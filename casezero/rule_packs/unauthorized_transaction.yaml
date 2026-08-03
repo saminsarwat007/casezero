@@ -1,0 +1,124 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — unauthorized_transaction  (35% of dispute volume)
+#
+# This file is POLICY, not code. The compliance kernel reads it and gates every
+# state transition and every outbound message against it. No LLM reads this to
+# decide anything; the kernel is deterministic.
+#
+# Keys marked IMMUTABLE cannot be modified by the Policy Composer (§12) even if
+# an operator asks for it in natural language. api/kernel/composer.py rejects any
+# diff touching them, and api/tests/test_composer.py proves it.
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: unauthorized_transaction
+version: 1
+volume_share: 0.35
+display_name: Unauthorized transaction
+description: >
+  Customer asserts a debit they did not authorise — card-not-present fraud,
+  account takeover, or a payment they never initiated.
+
+# ─── SLA: working days per BNM Complaints Handling PD ────────────────────────
+# IMMUTABLE: sla.*.working_days
+# Working days, not calendar days. Weekends and Malaysian public holidays are
+# skipped by kernel/sla.py — that is why a High case opened on a Friday is due
+# the following Friday, not the following Wednesday.
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  # Supervisor escalates when this fraction of the window remains.
+  breach_forecast_threshold: 0.20
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount."
+  - when: { amount_rm: { gte: 5000 } }
+    then: High
+  - when: { amount_rm: { gte: 500 } }
+    then: Medium
+  - default: Low
+
+# ─── Verification ───────────────────────────────────────────────────────────
+verification:
+  required_evidence:
+    - account_exists
+    - txn_ref_found
+    - amount_matches
+  # Amount tolerance before the Verifier must fall back to MANUAL_REVIEW.
+  amount_tolerance_pct: 1.0
+  # IMMUTABLE — a classification the model is unsure about never auto-resolves.
+  confidence_floor: 0.75
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+# ─── Financial resolution ───────────────────────────────────────────────────
+resolution:
+  # An unauthorised debit is reversed. A billing error is credit-adjusted.
+  journal_type: REVERSAL
+  debit_account: "GL-1450-FRAUD-SUSPENSE"
+  # IMMUTABLE — the kernel will not post on FAIL or MANUAL_REVIEW, ever.
+  require_verification: PASS
+  auto_approve_max_rm: 3000
+  dual_control_above_rm: 3000
+  narrative_template: >
+    Reversal of unauthorised transaction {txn_ref} per dispute {case_ref}.
+
+# ─── Customer communication ─────────────────────────────────────────────────
+communication:
+  # Plain-language summary on top, regulatory text below. The kernel guarantees
+  # the compliance half; the LLM only writes the human half.
+  register: dual            # dual | formal
+  languages: [en, ms]
+
+  # IMMUTABLE — mandatory_disclosures may be added to but never removed.
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+
+  # IMMUTABLE (entire block) — this is the clause the whole case study hinges on.
+  # The handbook ties it to "where the customer remains dissatisfied", so it is
+  # mandatory on rejection and partial-resolution outcomes. We also attach it to
+  # every FINAL_DECISION for safety.
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  # Phrases that must never appear in an outbound message. The kernel blocks.
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+
+# ─── Audit ──────────────────────────────────────────────────────────────────
+# IMMUTABLE (entire block) — the Policy Composer cannot switch off the chain.
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

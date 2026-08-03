@@ -1,0 +1,48 @@
+{
+  "accuracy": 0.959,
+  "confusion": {
+    "atm_debit_card": {
+      "atm_debit_card": 24
+    },
+    "billing_error": {
+      "billing_error": 43
+    },
+    "emoney_digital": {
+      "unauthorized_transaction": 4
+    },
+    "insurance_takaful": {
+      "insurance_takaful": 12
+    },
+    "loan_financing": {
+      "billing_error": 4,
+      "loan_financing": 5
+    },
+    "mis_selling": {
+      "mis_selling": 35
+    },
+    "unauthorized_transaction": {
+      "unauthorized_transaction": 68
+    }
+  },
+  "corpus_version": "v1",
+  "cost_rm_per_case": 0.001025,
+  "error_samples": [],
+  "errors": 0,
+  "evaluator": "gemini-production-classifier",
+  "injection_caught": 5,
+  "injection_total": 5,
+  "n_cases": 200,
+  "p50_ms": 2616,
+  "p95_ms": 4626,
+  "rule_pack_state": {
+    "atm_debit_card": 1,
+    "billing_error": 1,
+    "emoney_digital": 1,
+    "insurance_takaful": 1,
+    "loan_financing": 1,
+    "mis_selling": 1,
+    "unauthorized_transaction": 1
+  },
+  "urgency_accuracy": 0.9897,
+  "wall_ms": 71462
+}

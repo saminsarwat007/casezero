@@ -1,0 +1,25 @@
+FROM python:3.13-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+RUN addgroup --system casezero && adduser --system --ingroup casezero casezero
+COPY api/requirements.txt /tmp/requirements.txt
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -r /tmp/requirements.txt
+
+COPY api ./api
+COPY mcp_servers ./mcp_servers
+COPY rule_packs ./rule_packs
+COPY corpus/v1/labels.json ./corpus/v1/labels.json
+
+USER casezero
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

@@ -1,0 +1,41 @@
+# Secrets — never commit
+.env
+.env.local
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+
+# Local data / demo insurance
+*.dump
+*.sql.gz
+dumps/
+.cache/llm/
+tmp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Proof pack is committed on purpose — it is a graded submission artifact.
+# Only ignore scratch files inside it.
+proof/scratch/

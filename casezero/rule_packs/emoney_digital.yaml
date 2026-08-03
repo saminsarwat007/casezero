@@ -1,0 +1,131 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — emoney_digital  (2% of dispute volume)
+#
+# The smallest category and the fastest-moving one. DuitNow and e-wallet
+# transfers clear in seconds and are irrevocable once settled, so the useful
+# window is measured in hours while the SLA is measured in working days.
+#
+# Two consequences are encoded here:
+#   * everything is High or Medium — there is no Low tier worth having when the
+#     recall window closes before a Low case would be picked up
+#   * a scam report is not a refund question. The letter must point the customer
+#     at the National Scam Response Centre (997), because a bank that only
+#     answers the money question leaves the customer to be defrauded again.
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: emoney_digital
+version: 1
+volume_share: 0.02
+display_name: E-money / digital payment dispute
+description: >
+  Instant transfer or e-wallet dispute — DuitNow sent to the wrong recipient, a
+  QR payment debited twice, a wallet top-up that never arrived, or an
+  authorised-push-payment scam where the customer was deceived into sending.
+
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  # The most aggressive forecast threshold of the seven: half the window. A
+  # recall request sent on day 4 is usually too late to matter.
+  breach_forecast_threshold: 0.50
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount."
+  - when: { dispute_subtype: { equals: scam_apt } }
+    then: High
+    because: "Funds are moving through mule accounts; every hour reduces the
+      chance of a successful recall."
+  - when: { recall_window_open: { equals: true } }
+    then: High
+    because: "The beneficiary bank can still be asked to hold the funds, so the
+      case is worth more today than tomorrow."
+  - when: { amount_rm: { gte: 1000 } }
+    then: High
+  - default: Medium
+
+verification:
+  required_evidence:
+    - account_exists
+    - txn_ref_found
+    - amount_matches
+    - beneficiary_resolved
+  # Instant transfers are exact to the sen; any drift means we have the wrong
+  # transaction, not a rounding difference.
+  amount_tolerance_pct: 0.0
+  confidence_floor: 0.75
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+resolution:
+  journal_type: REVERSAL
+  debit_account: "GL-1490-EMONEY-SUSPENSE"
+  require_verification: PASS
+  auto_approve_max_rm: 1000
+  dual_control_above_rm: 3000
+  narrative_template: >
+    Reversal of disputed instant transfer {txn_ref} per dispute {case_ref}.
+
+communication:
+  register: dual
+  languages: [en, ms]
+
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+    - id: RECALL_STATUS
+      requirement: >
+        State plainly that an instant transfer is irrevocable once received and
+        say whether a recall was attempted. Silence here reads as a promise.
+      text_contains: ["recall"]
+    - id: SCAM_RESPONSE_CENTRE
+      requirement: >
+        Direct the customer to the National Scam Response Centre on 997 so the
+        wider fraud is reported, not only the debit.
+      text_contains: ["997"]
+      note: >
+        The bank can reverse a payment at most once; the NSRC can freeze the
+        chain of accounts behind it.
+
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+    # Never promise a recall. The receiving bank decides, not us.
+    - "we will recover your funds"
+
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

@@ -1,0 +1,138 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — mis_selling  (18% of dispute volume)
+#
+# The category that proves the kernel is not just an approval rubber stamp.
+#
+# A mis-selling claim turns on what was *said* at the point of sale, which no
+# core banking record contains. Automating the payout would be indefensible, so
+# this pack sets auto_approve_max_rm to 0: every mis-selling case with money
+# attached routes to a human, and every one above zero also demands a second
+# authoriser. The pipeline still does the work — intake, classification,
+# evidence assembly, drafting — it simply does not get to decide.
+#
+# This is the answer to "what stops your agents refunding everything?" It is not
+# a prompt. It is two numbers in a YAML file that the gate reads.
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: mis_selling
+version: 1
+volume_share: 0.18
+display_name: Mis-selling claim
+description: >
+  Customer says a product was sold to them on the strength of an incomplete or
+  inaccurate representation — undisclosed charges, risk understated, a term not
+  explained, or a product unsuitable for their circumstances.
+
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  # Tighter than other packs: these cases need investigator time, so the
+  # supervisor should escalate while a third of the window is still left.
+  breach_forecast_threshold: 0.33
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount; an
+      unsuitable product sold to one is the most serious form of this complaint."
+  - when: { customer_segment: { equals: senior } }
+    then: High
+    because: "Suitability complaints from senior customers carry heightened
+      conduct risk and are escalated on receipt."
+  - when: { product_type: { in: [investment_linked, structured_product, unit_trust] } }
+    then: High
+    because: "Investment and structured products carry capital risk, so the
+      suitability question is urgent regardless of the sum in dispute."
+  - when: { amount_rm: { gte: 10000 } }
+    then: High
+  - default: Medium
+
+verification:
+  # Note what is *not* here: no amount_matches. Nothing in core banking says
+  # whether the risk was explained, so the evidence list covers what a machine
+  # can actually establish, and the judgement stays with the investigator.
+  required_evidence:
+    - account_exists
+    - product_holding_found
+    - sale_date_within_window
+    - suitability_assessment_on_file
+  amount_tolerance_pct: 1.0
+  # Higher floor than the other packs. A borderline classification here is a
+  # case about advice being processed as if it were about a transaction.
+  confidence_floor: 0.85
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+resolution:
+  journal_type: CREDIT_ADJUSTMENT
+  debit_account: "GL-1465-CONDUCT-REDRESS"
+  require_verification: PASS
+  # Zero. No mis-selling claim is ever auto-resolved by an agent.
+  auto_approve_max_rm: 0
+  # Also zero: any redress at all requires two people.
+  dual_control_above_rm: 0
+  narrative_template: >
+    Conduct redress for mis-selling claim {case_ref} following suitability review.
+
+communication:
+  # Formal register throughout: these letters are read back to us by the
+  # ombudsman, and a chatty summary paragraph is a liability here.
+  register: formal
+  languages: [en, ms]
+
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+    - id: SUITABILITY_REVIEW
+      requirement: >
+        Tell the customer their suitability assessment and sales record are being
+        reviewed, so the basis of our decision is visible before it is made.
+      text_contains: ["suitability"]
+    - id: REDRESS_BASIS
+      requirement: "Where redress is offered, state how it was calculated."
+      applies_when_outcome_in: [RESOLVED_IN_FULL, PARTIALLY_RESOLVED]
+      must_state_amount: true
+
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+    # Blaming the customer for signing is exactly the posture that turns a
+    # complaint into an ombudsman referral.
+    - "you signed the documents"
+    - "you should have read"
+
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

@@ -1,0 +1,126 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — billing_error  (22% of dispute volume)
+#
+# Second-largest category, and the one that pays for the rollout: 35% + 22% is
+# 57% of volume from two packs.
+#
+# Different from unauthorized_transaction in ways that matter, and those
+# differences live entirely in this file rather than in code:
+#   * the money is CREDIT_ADJUSTMENT, not REVERSAL — the original debit was real,
+#     the charge on top of it was not
+#   * amounts are small and repetitive, so the auto-approval ceiling sits low and
+#     a genuine review band exists between it and dual control
+#   * the letter must show the arithmetic; "we have adjusted your account" without
+#     a figure is what generates the second complaint
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: billing_error
+version: 1
+volume_share: 0.22
+display_name: Billing error
+description: >
+  A fee, charge or interest amount the customer says is wrong — duplicate
+  postings, a fee waived at onboarding but still charged, incorrect profit or
+  interest calculation, or a subscription billed after cancellation.
+
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  breach_forecast_threshold: 0.20
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+# A repeated wrong charge is treated as High regardless of size: the amount
+# understates the harm when it recurs monthly and the customer has already
+# complained once.
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount."
+  - when: { is_repeat_complaint: { equals: true } }
+    then: High
+    because: "The customer has raised this charge before; a recurring error is a
+      systemic fault, not a one-off."
+  - when: { amount_rm: { gte: 5000 } }
+    then: High
+  - when: { amount_rm: { gte: 200 } }
+    then: Medium
+  - default: Low
+
+verification:
+  required_evidence:
+    - account_exists
+    - txn_ref_found
+    - fee_schedule_match
+  # Fee arithmetic should be exact. A mismatch beyond rounding means we do not
+  # understand the charge, and a human should look before we credit anything.
+  amount_tolerance_pct: 0.5
+  confidence_floor: 0.75
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+resolution:
+  # The debit itself was authorised; only the charge is wrong. Reversing the
+  # whole transaction would misstate the customer's account history.
+  journal_type: CREDIT_ADJUSTMENT
+  debit_account: "GL-1460-FEE-ADJUSTMENT"
+  require_verification: PASS
+  # Deliberately below dual_control_above_rm, leaving a band where a human
+  # approves but a second authoriser is not required.
+  auto_approve_max_rm: 1000
+  dual_control_above_rm: 5000
+  narrative_template: >
+    Adjustment of incorrect charge {txn_ref} per dispute {case_ref}.
+
+communication:
+  register: dual
+  languages: [en, ms]
+
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+    - id: FEE_AMOUNT_STATED
+      requirement: "State the disputed charge in figures, not as 'the amount'."
+      must_state_amount: true
+      note: >
+        A customer cannot check our arithmetic against a letter that never names
+        the number.
+
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+    - "system error on your part"
+
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

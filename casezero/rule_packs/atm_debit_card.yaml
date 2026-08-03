@@ -1,0 +1,130 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — atm_debit_card  (12% of dispute volume)
+#
+# The category with the best evidence and the worst customer experience.
+#
+# Best evidence: the ATM keeps an electronic journal and a cash-dispense counter,
+# so "the machine did not give me my money" is one of the few disputes a machine
+# can settle on its own. That is why the auto-approval ceiling sits at the daily
+# withdrawal limit rather than at zero.
+#
+# Worst experience: the customer is standing at a machine with no cash. Every
+# case here starts at Medium at worst, and a card still live after a skimming
+# report is an ongoing loss, so that one is High irrespective of amount.
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: atm_debit_card
+version: 1
+volume_share: 0.12
+display_name: ATM / debit card dispute
+description: >
+  Cash not dispensed or short-dispensed, a debit card transaction the customer
+  disputes at point of sale, a card captured by a machine, or a suspected
+  skimming or cloning incident.
+
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  breach_forecast_threshold: 0.20
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount."
+  - when: { card_still_active: { equals: true }, suspected_skimming: { equals: true } }
+    then: High
+    because: "A card reported as skimmed but still active is a live exposure; the
+      loss grows until it is blocked."
+  - when: { dispute_subtype: { equals: cash_not_dispensed } }
+    then: High
+    because: "The customer has been debited for cash they never received and may
+      have no other means of payment today."
+  - when: { amount_rm: { gte: 5000 } }
+    then: High
+  - default: Medium
+
+verification:
+  # The ATM's own record is the arbiter. If the electronic journal and the
+  # dispense counter disagree, no automated outcome is defensible.
+  required_evidence:
+    - account_exists
+    - txn_ref_found
+    - amount_matches
+    - atm_journal_match
+  # Cash is dispensed in notes, so a partial-dispense case will not match to the
+  # sen. The tolerance is wide enough for a RM50 note against a RM500 claim.
+  amount_tolerance_pct: 10.0
+  confidence_floor: 0.75
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+resolution:
+  journal_type: REVERSAL
+  debit_account: "GL-1455-ATM-SUSPENSE"
+  require_verification: PASS
+  # The daily ATM withdrawal limit. Above it, the claim is not a single failed
+  # dispense and should be looked at.
+  auto_approve_max_rm: 1500
+  dual_control_above_rm: 5000
+  narrative_template: >
+    Reversal of disputed card transaction {txn_ref} per dispute {case_ref}.
+
+communication:
+  register: dual
+  languages: [en, ms]
+
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+    - id: CARD_SECURITY_ADVICE
+      requirement: >
+        Tell the customer how to block the card and that a replacement will be
+        issued. Withholding this is what turns one fraudulent debit into six.
+      text_contains: ["block your card", "24-hour"]
+    - id: CREDIT_CONFIRMED
+      requirement: "Where funds are returned, state the amount credited."
+      applies_when_outcome_in: [RESOLVED_IN_FULL, PARTIALLY_RESOLVED]
+      must_state_amount: true
+
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+    # Presuming the customer disclosed their PIN pre-judges the investigation and
+    # reverses the burden of proof.
+    - "you must have shared your pin"
+
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

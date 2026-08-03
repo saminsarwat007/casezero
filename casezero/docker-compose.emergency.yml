@@ -1,0 +1,12 @@
+# Overlay for a stage demo with unreliable internet. It starts no background
+# scheduler and forces deterministic/in-process fallbacks. Open Offline Rehearsal
+# on the login page; no remote database or model call is made by that UI path.
+services:
+  api:
+    environment:
+      DEMO_REPLAY: "1"
+      MCP_TRANSPORT: inproc
+      MCP_ALLOW_FALLBACK: "1"
+
+  supervisor:
+    profiles: ["live-operations-only"]

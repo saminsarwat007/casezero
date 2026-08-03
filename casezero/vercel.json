@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "experimentalServices": {
+    "web": {
+      "entrypoint": "dashboard",
+      "routePrefix": "/"
+    },
+    "api": {
+      "entrypoint": "api/main.py",
+      "routePrefix": "/api",
+      "includeFiles": [
+        "rule_packs/**",
+        "mcp_servers/**",
+        "corpus/v1/labels.json"
+      ]
+    }
+  }
+}

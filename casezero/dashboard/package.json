@@ -1,0 +1,39 @@
+{
+  "name": "casezero-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@number-flow/react": "0.6.2",
+    "@supabase/supabase-js": "2.112.0",
+    "@xyflow/react": "12.11.2",
+    "clsx": "2.1.1",
+    "framer-motion": "12.43.0",
+    "lucide-react": "1.28.0",
+    "next": "15.5.22",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "recharts": "3.10.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@tailwindcss/postcss": "4.1.18",
+    "@types/node": "24.10.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "postcss": "8.5.25",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "postcss": "8.5.25",
+    "sharp": "0.35.3"
+  }
+}

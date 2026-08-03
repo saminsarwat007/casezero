@@ -1,0 +1,36 @@
+import type { Metadata, Viewport } from "next";
+import { Instrument_Sans, Martian_Mono } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import "./globals.css";
+
+const instrument = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--font-instrument",
+  display: "swap",
+});
+const martian = Martian_Mono({
+  subsets: ["latin"],
+  variable: "--font-martian",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: { default: "CaseZero — MYBank", template: "%s · CaseZero" },
+  description: "AI agents resolve bank disputes in minutes, fully compliant.",
+  applicationName: "CaseZero",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = { themeColor: "#E4EAE5", colorScheme: "light" };
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className={`${instrument.variable} ${martian.variable}`}>
+      <body>
+        <ServiceWorkerRegister />
+        <a className="skip-link" href="#main-content">Skip to case workspace</a>
+        {children}
+      </body>
+    </html>
+  );
+}

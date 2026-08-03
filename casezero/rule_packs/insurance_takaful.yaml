@@ -1,0 +1,133 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — insurance_takaful  (6% of dispute volume)
+#
+# Low volume, high consequence, and the only pack with a second regulator in the
+# room: a takaful contract is also a Shariah contract, so a decision on one is
+# reviewable by the Shariah committee as well as by BNM and FMOS.
+#
+# The pack encodes two beliefs:
+#   * a declined claim is High urgency whatever it is worth, because the customer
+#     is usually in the middle of the event the policy existed for
+#   * nothing here auto-resolves — the automation assembles the file, a human
+#     decides, and for takaful the letter must say which basis was applied
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: insurance_takaful
+version: 1
+volume_share: 0.06
+display_name: Insurance / takaful claim
+description: >
+  Dispute over a bancassurance or bancatakaful policy sold through the bank — a
+  declined or reduced claim, a premium or contribution deducted after
+  cancellation, a repudiation on non-disclosure grounds, or a disagreement about
+  cover during the free-look period.
+
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  # These cases need the insurer or takaful operator to respond, so the
+  # supervisor escalates early rather than discovering the wait at day 18.
+  breach_forecast_threshold: 0.33
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount."
+  - when: { dispute_subtype: { equals: claim_declined } }
+    then: High
+    because: "A declined claim usually reaches us while the insured event is
+      still unfolding; the amount is not a measure of the urgency."
+  - when: { policy_type: { in: [medical, critical_illness, personal_accident] } }
+    then: High
+    because: "Protection products are disputed at the worst moment in a
+      customer's year."
+  - when: { amount_rm: { gte: 5000 } }
+    then: High
+  - default: Medium
+
+verification:
+  required_evidence:
+    - account_exists
+    - policy_active_at_event_date
+    - premium_payments_current
+    - claim_reference_found
+  amount_tolerance_pct: 1.0
+  confidence_floor: 0.85
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+resolution:
+  # Where the bank is at fault the remedy is usually a refund of contributions
+  # deducted in error, not a reversal of the policy itself.
+  journal_type: CREDIT_ADJUSTMENT
+  debit_account: "GL-1470-CLAIMS-SUSPENSE"
+  require_verification: PASS
+  # No automatic payout: cover decisions belong to underwriting, and for takaful
+  # to the Shariah committee.
+  auto_approve_max_rm: 0
+  dual_control_above_rm: 2000
+  narrative_template: >
+    Refund of contributions/premium wrongly deducted, policy {policy_ref}, per
+    dispute {case_ref}.
+
+communication:
+  register: formal
+  languages: [en, ms]
+
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+    - id: POLICY_TERMS_CITED
+      requirement: >
+        Name the policy or certificate the decision rests on. A cover decision
+        that does not cite the contract cannot be checked by the customer.
+      text_contains: ["policy"]
+    - id: DECLINE_GROUNDS
+      requirement: >
+        Where a claim stays declined, state the clause relied on rather than
+        'as per policy terms'.
+      applies_when_outcome_in: [REJECTED]
+      text_contains: ["clause"]
+
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+    # A repudiation is a formal act with its own process; a complaints letter is
+    # not the place to announce one.
+    - "your policy is void"
+
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

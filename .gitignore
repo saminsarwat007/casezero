@@ -1,0 +1,10 @@
+# Insurance: this directory is not a git repo yet, but the moment it becomes one
+# the real .env must never be committed.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+.DS_Store
+.archive/

@@ -1,0 +1,131 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# CaseZero rule pack — loan_financing  (5% of dispute volume)
+#
+# Small by volume, largest by consequence per case: a loan dispute is the only
+# category where the bank's error can follow the customer to every other lender
+# in the country through CCRIS.
+#
+# That is why this pack has a disclosure the others do not — if the disputed
+# entry was reported to the credit bureau, the letter must say what we are doing
+# about the record, not only about the money. A refunded charge with an
+# uncorrected default marker is not a resolved complaint.
+# ═══════════════════════════════════════════════════════════════════════════
+
+category: loan_financing
+version: 1
+volume_share: 0.05
+display_name: Loan / financing dispute
+description: >
+  Dispute on a loan or Islamic financing facility — interest or profit
+  miscalculated, a late payment charge or ta'widh applied in error, an early
+  settlement rebate (ibra') withheld or understated, a payment not credited, or
+  an adverse CCRIS entry the customer says is wrong.
+
+sla:
+  High:
+    working_days: 5
+    source: "BNM Policy Document on Complaints Handling"
+  Medium:
+    working_days: 20
+  Low:
+    working_days: 20
+    extensions_allowed: true
+  breach_forecast_threshold: 0.25
+
+# ─── Urgency assignment — first match wins ──────────────────────────────────
+urgency_rules:
+  - when: { customer_segment: { equals: vulnerable } }
+    then: High
+    because: "Vulnerable customers are prioritised regardless of amount."
+  - when: { credit_bureau_impact: { equals: true } }
+    then: High
+    because: "An incorrect CCRIS entry blocks the customer at every other lender
+      while we deliberate, so the harm compounds daily and is not measured by the
+      disputed amount."
+  - when: { dispute_subtype: { equals: foreclosure_notice } }
+    then: High
+    because: "Recovery action is already in motion; the complaint has to be
+      resolved before the next step in that process."
+  - when: { amount_rm: { gte: 5000 } }
+    then: High
+  - when: { amount_rm: { gte: 500 } }
+    then: Medium
+  - default: Low
+
+verification:
+  required_evidence:
+    - account_exists
+    - facility_found
+    - amortisation_schedule_match
+    - payment_posting_match
+  # Amortisation is arithmetic. If our recomputation differs by more than
+  # rounding, one of the two schedules is wrong and a human should say which.
+  amount_tolerance_pct: 0.5
+  confidence_floor: 0.80
+  fallback_on_ambiguity: MANUAL_REVIEW
+
+resolution:
+  journal_type: CREDIT_ADJUSTMENT
+  debit_account: "GL-1480-FINANCING-ADJUSTMENT"
+  require_verification: PASS
+  auto_approve_max_rm: 2000
+  dual_control_above_rm: 10000
+  narrative_template: >
+    Adjustment to facility {facility_ref} following dispute {case_ref}.
+
+communication:
+  register: formal
+  languages: [en, ms]
+
+  mandatory_disclosures:
+    - id: BNM_ACK
+      requirement: "Acknowledge receipt of the complaint."
+      text_contains: ["acknowledge", "complaint"]
+    - id: BNM_CASE_REF
+      requirement: "State the case reference."
+      must_include_case_ref: true
+    - id: BNM_TIMELINE
+      requirement: "State the resolution deadline as an actual date."
+      must_state_deadline_date: true
+    - id: CONTACT_CHANNEL
+      requirement: "Provide a contact channel for follow-up."
+      text_contains: ["complaints@mybank.com.my"]
+    - id: ADJUSTMENT_AMOUNT
+      requirement: "State the adjustment in figures against the facility."
+      applies_when_outcome_in: [RESOLVED_IN_FULL, PARTIALLY_RESOLVED]
+      must_state_amount: true
+    - id: CCRIS_CORRECTION
+      requirement: >
+        Where the disputed entry reached the credit bureau, tell the customer
+        that the CCRIS record will be corrected and by when.
+      applies_when_outcome_in: [RESOLVED_IN_FULL, PARTIALLY_RESOLVED]
+      text_contains: ["CCRIS"]
+      note: >
+        Refunding the charge while leaving the credit record wrong resolves the
+        bank's exposure and none of the customer's.
+
+  fmos_clause:
+    applies_when:
+      claim_amount_rm: { lte: 250000 }
+      outcome_in: [REJECTED, PARTIALLY_RESOLVED, CUSTOMER_DISSATISFIED]
+    window_months: 6
+    enforcement: MANDATORY_INSERT_AND_BLOCK_IF_ABSENT
+    text_en: >
+      If you remain dissatisfied with our decision, you may refer this matter to
+      the Financial Markets Ombudsman Service (FMOS) within six (6) months from
+      the date of this letter.
+    text_ms: >
+      Sekiranya anda masih tidak berpuas hati dengan keputusan kami, anda boleh
+      merujuk perkara ini kepada Financial Markets Ombudsman Service (FMOS)
+      dalam tempoh enam (6) bulan dari tarikh surat ini.
+
+  prohibited_phrases:
+    - "we guarantee"
+    - "this is final and cannot be appealed"
+    # Recovery action is not a negotiating position in a complaints letter.
+    - "legal action will be taken"
+
+audit:
+  hash_chain: required
+  log_actor: required
+  retain_years: 7

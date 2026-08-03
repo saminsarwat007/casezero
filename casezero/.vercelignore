@@ -1,0 +1,16 @@
+.env
+.venv/
+dashboard/.env.local
+dashboard/node_modules/
+dashboard/.next/
+api/tests/
+evals/
+output/
+tmp/
+proof/
+corpus/v1/*.eml
+corpus/v1/*.pdf
+**/__pycache__/
+**/.pytest_cache/
+test-results/
+playwright-report/
