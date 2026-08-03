@@ -39,3 +39,5 @@ Thumbs.db
 # Proof pack is committed on purpose — it is a graded submission artifact.
 # Only ignore scratch files inside it.
 proof/scratch/
+.vercel
+.env*

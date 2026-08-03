@@ -81,6 +81,13 @@ def test_health_is_public_and_names_the_runtime() -> None:
     assert response.json()["mcp_transport"] in {"stdio", "inproc"}
 
 
+def test_vercel_service_prefix_reaches_the_same_health_route() -> None:
+    with TestClient(app) as client:
+        response = client.get("/api/health")
+    assert response.status_code == 200
+    assert response.json()["service"] == "casezero-api"
+
+
 def test_case_reads_require_a_bearer_token() -> None:
     with TestClient(app) as client:
         response = client.get("/cases")
@@ -106,6 +113,76 @@ def test_non_admin_cannot_list_staff(api_client) -> None:
     assert response.status_code == 403
 
 
+def test_admin_updates_hash_chained_stakeholder_controls(admin_api_client, fake_db) -> None:
+    response = admin_api_client.put(
+        "/settings",
+        json={
+            "bank_display_name": "MYBank Berhad",
+            "complaints_email": "care@mybank.example",
+            "timezone": "Asia/Kuala_Lumpur",
+            "sla_warning_hours": 12,
+            "default_workspace": "/pro",
+            "wajar_enabled": True,
+            "automatic_resolution_enabled": False,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["settings"]["sla_warning_hours"] == 12
+    assert response.json()["chain"] == {
+        "ok": True,
+        "links": 1,
+        "first_bad_seq": None,
+        "reason": None,
+    }
+    assert "automatic_resolution_enabled" in response.json()["changed"]
+    assert fake_db.settings_events[0].event_type == "SETTINGS_UPDATED"
+
+
+def test_wajar_replans_and_executes_admin_setting_with_receipt(
+    admin_api_client, fake_db
+) -> None:
+    planned = admin_api_client.post(
+        "/assistant/plan", json={"command": "Set SLA warning to 18 hours"}
+    )
+    assert planned.status_code == 200
+    assert planned.json()["plan"]["confirmation_required"] is True
+
+    refused = admin_api_client.post(
+        "/assistant/execute",
+        json={"command": "Set SLA warning to 18 hours", "confirm": False},
+    )
+    assert refused.status_code == 409
+
+    executed = admin_api_client.post(
+        "/assistant/execute",
+        json={"command": "Set SLA warning to 18 hours", "confirm": True},
+    )
+    assert executed.status_code == 200, executed.text
+    assert executed.json()["result"]["value"] == 18
+    assert executed.json()["receipt"]["receipt_id"].startswith("WJR-")
+    assert fake_db.assistant_receipts[0]["action"] == "UPDATE_SETTING"
+
+
+def test_wajar_admin_can_send_a_confirmed_operator_invitation(admin_api_client) -> None:
+    command = "Invite Amina Rahman at amina@mybank.example as COMPLIANCE"
+    response = admin_api_client.post(
+        "/assistant/execute", json={"command": command, "confirm": True}
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["result"]["invitation"] == "SENT"
+    assert admin_api_client.invited[-1].role == "COMPLIANCE"
+
+
+def test_investigator_cannot_execute_admin_wajar_action(api_client) -> None:
+    response = api_client.post(
+        "/assistant/execute",
+        json={"command": "Set SLA warning to 18 hours", "confirm": True},
+    )
+    assert response.status_code == 403
+
+
 def test_one_rfc822_email_resolves_through_the_http_api(api_client, eml_corpus) -> None:
     response = api_client.post(
         "/intake",
@@ -117,6 +194,22 @@ def test_one_rfc822_email_resolves_through_the_http_api(api_client, eml_corpus) 
     assert data["status"] == "COMMUNICATED"
     assert data["verification_result"] == "PASS"
     assert data["posted"] is True
+
+
+def test_control_register_can_pause_autonomous_financial_resolution(
+    api_client, eml_corpus, fake_db
+) -> None:
+    fake_db.settings["automatic_resolution_enabled"] = False
+    response = api_client.post("/intake", content=eml_corpus["happy_path"])
+
+    assert response.status_code == 201, response.text
+    assert response.json()["status"] == "REVIEW_PENDING"
+    assert response.json()["posted"] is False
+    gate = next(
+        event for event in response.json()["timeline"] if event["type"] == "GATE_DECISION"
+    )
+    assert gate["payload"]["action"] == "MANUAL_REVIEW"
+    assert "stakeholder_settings.automatic_resolution_enabled = false" in gate["payload"]["citations"]
 
 
 def test_case_list_never_returns_ciphertext(api_client, eml_corpus) -> None:

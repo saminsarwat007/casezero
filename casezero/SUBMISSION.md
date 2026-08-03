@@ -14,6 +14,13 @@ They do not control compliance or money. A deterministic kernel enforces confide
 routing, `PASS`-only posting, signed authorisation tickets, dual control, balanced
 journals, working-day deadlines and mandatory FMOS disclosure.
 
+**Wajar by CaseZero** is the stakeholder's governed operating agent. It accepts
+natural language, but presents an action docket—not a conversational promise—with
+the required authority, effect and safety gates. Reads may run immediately. Invites
+and settings changes require an eligible role, explicit confirmation and a durable
+receipt. The stakeholder Control Register supplies the operational kill switch and
+keeps every change in a separate hash chain.
+
 ## 2. Real-world insights — pain source, audience and core problems
 
 The case-study baseline is 90 minutes per complaint across multiple departments,
@@ -47,12 +54,16 @@ FastAPI boundary, Supabase Auth/RLS/PostgREST and one dedicated SLA worker. Live
 makes agent/tool execution observable without making the animation the source of
 truth.
 
-The public deployment opens on a themed five-minute judge guide. Judges choose
-**Open judge walkthrough** and need no email or password; every visible mutation is
-explicitly rehearsed against synthetic data. Production staff have no public sign-up
-path. An Admin enters a colleague's work email and role in **Operators**, Supabase
+The public deployment opens on a themed first-shift stakeholder guide. A visitor can
+choose **Start safe rehearsal** without an email or password; every visible mutation
+is explicitly rehearsed against synthetic data. Production staff have no public
+sign-up path. An Admin enters a colleague's work email and role in **Operators**, Supabase
 sends a single-use invitation, and Postgres RLS enforces that role after password
 setup.
+
+The Pro surface now behaves as an operations board on desktop and a focused
+single-stage register on mobile. Settings, the mobile menu and Wajar use the same
+Security Print system, with no horizontal page overflow at 390 or 1,440 pixels.
 
 ## 4. Business value — quantified
 
@@ -68,7 +79,7 @@ threshold-limited auto-resolution. Deadline risk is forecast before breach. Ever
 approved financial resolution has a balanced journal and an exportable four-page
 FMOS pack, reducing both operating time and regulator-file preparation.
 
-## Required proof to attach
+## External hackathon evidence to attach
 
 - Full CodeBuddy conversation-history export.
 - At least 3 genuine dated CodeBuddy/WorkBuddy screenshots (target 10+).

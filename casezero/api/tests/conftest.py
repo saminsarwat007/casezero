@@ -206,6 +206,20 @@ class FakeDatabase(FakeBank):
         self.proactive_alerts: list[dict[str, Any]] = []
         self.quarantined: list[dict[str, Any]] = []
         self.llm_calls: list[dict[str, Any]] = []
+        self.settings = {
+            "id": "primary",
+            "bank_display_name": "MYBank Berhad",
+            "complaints_email": "complaints@mybank.com.my",
+            "timezone": "Asia/Kuala_Lumpur",
+            "sla_warning_hours": 24,
+            "default_workspace": "/simple",
+            "wajar_enabled": True,
+            "automatic_resolution_enabled": True,
+            "updated_by": None,
+            "updated_at": "2026-08-03T00:00:00+00:00",
+        }
+        self.settings_events: list[ChainEvent] = []
+        self.assistant_receipts: list[dict[str, Any]] = []
         self._case_seq = 0
 
     # ─── Cases ──────────────────────────────────────────────────────────────
@@ -390,6 +404,36 @@ class FakeDatabase(FakeBank):
 
     def list_eval_runs(self, limit: int = 20) -> list[dict[str, Any]]:
         return []
+
+    # ─── Stakeholder controls + Wajar receipts ────────────────────────────
+
+    def get_stakeholder_settings(self) -> dict[str, Any]:
+        return dict(self.settings)
+
+    def update_stakeholder_settings(self, **fields: Any) -> dict[str, Any]:
+        self.settings.update(fields)
+        return dict(self.settings)
+
+    def append_settings_event(
+        self, event_type: str, actor: str, payload: dict[str, Any]
+    ) -> ChainEvent:
+        event = append_link(self.settings_events, event_type, actor, payload)
+        self.settings_events.append(event)
+        return event
+
+    def get_settings_events(self) -> list[ChainEvent]:
+        return list(self.settings_events)
+
+    def verify_settings_chain(self) -> ChainVerdict:
+        return verify_chain(self.settings_events)
+
+    def record_assistant_receipt(self, **fields: Any) -> dict[str, Any]:
+        row = {"created_at": "2026-08-03T00:00:00+00:00", **fields}
+        self.assistant_receipts.append(row)
+        return row
+
+    def list_assistant_receipts(self, limit: int = 50) -> list[dict[str, Any]]:
+        return list(reversed(self.assistant_receipts))[:limit]
 
     def rpc(self, name: str, params: dict[str, Any] | None = None) -> Any:
         if name == "dashboard_metrics":

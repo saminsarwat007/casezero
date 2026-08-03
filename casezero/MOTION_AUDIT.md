@@ -25,3 +25,11 @@ behaviour now preserve feedback without movement.
 **Approve.** No feel-breaking regression remains, high-frequency review actions do
 not animate, interaction durations stay under 300ms, and ambient movement is both
 purposeful and suppressible.
+
+## Wajar release addendum
+
+Wajar opens as a short mechanical registration of the docket, never as chat typing
+theatre. The visible demo cursor and click ripple exist only in the recording script,
+not the product. Reduced-motion removes the docket transform while retaining state
+and confirmation feedback. Mobile navigation and stage changes are immediate, so an
+operator never waits for decorative motion before acting on an SLA.

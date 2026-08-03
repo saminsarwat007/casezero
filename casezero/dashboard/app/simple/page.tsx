@@ -45,7 +45,7 @@ export default function SimplePage() {
       />
       {tour ? (
         <aside className="tour-note" aria-labelledby="tour-note-title">
-          <div><p className="eyebrow mono">Stop 01 of 05 / Judge walkthrough</p><h2 id="tour-note-title" className="section-title">Start with the three cases that need a person.</h2><p>Then follow the numbered left rail: Mission control → Policy studio → Customer alert → Audit explorer.</p></div>
+          <div><p className="eyebrow mono">First shift / Safe rehearsal</p><h2 id="tour-note-title" className="section-title">Start with the cases that need a person.</h2><p>Then open Mission control, ask Wajar for deadline risk, and inspect the operating controls. Every visible record here is synthetic.</p></div>
           <div className="tour-actions"><Link className="btn primary" href="/pro">Next: Mission control</Link><button className="btn ghost" type="button" onClick={() => { localStorage.removeItem("casezero_tour"); setTour(false); }}>Dismiss guide</button></div>
         </aside>
       ) : null}
@@ -65,7 +65,7 @@ export default function SimplePage() {
         <div className="chips">
           {[
             "Show cases at risk", "Open the review queue", "Summarise today", "Show quarantined input",
-          ].map((label) => <button key={label} className="chip" onClick={() => setNotice(`${label} — ${attention.length} case(s) match the current register.`)}>{label}</button>)}
+          ].map((label) => <button key={label} className="chip" onClick={() => window.dispatchEvent(new CustomEvent("casezero:wajar", { detail: label }))}>{label}</button>)}
         </div>
       </section>
       <section className="section" aria-labelledby="needs-attention">

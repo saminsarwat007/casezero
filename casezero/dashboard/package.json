@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "demo:record": "node scripts/record-stakeholder-demo.mjs"
   },
   "dependencies": {
     "@number-flow/react": "0.6.2",

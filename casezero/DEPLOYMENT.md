@@ -14,19 +14,23 @@ The API is stateless except for MCP subprocess sessions. Supabase is the system 
 record. Do not start the supervisor inside FastAPI; each web replica would otherwise
 own a scheduler.
 
-## Judge deployment on Vercel
+## Production web deployment on Vercel
 
 The root `vercel.json` uses Vercel Services to publish the Next.js dashboard at `/`
-and FastAPI at `/api` from one project. The service key `api` supplies
-`NEXT_PUBLIC_API_URL=/api` automatically, so browser requests stay on the same
-HTTPS origin. Python dependencies are declared in `api/pyproject.toml`.
+and rewrite `/api/*` to FastAPI from one project, so browser requests stay on the
+same HTTPS origin. Python dependencies are declared in the root `pyproject.toml`;
+`api/pyproject.toml` also supports deploying the API directory independently.
 
 ```bash
 vercel link
 vercel env add SUPABASE_URL production
 # add the remaining required values from .env.example through the encrypted prompt
-vercel deploy --prod
+npx --yes vercel@58.4.4 deploy --prod --yes
 ```
+
+The Services deployment endpoint currently refuses the older 41.x CLI bundled on
+this host. Keep the release command pinned at 58.4.4 (or a separately reviewed newer
+version) instead of depending on an unpinned global install.
 
 After the first production URL exists, set `DASHBOARD_BASE_URL` to that exact HTTPS
 origin and redeploy. Add both `https://<production-host>/set-password` and the site
@@ -34,10 +38,18 @@ origin to Supabase Auth's allowed redirect URLs/site URL. Keep `MCP_TRANSPORT=in
 on Vercel; stdio MCP remains the preferred container deployment. The SLA supervisor
 is a separate long-running process and must not be started inside a serverless API.
 
-Judges only need the production URL. `/` explains the product and starts a labelled,
-read-only rehearsal without login. Staff accounts are invitation-only: an Admin uses
+New stakeholders only need the production URL. `/` explains the operating model and
+starts a labelled, read-only rehearsal without login. Staff accounts are
+invitation-only: an Admin uses
 **Operators**, Supabase emails the recipient, and the recipient creates a password at
 `/set-password`.
+
+Current production origin: <https://casezero-alpha.vercel.app>.
+
+The Vercel deployment serves the interactive web/API boundary. The always-on SLA
+supervisor remains a separately deployed single worker; do not treat a serverless
+request as a scheduler. Until that worker is installed in the bank environment,
+`python -m api.jobs --once` is the controlled operational smoke.
 
 ## Environment
 
@@ -45,7 +57,7 @@ Set all production values from `.env.example` in the host's secret manager. The
 dashboard's three `NEXT_PUBLIC_*` values are public build-time configuration, not
 secrets. Set `DASHBOARD_BASE_URL` to the final HTTPS origin so CORS is exact.
 
-Required for the judged live path:
+Required for the live web path:
 
 - `GOOGLE_API_KEY` or another configured model key
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
@@ -59,14 +71,33 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 ## Release order
 
 1. Apply all SQL migrations in numeric order with `python -m api.db.bootstrap`.
+   Production must include `005_stakeholder_controls.sql` and
+   `006_stakeholder_privilege_hardening.sql`; the latter removes default public
+   table grants before the UI is released.
 2. Run `python -m api.db.seed`; it is idempotent and contains synthetic data only.
 3. Set a temporary `DEMO_USER_PASSWORD` and run `python -m api.db.seed_users`.
 4. Build and release the API; require `/health` to return `ok: true`.
 5. Run `python -m api.jobs --once`, then start exactly one scheduler worker.
 6. Build the dashboard with the final public API/Supabase values and release it.
 7. Sign in once as every role; confirm the investigator's RLS-filtered register.
-8. Run Playwright against the public URL and execute one live WorkBuddy smoke.
+8. Run all 11 Playwright journeys against the public URL and execute one live
+   mailbox-channel smoke when credentials are available.
 9. Remove `DEMO_USER_PASSWORD` from the long-lived runtime after identities exist.
+
+## Stakeholder control and inbox onboarding
+
+- The first Admin opens **Settings** and records the real bank name, complaint inbox,
+  timezone, warning horizon, default workspace and automation posture. The API
+  writes an append-only settings event with a chained hash.
+- The Admin opens **Operators** to invite colleagues by work email and assign OPS,
+  INVESTIGATOR, COMPLIANCE or ADMIN. Supabase sends the single-use password link.
+- The email value in Settings is the customer-facing contact used by letters and
+  referral material. Receiving mail still requires the bank's IMAP/forwarding
+  secret or a bank-owned webhook; a text field is not mailbox access.
+- Leave automatic resolution off until core banking/CRM MCP endpoints, signed ticket
+  custody, rule packs and outbound templates have bank approval.
+- Wajar may summarise and navigate immediately. Its write capabilities remain
+  allowlisted, role checked, explicitly confirmed and receipt logged.
 
 ## Rollback
 
@@ -85,4 +116,5 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 - `.env` absent from image layers and source control.
 - API logs expose no bearer tokens, PII, raw account numbers or encryption keys.
 - Four-role auth smoke, RLS visibility smoke and exact-chain verification pass.
-- `pytest`, typecheck, production build, Playwright, MCP, LLM and WorkBuddy smokes pass.
+- 464-test Python suite, typecheck, production build, 11 Playwright journeys, MCP,
+  LLM, database and mailbox-channel smokes pass.

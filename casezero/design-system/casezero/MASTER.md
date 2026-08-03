@@ -14,6 +14,8 @@ project-specific Security Print direction.
   unmistakable.
 - **Structural metaphor:** double-entry bookkeeping. `CLAIMED` and `OF RECORD`
   form the two sides of every case; verification makes them balance.
+- **Operating agent:** Wajar is a docket, not a chat bubble. It must expose action,
+  authority, effect, gates and result before an irreversible operation.
 
 ## Tokens
 
@@ -59,6 +61,9 @@ black.
 3. **VOID pantograph:** visible only when chain verification fails.
 4. **Working-day strip:** weekends are physical gaps, not coloured cells.
 5. **Microtext rule:** `CASEZERO·MYBANK·AUDIT·` repeats at section boundaries.
+6. **Wajar action docket:** a fixed, accessible control sheet with a visible close,
+   explicit confirmation zone and hash-addressed receipt. Never render anthropomorphic
+   typing dots or imply a write happened before the server confirms it.
 
 ## Motion
 
@@ -81,6 +86,11 @@ black.
 - **Tables:** sticky labelled header, text fallback for all status colour, row
   actions reachable by keyboard. Review shortcuts `A/R/I` do not fire while an
   input is focused.
+- **Pipeline lanes:** all lanes remain visible on wide screens. Below 768px a
+  two-column stage selector exposes one complete lane at a time; content is never
+  squeezed into unreadable columns.
+- **Mobile navigation:** a labelled menu expands in normal document flow. Do not
+  clip or horizontally scroll primary navigation.
 - **Charts:** exact values and legends always visible. Category distribution uses
   a labelled donut; performance targets use compact bullet bars; heatmaps expose
   a numeric/table fallback and never rely on colour alone.
@@ -103,6 +113,7 @@ black.
 | `/login` | One engraved credential sheet, no marketing split-screen |
 | `/simple` | Daily ledger: three counters, needs-attention register, command chips |
 | `/pro` | Pipeline rails, inverted Agent Theater, measured analytics |
+| `/settings` | Stakeholder Control Register, kill switches and settings chain |
 | `/case/[ref]` | CLAIMED ↔ OF RECORD balance, evidence, why, journal, chain |
 | `/review` | Keyboard-first evidence register with persistent decision panel |
 | `/policy` | Plain-English request → protected diff → corpus simulation → govern |
@@ -118,3 +129,5 @@ black.
 - Inter/Roboto/Arial/Geist/Fira; emoji icons; unlabeled colour-only status.
 - Decorative motion, spring bounce, fade-up-on-scroll and fixed-height mobile
   hero sections.
+- Consumer chat bubbles, autonomous-looking write actions or vague “AI is working”
+  states. Wajar is an accountable operating control, not a mascot.

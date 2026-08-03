@@ -1,18 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "experimentalServices": {
+  "services": {
     "web": {
-      "entrypoint": "dashboard",
-      "routePrefix": "/"
+      "root": "dashboard/",
+      "framework": "nextjs"
     },
     "api": {
-      "entrypoint": "api/main.py",
-      "routePrefix": "/api",
-      "includeFiles": [
-        "rule_packs/**",
-        "mcp_servers/**",
-        "corpus/v1/labels.json"
-      ]
+      "root": "api/",
+      "framework": "fastapi"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": { "service": "api", "path": "/$1" }
+    },
+    {
+      "source": "/(.*)",
+      "destination": { "service": "web", "path": "/$1" }
+    }
+  ]
 }

@@ -122,6 +122,24 @@ async def run(
         dual_control_by=dual_control_by,
     )
 
+    # A bank administrator can pause autonomous financial resolution without
+    # editing policy packs. This control only narrows authority: a PASS case is
+    # routed to review and still needs a human to resume through the same gate.
+    controls_reader = getattr(ctx.db, "get_stakeholder_settings", None)
+    if controls_reader is not None and decision.action == "POST" and not approved_by:
+        controls = controls_reader()
+        if not controls.get("automatic_resolution_enabled", True):
+            decision = GateDecision(
+                action="MANUAL_REVIEW",
+                reasons=(
+                    "Verification and category policy permit resolution, but the "
+                    "stakeholder control register has paused autonomous posting.",
+                ),
+                citations=(
+                    "stakeholder_settings.automatic_resolution_enabled = false",
+                ),
+            )
+
     events = [
         Event(
             type="GATE_DECISION",

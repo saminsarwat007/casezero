@@ -1,7 +1,7 @@
 # CaseZero — AI Dispute Resolution OS
 
-CaseZero is a governed banking-dispute automation pipeline for a synthetic
-Malaysian regional bank. Six AI agents understand the complaint and assemble a
+CaseZero is a governed banking-dispute operating system for a Malaysian regional
+bank. Six AI agents understand the complaint and assemble a
 proposal; a deterministic compliance kernel controls classification confidence,
 working-day SLA, verification, financial posting, dual control, customer
 disclosures and the tamper-evident audit chain.
@@ -19,9 +19,15 @@ mint a posting ticket, remove the FMOS clause, write a journal entry, or bypass 
 - Double-entry reversals/credits, confidence routing and dual-control thresholds.
 - Policy Composer: English instruction → typed intent → protected diff → 200-case
   replay → Compliance apply/reject → versioned hash chain.
+- **Wajar by CaseZero:** a governed operating agent that turns natural-language
+  requests into an inspectable action docket. Reads execute safely; writes require
+  role checks, explicit confirmation and a hash-addressed receipt.
+- Stakeholder Control Register for bank identity, complaint contact, timezone,
+  warning horizon, default workspace, Wajar availability and the automatic
+  resolution kill switch. Every change is chained.
 - Supabase Auth/RLS for OPS, INVESTIGATOR, COMPLIANCE and ADMIN.
-- Admin-only work-email invitations with single-use password setup; the public judge
-  walkthrough needs no account and cannot write to bank systems.
+- Admin-only work-email invitations with single-use password setup; the public
+  rehearsal needs no account and cannot write to bank systems.
 - Next.js PWA with Simple/Pro operations views, review queue, Agent Theater SSE,
   fraud-ring radar, quarantine, audit proof, customer tracker and proactive alert.
 - Four-page FMOS Referral Pack export.
@@ -38,9 +44,9 @@ RFC822 / WorkBuddy / Proactive alert
                  │             │             │
                  └──── deterministic compliance kernel ────┐
                                                           │
- Supabase RLS + encrypted PII + append-only hash chain + balanced journal
+ Supabase RLS + encrypted PII + append-only hash chains + balanced journal
                                                           │
- Next.js operations PWA ← authenticated API + incremental SSE
+ Next.js operations PWA ← authenticated API + incremental SSE ← Wajar docket
 ```
 
 ## Local setup
@@ -73,8 +79,8 @@ Copy the public Supabase URL/anon key and API URL into
 cd dashboard && npm run dev
 ```
 
-Open `http://localhost:3000`. A new visitor first sees the complete five-stop guide
-and can enter the labelled judge walkthrough without an account. Staff select
+Open `http://localhost:3000`. A new visitor first sees the complete first-shift guide
+and can enter the labelled safe rehearsal without an account. Staff select
 **Staff sign in**. The four synthetic identities are
 `ops@casezero.my`, `investigator@casezero.my`, `compliance@casezero.my` and
 `admin@casezero.my`; they use the password supplied to the seeder. Offline
@@ -84,6 +90,24 @@ Admins add real colleagues under **Operators** by entering a full name, work ema
 and least-privilege role. Supabase sends a single-use invitation to `/set-password`;
 after password setup, the `app_users` role row controls Postgres RLS. There is no
 public staff registration endpoint.
+
+## First day for a stakeholder
+
+1. Open the public guide and run **Start safe rehearsal**; this uses synthetic data
+   and cannot post money or contact a customer.
+2. Sign in as an Admin and open **Settings** to set the bank name, complaint inbox,
+   Malaysian timezone, SLA warning horizon and automation posture.
+3. Open **Operators**, enter each colleague's work email and assign the least
+   privileged role. The invitation is single use; there is no open registration.
+4. Use **Wajar** from any staff page. It shows the action, authority, effect and
+   gates before execution. Settings and invitations always require confirmation.
+5. Keep automatic resolution off during shadow mode, validate the evaluation and
+   journal evidence, then enable it only after Compliance approves the rule packs.
+
+The stakeholder release is live at <https://casezero-alpha.vercel.app>. It is ready
+today for onboarding, rehearsal and a synthetic-data pilot. Connecting real customer
+mail and financial posting requires the bank-controlled credentials listed in
+`DEPLOYMENT.md`; the repository never contains them.
 
 ## Verification
 
@@ -99,6 +123,21 @@ cd dashboard
 npm run typecheck
 npm run build
 npm run test:e2e
+npm audit --audit-level=high
+```
+
+The current release gate is **464 Python tests**, **11 Playwright stakeholder
+journeys**, a clean production build/typecheck and **0 npm vulnerabilities**.
+
+Record the production walkthrough at 1920×1080 with a visible cursor and click
+feedback, then create an upload-friendly MP4:
+
+```bash
+cd dashboard
+DEMO_BASE_URL=https://casezero-alpha.vercel.app npm run demo:record
+ffmpeg -i ../proof/video/casezero-stakeholder-demo.webm \
+  -c:v libx264 -crf 20 -preset medium -movflags +faststart -pix_fmt yuv420p \
+  ../proof/video/casezero-stakeholder-demo.mp4
 ```
 
 Regenerate and evaluate the synthetic corpus:
@@ -140,6 +179,6 @@ workers cannot duplicate SLA events.
 - [`PROGRESS.md`](../PROGRESS.md) — current evidence-backed build state.
 - [`MASTERPLAN.md`](../MASTERPLAN.md) — product/design source of truth.
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — production release runbook.
-- [`SUBMISSION.md`](SUBMISSION.md) — judge-facing description and evidence list.
+- [`SUBMISSION.md`](SUBMISSION.md) — case-study fit and external evidence list.
 - [`MOTION_AUDIT.md`](MOTION_AUDIT.md) and
   [`WEB_INTERFACE_AUDIT.md`](WEB_INTERFACE_AUDIT.md) — release audits.

@@ -2,6 +2,20 @@
 
 from __future__ import annotations
 
+# Vercel Services imports this file as top-level ``main`` from the ``api/``
+# service root. Add the repository root only for that packaging mode so the
+# same package-qualified imports used by pytest and Uvicorn keep working.
+if __package__ in {None, ""}:
+    import sys
+    import types
+    from pathlib import Path
+
+    service_root = Path(__file__).resolve().parent
+    package = types.ModuleType("api")
+    package.__file__ = str(service_root / "__init__.py")
+    package.__path__ = [str(service_root)]
+    sys.modules.setdefault("api", package)
+
 import base64
 import json
 import secrets
@@ -17,6 +31,8 @@ from sse_starlette.sse import EventSourceResponse
 
 from api.agents.base import AgentContext, build_context
 from api.agents.orchestrator import CaseRun, Orchestrator
+from api.agents.wajar import plan as plan_wajar
+from api.agents.wajar import receipt_payload
 from api.config import get_settings
 from api.corpus.labels import load_evaluation_labels
 from api.db.client import Database
@@ -57,13 +73,35 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.dashboard_base_url, "http://127.0.0.1:3000"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-WorkBuddy-Token"],
 )
 
 
+@app.middleware("http")
+async def normalize_service_prefix(request: Request, call_next):
+    """Strip the public Vercel Services prefix before FastAPI route matching."""
+    path = request.scope.get("path", "")
+    if path == "/api" or path.startswith("/api/"):
+        normalized = path[4:] or "/"
+        request.scope["path"] = normalized
+        request.scope["raw_path"] = normalized.encode("utf-8")
+    return await call_next(request)
+
+
 def agent_context(db: Database = Depends(service_database)) -> AgentContext:
-    return build_context(db=db)
+    ctx = build_context(db=db)
+    try:
+        controls = db.get_stakeholder_settings()
+    except Exception:  # The first bootstrap can run before migration 005 exists.
+        return ctx
+    ctx.settings = ctx.settings.model_copy(
+        update={
+            "bank_name": controls.get("bank_display_name") or ctx.settings.bank_name,
+            "bank_complaints_email": controls.get("complaints_email") or ctx.settings.bank_complaints_email,
+        }
+    )
+    return ctx
 
 
 def public_case(case: dict[str, Any]) -> dict[str, Any]:
@@ -164,6 +202,32 @@ class StaffInviteRequest(BaseModel):
         return email
 
 
+class StakeholderSettingsRequest(BaseModel):
+    bank_display_name: str = Field(min_length=2, max_length=120)
+    complaints_email: str = Field(min_length=5, max_length=254)
+    timezone: Literal["Asia/Kuala_Lumpur", "UTC"] = "Asia/Kuala_Lumpur"
+    sla_warning_hours: int = Field(ge=1, le=120)
+    default_workspace: Literal["/simple", "/pro"]
+    wajar_enabled: bool
+    automatic_resolution_enabled: bool
+
+    @field_validator("complaints_email")
+    @classmethod
+    def valid_complaints_email(cls, value: str) -> str:
+        email = value.strip().lower()
+        if email.count("@") != 1 or "." not in email.rsplit("@", 1)[1]:
+            raise ValueError("Enter a valid complaints email address.")
+        return email
+
+
+class WajarCommandRequest(BaseModel):
+    command: str = Field(min_length=2, max_length=500)
+
+
+class WajarExecuteRequest(WajarCommandRequest):
+    confirm: bool = False
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {
@@ -211,6 +275,149 @@ def invite_staff_user(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
+def control_register_response(db: Database) -> dict[str, Any]:
+    row = db.get_stakeholder_settings()
+    verdict = db.verify_settings_chain()
+    return {
+        "settings": row,
+        "chain": {
+            "ok": verdict.ok,
+            "links": len(db.get_settings_events()),
+            "first_bad_seq": verdict.first_bad_seq,
+            "reason": verdict.reason,
+        },
+    }
+
+
+@app.get("/settings")
+def stakeholder_controls(
+    _: AuthUser = Depends(current_user),
+    db: Database = Depends(rls_database),
+) -> dict[str, Any]:
+    return control_register_response(db)
+
+
+@app.put("/settings")
+def update_stakeholder_controls(
+    payload: StakeholderSettingsRequest,
+    user: AuthUser = Depends(current_user),
+    db: Database = Depends(service_database),
+) -> dict[str, Any]:
+    user.require("ADMIN")
+    before = db.get_stakeholder_settings()
+    changes = {
+        key: value
+        for key, value in payload.model_dump().items()
+        if before.get(key) != value
+    }
+    if changes:
+        db.update_stakeholder_settings(**changes, updated_by=user.id)
+        db.append_settings_event(
+            "SETTINGS_UPDATED",
+            f"user:{user.id}",
+            {
+                "changes": {
+                    key: {"from": before.get(key), "to": value}
+                    for key, value in changes.items()
+                }
+            },
+        )
+    return {**control_register_response(db), "changed": sorted(changes)}
+
+
+@app.get("/assistant/receipts")
+def assistant_receipts(
+    user: AuthUser = Depends(current_user),
+    db: Database = Depends(rls_database),
+) -> dict[str, Any]:
+    user.require("OPS", "COMPLIANCE", "ADMIN")
+    rows = db.list_assistant_receipts(limit=50)
+    return {"items": rows, "count": len(rows)}
+
+
+@app.post("/assistant/plan")
+def wajar_plan(
+    payload: WajarCommandRequest,
+    user: AuthUser = Depends(current_user),
+    db: Database = Depends(rls_database),
+) -> dict[str, Any]:
+    return {"plan": plan_wajar(payload.command, user.role, db).as_dict()}
+
+
+@app.post("/assistant/execute")
+def wajar_execute(
+    payload: WajarExecuteRequest,
+    user: AuthUser = Depends(current_user),
+    db: Database = Depends(service_database),
+    invitations: StaffInvitationService = Depends(invitation_service),
+) -> dict[str, Any]:
+    # Re-plan against server state. The browser never chooses the action it runs.
+    planned = plan_wajar(payload.command, user.role, db)
+    if planned.action not in {"INVITE_OPERATOR", "UPDATE_SETTING"}:
+        raise HTTPException(409, "This command has no confirmed write action.")
+    if not planned.permitted:
+        raise HTTPException(403, planned.summary)
+    if not payload.confirm:
+        raise HTTPException(409, "Explicit confirmation is required.")
+
+    if planned.action == "INVITE_OPERATOR":
+        try:
+            result = invitations.invite(
+                StaffInvite(
+                    email=str(planned.parameters["email"]),
+                    full_name=str(planned.parameters["full_name"]),
+                    role=str(planned.parameters["role"]),
+                )
+            )
+        except InvitationError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        outcome = "EXECUTED"
+    else:
+        key = str(planned.parameters["key"])
+        value = planned.parameters["value"]
+        allowed = {
+            "bank_display_name",
+            "complaints_email",
+            "sla_warning_hours",
+            "default_workspace",
+            "wajar_enabled",
+            "automatic_resolution_enabled",
+        }
+        if key not in allowed:
+            raise HTTPException(422, "Wajar selected an unknown control.")
+        before = db.get_stakeholder_settings()
+        updated = db.update_stakeholder_settings(**{key: value}, updated_by=user.id)
+        event = db.append_settings_event(
+            "SETTINGS_UPDATED_BY_WAJAR",
+            f"user:{user.id}",
+            {"key": key, "from": before.get(key), "to": value, "plan_id": planned.plan_id},
+        )
+        result = {
+            "key": key,
+            "value": updated.get(key),
+            "settings_event_seq": event.seq,
+        }
+        outcome = "EXECUTED"
+
+    receipt = receipt_payload(
+        payload.command,
+        user.role,
+        planned.action,
+        planned.parameters,
+        result,
+    )
+    db.record_assistant_receipt(
+        **receipt,
+        actor_id=user.id,
+        actor_role=user.role,
+        action=planned.action,
+        parameters=planned.parameters,
+        outcome=outcome,
+        result=result,
+    )
+    return {"plan": planned.as_dict(), "result": result, "receipt": receipt}
+
+
 @app.post("/intake", status_code=status.HTTP_201_CREATED)
 async def intake_email(
     request: Request,
@@ -235,11 +442,11 @@ async def intake_email(
     return run_summary(run)
 
 
-def normalized_email(payload: NormalizedIntake) -> bytes:
+def normalized_email(payload: NormalizedIntake, contact_email: str) -> bytes:
     message = EmailMessage()
     message["Subject"] = payload.subject
     message["From"] = payload.from_email
-    message["To"] = settings.bank_complaints_email
+    message["To"] = contact_email
     message.set_content(payload.body)
     for attachment in payload.attachments:
         try:
@@ -267,7 +474,7 @@ async def intake_workbuddy(
     if not expected or not x_workbuddy_token or not secrets.compare_digest(expected, x_workbuddy_token):
         raise HTTPException(401, "Invalid WorkBuddy intake token.")
     run = await Orchestrator(ctx).process(
-        normalized_email(payload), channel="WORKBUDDY_EMAIL_MCP"
+        normalized_email(payload, ctx.settings.bank_complaints_email), channel="WORKBUDDY_EMAIL_MCP"
     )
     await publish_run(run)
     return run_summary(run)
@@ -284,7 +491,7 @@ async def intake_proactive(
     message = EmailMessage()
     message["Subject"] = "Proactive dispute confirmation"
     message["From"] = "proactive.monitor@mybank.com.my"
-    message["To"] = settings.bank_complaints_email
+    message["To"] = ctx.settings.bank_complaints_email
     message.set_content(
         f"The customer confirmed this transaction was not theirs. Account "
         f"{payload.account_no}; debit RM{payload.amount_rm:,.2f}; merchant "
@@ -353,7 +560,7 @@ async def respond_proactive(
     message = EmailMessage()
     message["Subject"] = "Proactive dispute confirmation"
     message["From"] = "proactive.monitor@mybank.com.my"
-    message["To"] = settings.bank_complaints_email
+    message["To"] = ctx.settings.bank_complaints_email
     message.set_content(
         f"The customer confirmed this transaction was not theirs. Account "
         f"{alert['account_no']}; debit RM{float(alert['amount_rm']):,.2f}; merchant "
@@ -491,7 +698,7 @@ def fmos_pack(
         events=db.get_events(case_id),
         journal=db.get_journal(case_id),
         verdict=db.verify_case_chain(case_id),
-        contact_email=settings.bank_complaints_email,
+        contact_email=str(db.get_stakeholder_settings().get("complaints_email") or settings.bank_complaints_email),
     )
     return Response(
         content=payload,
@@ -767,5 +974,5 @@ def customer_tracker(token: str, db: Database = Depends(service_database)) -> di
         "outcome": case.get("outcome"),
         "amount_rm": case.get("amount_rm"),
         "timeline": public_events,
-        "contact": settings.bank_complaints_email,
+        "contact": str(db.get_stakeholder_settings().get("complaints_email") or settings.bank_complaints_email),
     }

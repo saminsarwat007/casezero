@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Guilloche } from "@/components/design/guilloche";
 import { MicroRule } from "@/components/design/micro-rule";
-import { supabase } from "@/lib/api";
+import { apiFetch, supabase } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,7 +23,12 @@ export default function LoginPage() {
     const result = await supabase.auth.signInWithPassword({ email, password });
     if (result.error) { setError(result.error.message); setBusy(false); return; }
     localStorage.removeItem("casezero_rehearsal");
-    router.push("/simple"); router.refresh();
+    let destination = "/simple";
+    try {
+      const controls = await apiFetch<{ settings: { default_workspace: "/simple" | "/pro" } }>("/settings");
+      destination = controls.settings.default_workspace;
+    } catch { /* Identity is valid; fall back to the calm daily view. */ }
+    router.push(destination); router.refresh();
   }
 
   function rehearsal() {
@@ -59,7 +64,7 @@ export default function LoginPage() {
         </form>
         <div className="invite-note">
           <strong>New colleague?</strong>
-          <p>Your CaseZero Admin adds your work email in Operators. Open the invitation email once, set your password, then return here. Judges can use the walkthrough without an account.</p>
+          <p>Your CaseZero Admin adds your work email in Operators. Open the invitation email once, set your password, then return here. New teams can explore the labelled rehearsal before live access is configured.</p>
           <Link href="/">Open the first-visit guide</Link>
         </div>
         <div style={{ marginTop: 28 }}><MicroRule /></div>

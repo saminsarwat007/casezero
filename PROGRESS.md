@@ -3,7 +3,7 @@
 **Read this first in a fresh session.** `MASTERPLAN.md` is the *design*; this file is
 the *state*. Where they disagree, this file is right.
 
-Last verified: **4 Aug 2026, 01:59 UTC+8**
+Last verified: **4 Aug 2026, 03:10 UTC+8**
 Repo root: `/Users/saminsmac/Projects/tencent copy 2`
 Code root: `casezero/`
 
@@ -18,11 +18,12 @@ Three things will waste an hour each if you miss them.
 | **Two Pythons on this machine.** The system `python` (3.11, Homebrew) does **not** have `supabase` installed. The venv (3.13) has everything. | Always run `.venv/bin/python`, never bare `python`. |
 | **`timeout` does not exist** in this zsh. | Don't prefix commands with `timeout`; it fails with `command not found`. |
 | **MCP SDK 2.0 breaks FastAPI.** `mcp>=2` requires `starlette>=1.0`; installing it silently downgrades the web stack. | `requirements.txt` pins `mcp>=1.9,<2`. Do not relax it. |
+| **The `pytest` launcher has a stale absolute path.** | Run `.venv/bin/python -m pytest`, not `.venv/bin/pytest`. |
 
 ```bash
 cd "/Users/saminsmac/Projects/tencent copy 2/casezero"
 
-.venv/bin/python -m pytest api/tests -q          # 453 tests, ~7s
+.venv/bin/python -m pytest api/tests -q          # 464 tests, ~7s
 .venv/bin/python -m api.agents.smoke             # live six-agent E2E, 6 checks
 .venv/bin/python -m api.mcp_tools.smoke          # MCP over real stdio, 6 checks
 .venv/bin/python -m api.llm.smoke                # Gemini + Groq + vision OCR gate
@@ -114,7 +115,9 @@ fallback so a subprocess failure mid-demo degrades instead of dying).
 
 ### 1.4 Everything else already standing
 
-- **Schema live on Supabase** — `001_init.sql` (enums in the brief's exact vocabulary, tables, RLS) + `002_audit_hardening.sql` (privilege revocation making `case_events` append-only while preserving `ON DELETE CASCADE`, immutable `rule_packs.yaml` trigger, 4 analytics RPCs).
+- **Schema live on Supabase** — migrations `001`–`006`, including policy/proactive
+  data, stakeholder settings, Wajar receipts and an explicit privilege-hardening
+  pass that removes default public grants from the new tables.
 - **Tamper-evidence proven live** — `api/db/verify_integrity.py`: the service role is refused by Postgres privileges, and a table-owner tamper is caught by `verify_chain` at the exact event.
 - **LLM layer** — `api/llm/`: Gemini 2.5 Flash (+ native vision OCR, no tesseract anywhere), Groq Llama 3.3 70B, Hunyuan stub. Per-call tokens/latency/ringgit cost. Block 0 gate passed 3/3 including exact PDF transcription.
 - **Data layer** — `api/db/client.py` (PostgREST, service-role vs user-JWT split), `api/security/crypto.py` (Fernet + masking + `redact_pii` before prompts), `api/db/seed.py` (8 accounts, 23 transactions, an 8-transaction fraud ring).
@@ -135,8 +138,9 @@ fallback so a subprocess failure mid-demo degrades instead of dying).
 | `api/agents/communicator.py` | Draft sections, deterministic lint repair, FMOS insertion, send authorisation |
 | `api/agents/supervisor.py` | SLA watch, breach forecast and escalation events |
 | `api/agents/orchestrator.py` | Legal status transitions and one continuous SHA-256 chain across every stage |
+| `api/agents/wajar.py` | Deterministic natural-language capability planner; role, confirmation and receipt contract |
 
-**453 total tests, all passing.** Fixtures include a real-chain `FakeDatabase`, a
+**464 total tests, all passing.** Fixtures include a real-chain `FakeDatabase`, a
 prompt-recording scripted provider, and four checked-in RFC822 files under
 `api/tests/fixtures/eml/`. The acceptance test replays `happy_path.eml` and proves
 `PASS` → signed balanced reversal → `FINANCIALLY_RESOLVED` → `COMMUNICATED`, with
@@ -172,7 +176,7 @@ PASS evidence, while dual control and the PASS-only invariant remain mandatory.
 case detail/chain/journal/cost, WorkBuddy token refusal, human resume, and the
 SLA-aware request-info path. `api/tests/test_invitations.py` additionally proves
 normalisation, duplicate refusal and role validation before an Auth identity is
-created. Full suite: **453 passed, zero warnings**.
+created. Full suite: **464 passed, zero warnings**.
 
 ### 1.7 Dashboard and Security Print design system — complete and verified
 
@@ -182,7 +186,7 @@ linework, endorsement stamps, microtype rules, punched SLA strips and a VOID
 tamper state. It deliberately uses no gradients, glass, shadows, or generic rounded
 dashboard cards. Instrument Sans and Martian Mono are loaded through `next/font`.
 
-All planned operational surfaces now exist: a themed first-visit judge guide,
+All planned operational surfaces now exist: a themed first-shift stakeholder guide,
 Supabase login plus an explicitly labelled offline rehearsal, Admin Operators and
 single-use password setup, Simple mode, Pro Mission Control, Agent Theater, case
 detail with rule-key “Why?” evidence, keyboard review queue, Policy Studio, Fraud
@@ -198,15 +202,46 @@ Verification on 4 Aug 2026:
 - In-app browser smoke — login → offline rehearsal, Simple mode and Pro mode all
   rendered; DOM/landmark inspection passed; console had **0 warnings/errors**.
 - Responsive smoke at 390×844 — critical content and actions remained reachable;
-  nav degrades to a horizontally scrollable labelled register; no console errors.
+  the real mobile menu and focused Pro stage selector have zero page overflow.
 - Reduced-motion rules, visible focus, skip-link, semantic headings/form labels and
   non-colour status labels are present in the shared design system.
-- The public `/` route explains the full five-stop judging path. The judge button
+- The public `/` route explains the complete first shift. The rehearsal button
   needs no email, sets mutation-free rehearsal mode, and opens a persistent guided
   callout. Admins invite real staff from `/admin/users`; recipients land on
   `/set-password`, while Postgres RLS remains the authorisation boundary.
 
-### 1.8 Policy Composer — complete, versioned and live
+### 1.8 Wajar and the stakeholder Control Register — complete
+
+- **Wajar by CaseZero** replaces the discarded NADI name. It is intentionally an
+  action docket rather than a chatbot: every plan shows the capability, caller
+  authority, side effect, gates and expected result.
+- Supported actions include operations/SLA summaries, case and control navigation,
+  chain verification, operator invitations and safe settings changes. Unknown or
+  prompt-injection-shaped requests are refused before any model call.
+- Write requests are reparsed on the server, role checked and confirmation gated;
+  the browser cannot swap in a more powerful action. Each execution records a
+  stable `WJR-…` receipt.
+- `/settings` lets an Admin change bank name, complaint inbox, timezone, SLA warning
+  horizon, default workspace, Wajar availability and automatic resolution. The
+  last item is a real resolver gate, not a cosmetic toggle.
+- Settings changes form their own append-only SHA-256 chain. Live Supabase checks
+  proved no anonymous grant, authenticated read-only access, service-only writes
+  and RLS on all three stakeholder tables.
+
+### 1.9 Responsive stakeholder release — complete
+
+- Pro was rebuilt as an operational pulse plus responsive pipeline. Desktop keeps
+  every lane visible; mobile uses a two-column stage selector and renders one full
+  lane without clipped cards.
+- The app shell now has a usable mobile menu, dynamic bank identity and Wajar on
+  every staff surface. Settings and the Wajar docket share the same Security Print
+  design language.
+- Visual checks at 1,440px and 390px covered home, Pro, Settings, Wajar and mobile
+  navigation. Every page reported `scrollWidth == clientWidth`.
+- Playwright now covers 11 stakeholder journeys. A separate 1,920×1,080 recording
+  script adds a visible cursor and click ripple and never mutates live bank data.
+
+### 1.10 Policy Composer — complete, versioned and live
 
 `api/kernel/composer.py` turns a plain-English instruction into a typed
 `PolicyIntent`, then applies a deterministic allowlist before the proposal can touch
@@ -222,7 +257,7 @@ live project, and `AgentContext` loads the active database version for future ca
 The dashboard Policy Studio performs the real compose/apply/reject workflow; its
 offline rehearsal remains clearly synthetic and mutation-free.
 
-### 1.9 Evaluation corpus and production model evidence — complete
+### 1.11 Evaluation corpus and production model evidence — complete
 
 `corpus/v1/` contains exactly **200** deterministic RFC822 complaints in the brief's
 volume mix (70/44/36/24/12/10/4), with 100 English, 60 Bahasa Malaysia and 40
@@ -246,7 +281,7 @@ The deterministic baseline is explicitly labelled as a fixture baseline; it is n
 presented as production model performance. `evals/latest.json` is the dashboard's
 latest production evidence.
 
-### 1.10 Beyond-spec surfaces — complete
+### 1.12 Beyond-spec surfaces — complete
 
 - Live operations analytics and workload endpoints drive Pro Mission Control.
 - Fraud-Ring Radar detects merchant/device clusters while masking accounts at the
@@ -261,12 +296,12 @@ latest production evidence.
 - The service worker and manifest provide installable/offline rehearsal behaviour;
   the live authenticated Agent Theater consumes its SSE stream incrementally.
 
-### 1.11 Final verification matrix — current
+### 1.13 Final verification matrix — current
 
 | Check | Result |
 |---|---|
-| Python suite | **453 passed** |
-| Playwright browser acceptance | **8 passed** |
+| Python suite | **464 passed** |
+| Playwright browser acceptance | **11 passed** |
 | Next.js typecheck and production build | **clean** |
 | npm dependency audit | **0 vulnerabilities** |
 | MCP protocol smoke | **6 / 6** |
@@ -275,8 +310,12 @@ latest production evidence.
 | Live WorkBuddy HTTP intake | `MYB-2026-000016` communicated; FAIL safely blocked posting |
 | Database tamper proof | service-role writes refused; owner tamper located at exact event |
 | FMOS PDF visual QA | all four pages rendered, inspected, no clipping/overflow |
+| Stakeholder Supabase controls | migrations `005`/`006` live; grants and RLS explicitly audited |
+| Vercel production | **READY** at `https://casezero-alpha.vercel.app`; public UI/API smoke clean |
+| Production runtime logs | zero error or warning entries after release smoke |
+| Demo capture | 60.8s, 1,920×1,080 H.264 MP4 visually sampled and approved |
 
-### 1.12 Operations and release packaging — complete
+### 1.14 Operations and release packaging — complete
 
 - `api/db/seed_users.py` idempotently creates the four synthetic staff identities,
   refuses a password under 12 characters and never prints it. Existing accounts are
@@ -287,7 +326,7 @@ latest production evidence.
   emergency rehearsal overlay are checked in. YAML validation passed; this host
   does not have Docker, so image execution remains a deployment-host check.
 - `README.md`, `DEPLOYMENT.md`, `SUBMISSION.md`, `buildlog.md` and `proof/README.md`
-  form the operator, release and judging handoff.
+  form the operator, release and evidence handoff.
 - `MOTION_AUDIT.md` and `WEB_INTERFACE_AUDIT.md` record the pre-remediation findings
   and approved release result. The final in-app browser DOM/visual check shows the
   intended Security Print surface with landmarks and content intact.
@@ -296,23 +335,37 @@ latest production evidence.
 - Vercel Services release files are present: root `vercel.json` publishes Next.js
   at `/` and FastAPI at `/api`, `api/pyproject.toml` declares the Python runtime,
   and `.vercelignore` excludes secrets, local environments and generated corpora.
-  GitHub CLI is authenticated as `saminsarwat007`; Vercel CLI still needs a login.
+  The preview artifact was verified, promoted and is **READY** at
+  `https://casezero-alpha.vercel.app`. Public root/Pro return HTML, health returns
+  the FastAPI/MCP contract, unauthenticated Settings correctly returns 401, and the
+  post-release error/warning scan is empty.
+- `dashboard/scripts/record-stakeholder-demo.mjs` ran against production. The
+  resulting `proof/video/casezero-stakeholder-demo.mp4` is a 60.8-second 1080p H.264
+  walkthrough with visible cursor/click feedback; a multi-frame visual sample passed.
+- A production authenticated read was not forced because the seeded Admin password
+  is intentionally absent from local secrets. The same Settings/Wajar boundary is
+  covered by API tests and direct live Supabase privilege checks. Onboarding the
+  stakeholder's first Admin is the remaining identity action.
 
 ---
 
 ## 2. What is left
 
-No product-code or acceptance-test work remains. These owner/external-system actions
-cannot be completed from the repository alone:
+No product-code or acceptance-test work remains. The hosted system can be used now
+for stakeholder onboarding, safe rehearsal and a synthetic pilot. Live bank use
+still needs bank-controlled integration material:
 
-1. Authenticate the Vercel CLI once. The installed Vercel plugin supplies the
-   deployment guidance, but it does not expose account credentials to the terminal.
-2. After production gets its final URL, allow that origin and `/set-password` in
-   Supabase Auth redirects, set `DASHBOARD_BASE_URL`, and redeploy.
-3. Export the genuine CodeBuddy conversation history and WorkBuddy screenshots,
-   record the demo, add team/presenter details and submit the form.
-4. Optional physical-channel upgrades require Gmail, Telegram and VAPID credentials.
-   The WorkBuddy channel and presenter-mode proactive PWA are already verified.
+1. Real core-banking and CRM MCP endpoints, credentials, field mapping and a named
+   owner for signed posting-ticket custody.
+2. A bank-owned complaints mailbox credential/forwarding webhook plus approved
+   outbound mail transport. The Settings email field is identity, not mailbox access.
+3. The first Admin's real work email and password/invitation handoff, then named
+   staff emails and least-privilege roles. That Admin can invite all remaining
+   operators from the product.
+4. Compliance approval for the seven rule packs, thresholds, FMOS wording and letter
+   templates before automatic resolution is enabled.
+5. Bank name/logo, production domain, privacy/security approvals and an always-on
+   host for exactly one SLA supervisor worker.
 
 ---
 
@@ -330,19 +383,14 @@ cannot be completed from the repository alone:
 
 ## 4. What I need from you
 
-- Complete the one-time Vercel account login when prompted. No secrets need to be
-  pasted into chat; the CLI opens Vercel's browser/device authorisation flow.
-- Tell me only if the production project must belong to a particular Vercel team.
-  Otherwise the authenticated account's personal scope is the default.
-
 | Priority | What | Why |
 |---|---|---|
-| Required | A **12+ character demo staff password** | Creates the real OPS / INVESTIGATOR / COMPLIANCE / ADMIN logins without committing a default password |
-| Required for public URL | Log in with `vercel login` or provide a Vercel token, and choose/provide access to an API host | This machine has the Vercel CLI but no session; the API and one scheduler worker also need hosting |
-| Submission-critical | **Genuine CodeBuddy history export and WorkBuddy screenshots** | Tencent proof-of-use is mandatory and cannot be fabricated from code |
-| Submission-critical | Team/member names, presenter name and final video/cover assets | Completes the form and judge-facing media |
-| Optional | Gmail app password, Telegram bot token, VAPID key pair | Enables the non-essential physical mailbox/bot/push upgrades |
-| Optional | Bank name/logo preference | The current synthetic identity is `MYBank Berhad` |
+| Required for real customers | Core/CRM endpoints and credentials | Replaces the synthetic banking adapters; no live financial posting is claimed without them |
+| Required for real email | Complaints mailbox and approved sender credentials | Enables inbound monitoring and customer delivery from bank-owned infrastructure |
+| Required for controlled rollout | First Admin work email, Compliance sign-off and named operator emails/roles | Establishes recoverable access, legal policy ownership and least privilege |
+| Required for full operations | One always-on supervisor worker host | Continuously forecasts SLA breach outside request-driven Vercel functions |
+| Brand decision | Final bank name/logo/domain | Replaces the configurable synthetic `MYBank Berhad` identity |
+| Hackathon evidence only | Genuine Tencent product exports and team/presenter details | External account evidence cannot be fabricated by the repository |
 
 ---
 
@@ -356,13 +404,13 @@ casezero/
     llm/                   provider, gemini, groq, hunyuan, pricing, smoke
     db/                    client (PostgREST), bootstrap, management_api,
                            seed, verify_integrity, migrations/
-    agents/                firewall, six agents, supervisor, orchestrator, live smoke
+    agents/                firewall, six agents, supervisor, orchestrator, Wajar, live smoke
     mcp_tools/             matching, core_banking, crm, gateway, smoke
     security/crypto.py     Fernet + masking + redact_pii
     corpus/                statement_pdf.py
     web/                   Supabase JWT/RLS auth + SSE hub
     main.py                FastAPI intake, cases, review, tracker, event stream
-    tests/                 448 tests; fake DB + scripted LLM + `.eml` replay corpus
+    tests/                 464 tests; fake DB + scripted LLM + `.eml` replay corpus
   mcp_servers/             core_banking_server.py, crm_server.py  ← real MCP, stdio
   rule_packs/              7 YAML packs
   .env                     secrets (git-ignored)

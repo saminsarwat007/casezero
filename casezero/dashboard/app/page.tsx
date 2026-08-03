@@ -7,17 +7,17 @@ import { MicroRule } from "@/components/design/micro-rule";
 import { Stamp } from "@/components/design/stamp";
 
 const route = [
-  ["01", "Today", "See the operating ledger and the three cases that need a person.", "/simple"],
-  ["02", "Mission control", "Watch the eight-agent pipeline, measured quality, latency, and cost.", "/pro"],
-  ["03", "Policy studio", "Change a rule in plain language, replay it, and exercise the approval gate.", "/policy"],
-  ["04", "Customer alert", "Dispute a synthetic transaction and watch it resolve end to end.", "/proactive/demo-proactive-techworld-2026"],
-  ["05", "Audit explorer", "Tamper with sequence 04 and see the hash chain identify the break.", "/audit"],
+  ["01", "Take the shift", "See the cases that need a person, already ordered by deadline risk.", "/simple"],
+  ["02", "Read the operation", "Move from pipeline state to measured quality, latency, cost, and workload.", "/pro"],
+  ["03", "Ask Wajar", "Use plain language to summarise, navigate, verify evidence, or prepare a governed Admin action.", "/pro"],
+  ["04", "Set the controls", "Change operational settings directly; send regulated rule changes through simulation and Compliance approval.", "/settings"],
+  ["05", "Prove the record", "Recompute any case chain and package its evidence for review or FMOS escalation.", "/audit"],
 ] as const;
 
 export default function Home() {
   const router = useRouter();
 
-  function openWalkthrough() {
+  function openWorkspace() {
     localStorage.setItem("casezero_rehearsal", "1");
     localStorage.setItem("casezero_tour", "1");
     router.push("/simple?tour=1");
@@ -35,21 +35,21 @@ export default function Home() {
       <section className="welcome-hero" aria-labelledby="welcome-title">
         <Guilloche className="welcome-guilloche" />
         <div className="welcome-copy">
-          <p className="eyebrow mono">First visit / Guided evidence route</p>
-          <h1 id="welcome-title" className="welcome-title">Resolve the dispute.<br />Prove every step.</h1>
-          <p className="welcome-lede">CaseZero is an agentic bank-complaint operating system. Start with a safe, fully labelled walkthrough—no login, no real customer data, and no bank writes.</p>
+          <p className="eyebrow mono">Complaint operations / Malaysia</p>
+          <h1 id="welcome-title" className="welcome-title">The complaint arrives.<br />The clock starts here.</h1>
+          <p className="welcome-lede">CaseZero turns email complaints into verified, policy-governed resolutions—with every model call, bank check, financial gate, letter, and deadline preserved as evidence.</p>
           <div className="welcome-actions">
-            <button className="btn primary" type="button" onClick={openWalkthrough}>Open judge walkthrough</button>
-            <a className="btn ghost" href="#guide">Read the 5-minute guide</a>
+            <button className="btn primary" type="button" onClick={openWorkspace}>Explore the operating workspace <span aria-hidden="true">↗</span></button>
+            <a className="btn ghost" href="#guide">See the first-shift guide</a>
           </div>
-          <p className="safe-path mono">SYNTHETIC DATA · ZERO EXTERNAL WRITES · RESET BY REFRESH</p>
+          <p className="safe-path mono">SAFE REHEARSAL · SYNTHETIC CUSTOMER DATA · ZERO BANK WRITES</p>
         </div>
-        <div className="welcome-seal" aria-label="Walkthrough status">
-          <Stamp>Judge ready</Stamp>
+        <div className="welcome-seal" aria-label="Operating system summary">
+          <div><Stamp>Stakeholder ready</Stamp><p className="seal-line">Wajar by CaseZero</p><p className="muted">The operating agent that must show its authority before it acts.</p></div>
           <dl className="seal-facts">
-            <div><dt>Route</dt><dd>05 stops</dd></div>
-            <div><dt>Time</dt><dd>05 minutes</dd></div>
-            <div><dt>Access</dt><dd>No account</dd></div>
+            <div><dt>Baseline</dt><dd>90 min / case</dd></div>
+            <div><dt>Target</dt><dd>&lt; 05 min PASS</dd></div>
+            <div><dt>Team</dt><dd>05 operators</dd></div>
           </dl>
         </div>
       </section>
@@ -58,8 +58,8 @@ export default function Home() {
 
       <section id="guide" className="welcome-section" aria-labelledby="guide-title">
         <div className="welcome-section-head">
-          <div><p className="eyebrow mono">Recommended judging route</p><h2 id="guide-title" className="section-title">Five stops tell the whole story.</h2></div>
-          <p className="muted">The numbered route stays available in the left rail. Every destructive-looking action is a rehearsal.</p>
+          <div><p className="eyebrow mono">A first shift, already arranged</p><h2 id="guide-title" className="section-title">Know what needs you. Trust what does not.</h2></div>
+          <p className="muted">The workspace starts with decisions, not agent internals. Rehearsal mode keeps every action synthetic while preserving the real operating vocabulary.</p>
         </div>
         <ol className="guide-route">
           {route.map(([index, title, description, href]) => (
@@ -73,19 +73,19 @@ export default function Home() {
 
       <section className="access-ledger" aria-labelledby="access-title">
         <div className="access-intro">
-          <p className="eyebrow mono">For real operators</p>
-          <h2 id="access-title" className="section-title">Work email access is invitation-only.</h2>
-          <p className="muted">A CaseZero administrator adds a colleague from Operators. Supabase emails a one-time invitation, the colleague sets a password, and their assigned role drives Postgres row-level security.</p>
-          <Link className="btn ghost" href="/login">I already have an invitation</Link>
+          <p className="eyebrow mono">Bring the operating team in</p>
+          <h2 id="access-title" className="section-title">One work email. One role. No shared access.</h2>
+          <p className="muted">An Admin invites each colleague once. Supabase establishes the identity; Postgres row-level security decides which cases and controls that person can see.</p>
+          <Link className="btn ghost" href="/login">Sign in with a work email</Link>
         </div>
         <ol className="access-steps">
-          <li><span className="mono">A</span><div><strong>Admin enters the work email</strong><p>No shared credentials and no public registration form.</p></div></li>
-          <li><span className="mono">B</span><div><strong>Recipient opens the secure email</strong><p>The single-use link lands on CaseZero&apos;s password setup page.</p></div></li>
-          <li><span className="mono">C</span><div><strong>Database enforces the role</strong><p>OPS, Investigator, Compliance, or Admin permissions apply on every request.</p></div></li>
+          <li><span className="mono">A</span><div><strong>Admin enters a work email</strong><p>Public registration stays closed; no team shares a password.</p></div></li>
+          <li><span className="mono">B</span><div><strong>The colleague accepts once</strong><p>The single-use link lands on CaseZero&apos;s password setup page.</p></div></li>
+          <li><span className="mono">C</span><div><strong>The database enforces the role</strong><p>OPS, Investigator, Compliance, and Admin access remain distinct on every request.</p></div></li>
         </ol>
       </section>
 
-      <footer className="welcome-foot mono">MYBANK BERHAD · CASEZERO EVIDENCE WORKSPACE · AUGUST 2026</footer>
+      <footer className="welcome-foot mono">CASEZERO · WAJAR OPERATING AGENT · BUILT FOR MALAYSIAN BANK COMPLAINT OPERATIONS</footer>
     </main>
   );
 }

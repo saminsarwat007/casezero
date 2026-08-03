@@ -4,14 +4,14 @@ async function rehearsal(page: import("@playwright/test").Page) {
   await page.addInitScript(() => localStorage.setItem("casezero_rehearsal", "1"));
 }
 
-test("first visit explains access and opens the judge walkthrough", async ({ page }) => {
+test("first visit onboards a stakeholder into a safe operating shift", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Resolve the dispute/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Five stops tell the whole story." })).toBeVisible();
-  await expect(page.getByText("Work email access is invitation-only.")).toBeVisible();
-  await page.getByRole("button", { name: "Open judge walkthrough" }).click();
+  await expect(page.getByRole("heading", { name: /The complaint arrives/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Know what needs you/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /One work email/ })).toBeVisible();
+  await page.getByRole("button", { name: /Explore the operating workspace/ }).click();
   await expect(page).toHaveURL(/\/simple\?tour=1$/);
-  await expect(page.getByRole("heading", { name: "Start with the three cases that need a person." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Start with the cases that need a person." })).toBeVisible();
 });
 
 test("login opens a labelled offline operating ledger", async ({ page }) => {
@@ -19,16 +19,53 @@ test("login opens a labelled offline operating ledger", async ({ page }) => {
   await page.getByRole("button", { name: "Open offline rehearsal" }).click();
   await expect(page).toHaveURL(/\/simple$/);
   await expect(page.getByRole("heading", { name: "Only three cases need you." })).toBeVisible();
-  await expect(page.getByText("Offline rehearsal data")).toBeVisible();
+  await expect(page.getByText("Synthetic rehearsal register")).toBeVisible();
 });
 
 test("mission control exposes pipeline, agents and measured evals", async ({ page }) => {
   await rehearsal(page);
   await page.goto("/pro");
-  await expect(page.getByRole("heading", { name: "Mission control" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Operational pulse" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Case movement" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Agent theater" })).toBeVisible();
   await expect(page.getByText("95.90%")).toBeVisible();
   await expect(page.getByText("P50 / P95 4.63s")).toBeVisible();
+});
+
+test("Wajar prepares a governed action and issues a rehearsal receipt", async ({ page }) => {
+  await rehearsal(page);
+  await page.goto("/pro");
+  await page.getByRole("button", { name: "Open Wajar operating agent" }).click();
+  await page.getByLabel("What needs to happen?").fill("Set SLA warning to 12 hours");
+  await page.getByRole("button", { name: "Prepare action" }).click();
+  await expect(page.getByRole("heading", { name: "Change an operating control" })).toBeVisible();
+  await expect(page.getByText("Admin role", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /Confirm and execute/ }).click();
+  await expect(page.getByRole("status")).toContainText("WJR-");
+  await expect(page.getByRole("status")).toContainText("no live control changed", { ignoreCase: true });
+});
+
+test("mobile Pro uses a real menu and one-stage case view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await rehearsal(page);
+  await page.goto("/pro");
+  await page.getByRole("button", { name: "Open workspace menu" }).click();
+  await expect(page.getByRole("link", { name: /Settings/ })).toBeVisible();
+  await page.getByRole("button", { name: "Close workspace menu" }).click();
+  await page.getByRole("tab", { name: /CLASSIFIED/ }).click();
+  await expect(page.getByRole("tab", { name: /CLASSIFIED/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("RM 12,000.00")).toBeVisible();
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 390);
+});
+
+test("stakeholder settings are usable and governed in rehearsal", async ({ page }) => {
+  await rehearsal(page);
+  await page.goto("/settings");
+  await expect(page.getByRole("heading", { name: "What automation may do" })).toBeVisible();
+  await page.getByLabel("SLA warning horizon").fill("12");
+  await page.getByRole("button", { name: "Rehearse control change" }).click();
+  await expect(page.getByRole("status")).toContainText("No live setting");
+  await expect(page.getByText("04 append-only change receipts")).toBeVisible();
 });
 
 test("review queue supports the A keyboard decision", async ({ page }) => {
@@ -72,8 +109,8 @@ test("operators makes email access clear without sending in rehearsal", async ({
   await rehearsal(page);
   await page.goto("/admin/users");
   await expect(page.getByRole("heading", { name: "Invite work emails. Assign least privilege." })).toBeVisible();
-  await page.getByLabel("Full name").fill("New Judge Liaison");
-  await page.getByLabel("Work email").fill("liaison@mybank.example");
+  await page.getByLabel("Full name").fill("New Complaints Officer");
+  await page.getByLabel("Work email", { exact: true }).fill("liaison@mybank.example");
   await page.getByRole("button", { name: "Rehearse invitation" }).click();
   await expect(page.getByRole("status")).toContainText("No email was sent");
   await expect(page.getByText("liaison@mybank.example", { exact: true })).toBeVisible();

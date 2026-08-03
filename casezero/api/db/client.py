@@ -452,6 +452,95 @@ class Database:
             .data
         )
 
+    # ─── Stakeholder controls + Wajar receipts ────────────────────────────
+
+    def get_stakeholder_settings(self) -> dict[str, Any]:
+        rows = (
+            self.sb.table("stakeholder_settings")
+            .select("*")
+            .eq("id", "primary")
+            .limit(1)
+            .execute()
+            .data
+        )
+        if not rows:
+            raise RuntimeError("The stakeholder control register is not initialised.")
+        return rows[0]
+
+    def update_stakeholder_settings(self, **fields: Any) -> dict[str, Any]:
+        return (
+            self.sb.table("stakeholder_settings")
+            .update({**fields, "updated_at": _now()})
+            .eq("id", "primary")
+            .execute()
+            .data[0]
+        )
+
+    def append_settings_event(
+        self,
+        event_type: str,
+        actor: str,
+        payload: dict[str, Any],
+    ) -> ChainEvent:
+        rows = (
+            self.sb.table("settings_events")
+            .select("seq,hash")
+            .order("seq", desc=True)
+            .limit(1)
+            .execute()
+            .data
+        )
+        seq = int(rows[0]["seq"]) + 1 if rows else 1
+        prev_hash = str(rows[0]["hash"]) if rows else GENESIS
+        event = build_event(seq, event_type, actor, payload, prev_hash)
+        self.sb.table("settings_events").insert(
+            {
+                "seq": event.seq,
+                "event_type": event.event_type,
+                "actor": event.actor,
+                "payload": event.payload,
+                "prev_hash": event.prev_hash,
+                "hash": event.hash,
+            }
+        ).execute()
+        return event
+
+    def get_settings_events(self) -> list[ChainEvent]:
+        rows = (
+            self.sb.table("settings_events")
+            .select("seq,event_type,actor,payload,prev_hash,hash")
+            .order("seq")
+            .execute()
+            .data
+        )
+        return [
+            ChainEvent(
+                seq=row["seq"],
+                event_type=row["event_type"],
+                actor=row["actor"],
+                payload=row["payload"],
+                prev_hash=row["prev_hash"],
+                hash=row["hash"],
+            )
+            for row in rows
+        ]
+
+    def verify_settings_chain(self) -> ChainVerdict:
+        return verify_chain(self.get_settings_events())
+
+    def record_assistant_receipt(self, **fields: Any) -> dict[str, Any]:
+        return self.sb.table("assistant_receipts").insert(fields).execute().data[0]
+
+    def list_assistant_receipts(self, limit: int = 50) -> list[dict[str, Any]]:
+        return (
+            self.sb.table("assistant_receipts")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+            .data
+        )
+
     def rpc(self, name: str, params: dict[str, Any] | None = None) -> Any:
         return self.sb.rpc(name, params or {}).execute().data
 

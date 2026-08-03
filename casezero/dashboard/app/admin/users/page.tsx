@@ -76,9 +76,9 @@ export default function OperatorsPage() {
     <AppShell>
       <PageHeader eyebrow="Admin / Identity register" title="Invite work emails. Assign least privilege." lede="Public sign-up is disabled. Every colleague enters through a single-use Supabase invitation and a role enforced by Postgres RLS." />
 
-      <section className="judge-access-note" aria-labelledby="judge-access-title">
-        <div><p className="eyebrow mono">Judge access</p><h2 id="judge-access-title" className="section-title">Judges do not need an email account.</h2><p>Send them the deployment URL. The first page opens a labelled, non-writing walkthrough with synthetic data.</p></div>
-        <Link className="btn ghost" href="/">Preview first-visit guide</Link>
+      <section className="stakeholder-access-note" aria-labelledby="stakeholder-access-title">
+        <div><p className="eyebrow mono">New team access</p><h2 id="stakeholder-access-title" className="section-title">Rehearsal first. Work email when ready.</h2><p>Stakeholders can learn the workspace with synthetic data, then each live operator accepts a single-use invitation tied to a least-privilege role.</p></div>
+        <Link className="btn ghost" href="/">Preview stakeholder onboarding</Link>
       </section>
 
       <section className="operators-grid section" aria-labelledby="invite-title">
