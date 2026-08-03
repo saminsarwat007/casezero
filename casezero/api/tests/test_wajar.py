@@ -1,4 +1,4 @@
-"""Wajar plans capabilities instead of improvising bank actions."""
+"""Axiom plans capabilities instead of improvising bank actions."""
 
 from api.agents.wajar import plan, receipt_payload
 
@@ -36,6 +36,10 @@ def test_admin_control_change_is_explicit_and_confirmed(fake_db):
     assert planned.confirmation_required is True
     assert planned.permitted is True
 
+    renamed_agent_control = plan("Turn off Axiom", "ADMIN", fake_db)
+    assert renamed_agent_control.parameters == {"key": "wajar_enabled", "value": False}
+    assert renamed_agent_control.confirmation_required is True
+
 
 def test_non_admin_cannot_plan_an_invitation(fake_db):
     planned = plan(
@@ -66,4 +70,4 @@ def test_receipts_are_stable_for_the_same_effect():
     )
 
     assert one == two
-    assert one["receipt_id"].startswith("WJR-")
+    assert one["receipt_id"].startswith("AXR-")

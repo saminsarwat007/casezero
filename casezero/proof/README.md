@@ -20,13 +20,12 @@ Examples:
 - [ ] WorkBuddy agent configuration using Email MCP and the PDF skill.
 - [ ] WorkBuddy run showing the request accepted by `/intake/workbuddy`.
 - [x] Final public URL and public Playwright result.
-- [ ] 380×216 cover image.
-- [x] One-minute production stakeholder walkthrough, ready for direct use or narration.
-- [ ] Extend the walkthrough into the handbook's final 5–8 minute narrated edit.
+- [x] 380×216 cover image in `submission/03-cover/`.
+- [x] Final 6:08 narrated stakeholder film with captions and chapter QA.
 
 ## Repository-produced evidence
 
-- [x] Full backend acceptance suite: 464 passing tests.
+- [x] Full backend acceptance suite: 465 passing tests.
 - [x] Eleven-journey Playwright stakeholder acceptance suite.
 - [x] Real MCP stdio smoke.
 - [x] Gemini/Groq/vision smoke.
@@ -36,11 +35,12 @@ Examples:
 - [x] FMOS pack render and visual QA.
 - [x] Motion and web-interface audits.
 
-## Production walkthrough
+## Final stakeholder film
 
 - Public product: <https://casezero-alpha.vercel.app>
-- Upload-ready MP4: `proof/video/casezero-stakeholder-demo.mp4`
-- Original Playwright capture: `proof/video/casezero-stakeholder-demo.webm`
-- Capture: 1:00.8, 1,920×1,080, 25fps; MP4 is H.264 with fast-start metadata.
-- Sequence: onboarding → safe rehearsal → Wajar SLA plan → Pro pipeline → Wajar
-  chain verification → customer dispute → audit tamper proof → Settings control.
+- Upload-ready MP4: `submission/04-demo/CaseZero-Stakeholder-Demo.mp4`
+- Transcript: `submission/04-demo/CaseZero-Stakeholder-Demo.en.vtt`
+- Capture: 6:08, 1,920×1,080, 25fps, H.264/AAC with fast-start metadata.
+- Sequence: case-study stakes → six-agent/kernel boundary → onboarding → Simple →
+  Mission Control → Axiom → customer resolution → audit/quarantine → Settings →
+  work-email invitation → measured proof → controlled rollout.

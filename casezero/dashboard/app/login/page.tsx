@@ -42,7 +42,7 @@ export default function LoginPage() {
       <section className="login-sheet" aria-labelledby="login-title">
         <div className="brand"><span className="brand-word">CaseZero</span><span className="brand-mark" aria-hidden="true" /></div>
         <div style={{ marginTop: 46, position: "relative", zIndex: 2 }}>
-          <p className="eyebrow mono">Authorised staff / MYBank Berhad</p>
+          <p className="eyebrow mono">Authorised bank staff / controlled access</p>
           <h1 id="login-title" className="page-title" style={{ fontSize: 44 }}>Open the case register.</h1>
           <p className="page-lede">Your role is enforced by Postgres. Investigators see only the cases assigned to them.</p>
         </div>

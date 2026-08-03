@@ -45,7 +45,7 @@ export default function SimplePage() {
       />
       {tour ? (
         <aside className="tour-note" aria-labelledby="tour-note-title">
-          <div><p className="eyebrow mono">First shift / Safe rehearsal</p><h2 id="tour-note-title" className="section-title">Start with the cases that need a person.</h2><p>Then open Mission control, ask Wajar for deadline risk, and inspect the operating controls. Every visible record here is synthetic.</p></div>
+          <div><p className="eyebrow mono">First shift / Safe rehearsal</p><h2 id="tour-note-title" className="section-title">Start with the cases that need a person.</h2><p>Then open Mission control, ask Axiom for deadline risk, and inspect the operating controls. Every visible record here is synthetic.</p></div>
           <div className="tour-actions"><Link className="btn primary" href="/pro">Next: Mission control</Link><button className="btn ghost" type="button" onClick={() => { localStorage.removeItem("casezero_tour"); setTour(false); }}>Dismiss guide</button></div>
         </aside>
       ) : null}

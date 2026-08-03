@@ -384,11 +384,11 @@ def wajar_execute(
             "automatic_resolution_enabled",
         }
         if key not in allowed:
-            raise HTTPException(422, "Wajar selected an unknown control.")
+            raise HTTPException(422, "Axiom selected an unknown control.")
         before = db.get_stakeholder_settings()
         updated = db.update_stakeholder_settings(**{key: value}, updated_by=user.id)
         event = db.append_settings_event(
-            "SETTINGS_UPDATED_BY_WAJAR",
+            "SETTINGS_UPDATED_BY_AXIOM",
             f"user:{user.id}",
             {"key": key, "from": before.get(key), "to": value, "plan_id": planned.plan_id},
         )
@@ -490,8 +490,9 @@ async def intake_proactive(
         return {"accepted": False, "message": "Transaction confirmed by customer."}
     message = EmailMessage()
     message["Subject"] = "Proactive dispute confirmation"
-    message["From"] = "proactive.monitor@mybank.com.my"
-    message["To"] = ctx.settings.bank_complaints_email
+    complaints_email = public_complaints_email(ctx.db)
+    message["From"] = complaints_email
+    message["To"] = complaints_email
     message.set_content(
         f"The customer confirmed this transaction was not theirs. Account "
         f"{payload.account_no}; debit RM{payload.amount_rm:,.2f}; merchant "
@@ -503,7 +504,23 @@ async def intake_proactive(
     return run_summary(run)
 
 
-def public_proactive(alert: dict[str, Any]) -> dict[str, Any]:
+def public_bank_name(db: Database) -> str:
+    try:
+        configured = db.get_stakeholder_settings().get("bank_display_name")
+    except Exception:  # pragma: no cover - only protects a pre-migration deployment
+        configured = None
+    return str(configured or settings.bank_name)
+
+
+def public_complaints_email(db: Database) -> str:
+    try:
+        configured = db.get_stakeholder_settings().get("complaints_email")
+    except Exception:  # pragma: no cover - only protects a pre-migration deployment
+        configured = None
+    return str(configured or settings.bank_complaints_email)
+
+
+def public_proactive(alert: dict[str, Any], db: Database) -> dict[str, Any]:
     return {
         "token": alert["token"],
         "txn_ref": alert["txn_ref"],
@@ -513,6 +530,7 @@ def public_proactive(alert: dict[str, Any]) -> dict[str, Any]:
         "status": alert["status"],
         "expires_at": alert["expires_at"],
         "case_id": alert.get("case_id"),
+        "bank_name": public_bank_name(db),
     }
 
 
@@ -527,7 +545,7 @@ def proactive_alert(
     expires = datetime.fromisoformat(str(alert["expires_at"]).replace("Z", "+00:00"))
     if alert["status"] == "PENDING" and expires < datetime.now(timezone.utc):
         alert = db.update_proactive_alert(str(alert["id"]), status="EXPIRED")
-    return public_proactive(alert)
+    return public_proactive(alert, db)
 
 
 @app.post("/proactive/{token}/respond")
@@ -540,7 +558,7 @@ async def respond_proactive(
     if alert is None:
         raise HTTPException(404, "Proactive alert is invalid or expired.")
     if alert["status"] != "PENDING":
-        return {"alert": public_proactive(alert), "idempotent": True}
+        return {"alert": public_proactive(alert, ctx.db), "idempotent": True}
     expires = datetime.fromisoformat(str(alert["expires_at"]).replace("Z", "+00:00"))
     if expires < datetime.now(timezone.utc):
         ctx.db.update_proactive_alert(str(alert["id"]), status="EXPIRED")
@@ -552,15 +570,16 @@ async def respond_proactive(
             str(alert["id"]), status="CONFIRMED", responded_at=responded_at
         )
         return {
-            "alert": public_proactive(updated),
+            "alert": public_proactive(updated, ctx.db),
             "accepted": False,
             "message": "Transaction confirmed by customer. No dispute was filed.",
         }
 
     message = EmailMessage()
     message["Subject"] = "Proactive dispute confirmation"
-    message["From"] = "proactive.monitor@mybank.com.my"
-    message["To"] = ctx.settings.bank_complaints_email
+    complaints_email = public_complaints_email(ctx.db)
+    message["From"] = complaints_email
+    message["To"] = complaints_email
     message.set_content(
         f"The customer confirmed this transaction was not theirs. Account "
         f"{alert['account_no']}; debit RM{float(alert['amount_rm']):,.2f}; merchant "
@@ -577,7 +596,7 @@ async def respond_proactive(
     await publish_run(run)
     case = ctx.db.get_case(run.case_id) or {}
     return {
-        "alert": public_proactive(updated),
+        "alert": public_proactive(updated, ctx.db),
         "case": {**run_summary(run), "track_token": case.get("track_token")},
     }
 
@@ -974,5 +993,6 @@ def customer_tracker(token: str, db: Database = Depends(service_database)) -> di
         "outcome": case.get("outcome"),
         "amount_rm": case.get("amount_rm"),
         "timeline": public_events,
-        "contact": str(db.get_stakeholder_settings().get("complaints_email") or settings.bank_complaints_email),
+        "bank_name": public_bank_name(db),
+        "contact": public_complaints_email(db),
     }

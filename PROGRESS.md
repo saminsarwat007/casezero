@@ -3,7 +3,7 @@
 **Read this first in a fresh session.** `MASTERPLAN.md` is the *design*; this file is
 the *state*. Where they disagree, this file is right.
 
-Last verified: **4 Aug 2026, 03:10 UTC+8**
+Last verified: **4 Aug 2026, 04:27 UTC+8**
 Repo root: `/Users/saminsmac/Projects/tencent copy 2`
 Code root: `casezero/`
 
@@ -23,7 +23,7 @@ Three things will waste an hour each if you miss them.
 ```bash
 cd "/Users/saminsmac/Projects/tencent copy 2/casezero"
 
-.venv/bin/python -m pytest api/tests -q          # 464 tests, ~7s
+.venv/bin/python -m pytest api/tests -q          # 465 tests, ~7s
 .venv/bin/python -m api.agents.smoke             # live six-agent E2E, 6 checks
 .venv/bin/python -m api.mcp_tools.smoke          # MCP over real stdio, 6 checks
 .venv/bin/python -m api.llm.smoke                # Gemini + Groq + vision OCR gate
@@ -116,7 +116,7 @@ fallback so a subprocess failure mid-demo degrades instead of dying).
 ### 1.4 Everything else already standing
 
 - **Schema live on Supabase** — migrations `001`–`006`, including policy/proactive
-  data, stakeholder settings, Wajar receipts and an explicit privilege-hardening
+  data, stakeholder settings, Axiom receipts and an explicit privilege-hardening
   pass that removes default public grants from the new tables.
 - **Tamper-evidence proven live** — `api/db/verify_integrity.py`: the service role is refused by Postgres privileges, and a table-owner tamper is caught by `verify_chain` at the exact event.
 - **LLM layer** — `api/llm/`: Gemini 2.5 Flash (+ native vision OCR, no tesseract anywhere), Groq Llama 3.3 70B, Hunyuan stub. Per-call tokens/latency/ringgit cost. Block 0 gate passed 3/3 including exact PDF transcription.
@@ -138,9 +138,9 @@ fallback so a subprocess failure mid-demo degrades instead of dying).
 | `api/agents/communicator.py` | Draft sections, deterministic lint repair, FMOS insertion, send authorisation |
 | `api/agents/supervisor.py` | SLA watch, breach forecast and escalation events |
 | `api/agents/orchestrator.py` | Legal status transitions and one continuous SHA-256 chain across every stage |
-| `api/agents/wajar.py` | Deterministic natural-language capability planner; role, confirmation and receipt contract |
+| `api/agents/wajar.py` | Axiom's deterministic natural-language capability planner; role, confirmation and receipt contract |
 
-**464 total tests, all passing.** Fixtures include a real-chain `FakeDatabase`, a
+**465 total tests, all passing.** Fixtures include a real-chain `FakeDatabase`, a
 prompt-recording scripted provider, and four checked-in RFC822 files under
 `api/tests/fixtures/eml/`. The acceptance test replays `happy_path.eml` and proves
 `PASS` → signed balanced reversal → `FINANCIALLY_RESOLVED` → `COMMUNICATED`, with
@@ -176,7 +176,7 @@ PASS evidence, while dual control and the PASS-only invariant remain mandatory.
 case detail/chain/journal/cost, WorkBuddy token refusal, human resume, and the
 SLA-aware request-info path. `api/tests/test_invitations.py` additionally proves
 normalisation, duplicate refusal and role validation before an Auth identity is
-created. Full suite: **464 passed, zero warnings**.
+created. Full suite: **465 passed, zero warnings**.
 
 ### 1.7 Dashboard and Security Print design system — complete and verified
 
@@ -210,9 +210,9 @@ Verification on 4 Aug 2026:
   callout. Admins invite real staff from `/admin/users`; recipients land on
   `/set-password`, while Postgres RLS remains the authorisation boundary.
 
-### 1.8 Wajar and the stakeholder Control Register — complete
+### 1.8 Axiom and the stakeholder Control Register — complete
 
-- **Wajar by CaseZero** replaces the discarded NADI name. It is intentionally an
+- **Axiom by CaseZero** is intentionally an
   action docket rather than a chatbot: every plan shows the capability, caller
   authority, side effect, gates and expected result.
 - Supported actions include operations/SLA summaries, case and control navigation,
@@ -220,9 +220,9 @@ Verification on 4 Aug 2026:
   prompt-injection-shaped requests are refused before any model call.
 - Write requests are reparsed on the server, role checked and confirmation gated;
   the browser cannot swap in a more powerful action. Each execution records a
-  stable `WJR-…` receipt.
+  stable `AXR-…` receipt.
 - `/settings` lets an Admin change bank name, complaint inbox, timezone, SLA warning
-  horizon, default workspace, Wajar availability and automatic resolution. The
+  horizon, default workspace, Axiom availability and automatic resolution. The
   last item is a real resolver gate, not a cosmetic toggle.
 - Settings changes form their own append-only SHA-256 chain. Live Supabase checks
   proved no anonymous grant, authenticated read-only access, service-only writes
@@ -233,10 +233,10 @@ Verification on 4 Aug 2026:
 - Pro was rebuilt as an operational pulse plus responsive pipeline. Desktop keeps
   every lane visible; mobile uses a two-column stage selector and renders one full
   lane without clipped cards.
-- The app shell now has a usable mobile menu, dynamic bank identity and Wajar on
-  every staff surface. Settings and the Wajar docket share the same Security Print
+- The app shell now has a usable mobile menu, dynamic bank identity and Axiom on
+  every staff surface. Settings and the Axiom docket share the same Security Print
   design language.
-- Visual checks at 1,440px and 390px covered home, Pro, Settings, Wajar and mobile
+- Visual checks at 1,440px and 390px covered home, Pro, Settings, Axiom and mobile
   navigation. Every page reported `scrollWidth == clientWidth`.
 - Playwright now covers 11 stakeholder journeys. A separate 1,920×1,080 recording
   script adds a visible cursor and click ripple and never mutates live bank data.
@@ -300,20 +300,22 @@ latest production evidence.
 
 | Check | Result |
 |---|---|
-| Python suite | **464 passed** |
+| Python suite | **465 passed** |
 | Playwright browser acceptance | **11 passed** |
 | Next.js typecheck and production build | **clean** |
 | npm dependency audit | **0 vulnerabilities** |
 | MCP protocol smoke | **6 / 6** |
 | Gemini + Groq + vision smoke | **3 / 3** |
-| Six-agent live smoke | **6 / 6**; `MYB-2026-000020` resolved, `MYB-2026-000021` quarantined |
+| Six-agent live smoke | **6 / 6**; `MYB-2026-000024` resolved, `MYB-2026-000025` quarantined |
 | Live WorkBuddy HTTP intake | `MYB-2026-000016` communicated; FAIL safely blocked posting |
 | Database tamper proof | service-role writes refused; owner tamper located at exact event |
 | FMOS PDF visual QA | all four pages rendered, inspected, no clipping/overflow |
 | Stakeholder Supabase controls | migrations `005`/`006` live; grants and RLS explicitly audited |
-| Vercel production | **READY** at `https://casezero-alpha.vercel.app`; public UI/API smoke clean |
-| Production runtime logs | zero error or warning entries after release smoke |
-| Demo capture | 60.8s, 1,920×1,080 H.264 MP4 visually sampled and approved |
+| Vercel production | **READY**, deployment `dpl_4NFX4xrkYAznnDb1Z8aThJuEocKx`, aliased to `https://casezero-alpha.vercel.app` |
+| Production runtime logs | zero error or warning entries after Axiom release smoke |
+| Demo capture | **6:08**, 1,920×1,080 H.264/AAC; narrated, chapter-captioned and 13-frame visual QA passed |
+| Submission deck | 10 rubric-ordered slides; PPTX overflow test passed; every slide and the 10-page PDF visually inspected |
+| Showcase cover | exact **380×216 PNG**, visually inspected |
 
 ### 1.14 Operations and release packaging — complete
 
@@ -339,11 +341,15 @@ latest production evidence.
   `https://casezero-alpha.vercel.app`. Public root/Pro return HTML, health returns
   the FastAPI/MCP contract, unauthenticated Settings correctly returns 401, and the
   post-release error/warning scan is empty.
-- `dashboard/scripts/record-stakeholder-demo.mjs` ran against production. The
-  resulting `proof/video/casezero-stakeholder-demo.mp4` is a 60.8-second 1080p H.264
-  walkthrough with visible cursor/click feedback; a multi-frame visual sample passed.
+- `dashboard/scripts/record-stakeholder-demo.mjs` now produces a 13-chapter timed
+  capture. `build-demo-film.mjs` adds scene-aligned narration and WebVTT subtitles.
+  `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` is a verified 6:08 1080p
+  H.264/AAC stakeholder story; the 13-frame contact sheet passed visual review.
+- `submission/02-deck/CaseZero-Submission-Deck.pptx` and `.pdf` follow the rubric
+  order, include speaker notes and passed full-slide rendering/overflow review. The
+  online showcase cover is the exact required 380×216 size.
 - A production authenticated read was not forced because the seeded Admin password
-  is intentionally absent from local secrets. The same Settings/Wajar boundary is
+  is intentionally absent from local secrets. The same Settings/Axiom boundary is
   covered by API tests and direct live Supabase privilege checks. Onboarding the
   stakeholder's first Admin is the remaining identity action.
 
@@ -404,13 +410,13 @@ casezero/
     llm/                   provider, gemini, groq, hunyuan, pricing, smoke
     db/                    client (PostgREST), bootstrap, management_api,
                            seed, verify_integrity, migrations/
-    agents/                firewall, six agents, supervisor, orchestrator, Wajar, live smoke
+    agents/                firewall, six agents, supervisor, orchestrator, Axiom, live smoke
     mcp_tools/             matching, core_banking, crm, gateway, smoke
     security/crypto.py     Fernet + masking + redact_pii
     corpus/                statement_pdf.py
     web/                   Supabase JWT/RLS auth + SSE hub
     main.py                FastAPI intake, cases, review, tracker, event stream
-    tests/                 464 tests; fake DB + scripted LLM + `.eml` replay corpus
+    tests/                 465 tests; fake DB + scripted LLM + `.eml` replay corpus
   mcp_servers/             core_banking_server.py, crm_server.py  ← real MCP, stdio
   rule_packs/              7 YAML packs
   .env                     secrets (git-ignored)

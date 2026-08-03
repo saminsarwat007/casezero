@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "CaseZero — MYBank Dispute Tracker",
+    name: "CaseZero — Governed Dispute Operations",
     short_name: "CaseZero",
-    description: "Track and govern MYBank complaints.",
+    description: "Track and govern banking complaints with Axiom by CaseZero.",
     start_url: "/",
     display: "standalone",
     background_color: "#E4EAE5",

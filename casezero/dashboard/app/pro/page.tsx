@@ -35,7 +35,7 @@ export default function ProPage() {
 
   return (
     <AppShell>
-      <PageHeader eyebrow="Pro / Operational pulse" title="See the pressure before it becomes a breach." lede="Read the queue by state, deadline, human load, and governing evidence. Wajar is always one command away, but never one gate ahead." action={<button className="btn primary" type="button" onClick={() => window.dispatchEvent(new CustomEvent("casezero:wajar", { detail: "Show cases at SLA risk" }))}>Ask Wajar about risk <span aria-hidden="true">↗</span></button>} />
+      <PageHeader eyebrow="Pro / Operational pulse" title="See the pressure before it becomes a breach." lede="Read the queue by state, deadline, human load, and governing evidence. Axiom is always one command away, but never one gate ahead." action={<button className="btn primary" type="button" onClick={() => window.dispatchEvent(new CustomEvent("casezero:wajar", { detail: "Show cases at SLA risk" }))}>Ask Axiom about risk <span aria-hidden="true">↗</span></button>} />
       {rehearsal ? <div className="rehearsal-ribbon pro-ribbon">SYNTHETIC OPERATING PULSE · REAL CASE STATUSES, GATES, AND MEASUREMENT CONTRACTS</div> : null}
 
       <section className="section" aria-labelledby="pulse-title">

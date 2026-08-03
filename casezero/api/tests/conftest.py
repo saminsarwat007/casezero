@@ -405,7 +405,7 @@ class FakeDatabase(FakeBank):
     def list_eval_runs(self, limit: int = 20) -> list[dict[str, Any]]:
         return []
 
-    # ─── Stakeholder controls + Wajar receipts ────────────────────────────
+    # ─── Stakeholder controls + Axiom receipts ────────────────────────────
 
     def get_stakeholder_settings(self) -> dict[str, Any]:
         return dict(self.settings)

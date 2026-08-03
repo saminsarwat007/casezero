@@ -26,7 +26,7 @@ All implementation dates are 2026 and all bank/customer data is synthetic.
 - Added a Security Print first-visit guide, account-free safe rehearsal,
   Admin-only work-email invitations, least-privilege operator register and secure
   password setup. Prepared one-origin Vercel Services deployment for Next.js + FastAPI.
-- Replaced NADI with **Wajar by CaseZero**, a deterministic, role-aware operating
+- Introduced **Axiom by CaseZero**, a deterministic, role-aware operating
   agent with inspectable plans, explicit confirmation and receipt logging.
 - Added the stakeholder Control Register, a separate settings hash chain, a real
   automation kill switch and exact Supabase grants for the new tables.
@@ -37,9 +37,12 @@ All implementation dates are 2026 and all bank/customer data is synthetic.
 - Promoted the verified Vercel Services artifact to
   `https://casezero-alpha.vercel.app`; public UI/API smoke and the production
   error/warning scan were clean.
-- Recorded production into a 60.8-second WebM and upload-ready H.264 MP4, then
-  visually sampled the complete sequence.
-- Release gates after final packaging: **464 backend tests**, **11 browser tests**,
+- Replaced the confusing 60.8-second tour with a 6:08 narrated 1080p stakeholder
+  film: 13 rubric-led chapters, visible cursor/click feedback, persistent captions,
+  a WebVTT transcript and a 13-frame visual QA contact sheet.
+- Created a 10-slide Security Print submission deck in rubric order, rendered and
+  inspected every slide, exported a verified PDF and produced the exact 380×216 cover.
+- Release gates after final packaging: **465 backend tests**, **11 browser tests**,
   TypeScript, production build, dependency audit, MCP, LLM/vision, live agent,
   database-integrity and scheduler smokes all passed.
 

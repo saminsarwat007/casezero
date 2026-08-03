@@ -73,14 +73,14 @@ export default function SettingsPage() {
               <div className="field"><label htmlFor="timezone">Operating timezone</label><select className="select" id="timezone" value={controls.timezone} onChange={(event) => change("timezone", event.target.value as Controls["timezone"])}><option value="Asia/Kuala_Lumpur">Malaysia time · UTC+8</option><option value="UTC">UTC</option></select></div>
               <div className="field"><label htmlFor="default-workspace">Default workspace</label><select className="select" id="default-workspace" value={controls.default_workspace} onChange={(event) => change("default_workspace", event.target.value as Controls["default_workspace"])}><option value="/simple">Today · Simple</option><option value="/pro">Mission control · Pro</option></select></div>
             </div>
-            <div className="field"><label htmlFor="warning-hours">SLA warning horizon</label><div className="unit-input"><input className="input" id="warning-hours" type="number" min={1} max={120} value={controls.sla_warning_hours} onChange={(event) => change("sla_warning_hours", Number(event.target.value))} /><span className="mono">HOURS</span></div><p className="field-help">Wajar and Mission Control surface open cases due inside this horizon. BNM working-day deadlines themselves do not change here.</p></div>
+            <div className="field"><label htmlFor="warning-hours">SLA warning horizon</label><div className="unit-input"><input className="input" id="warning-hours" type="number" min={1} max={120} value={controls.sla_warning_hours} onChange={(event) => change("sla_warning_hours", Number(event.target.value))} /><span className="mono">HOURS</span></div><p className="field-help">Axiom and Mission Control surface open cases due inside this horizon. BNM working-day deadlines themselves do not change here.</p></div>
           </div>
         </div>
 
         <aside className="settings-controls">
           <div className="panel control-card">
             <p className="eyebrow mono">Authority switches</p><h2 className="section-title">What automation may do</h2>
-            <label className="control-toggle"><span><strong>Wajar operating agent</strong><small>Allow signed-in staff to prepare read, navigation, and governed Admin actions.</small></span><input type="checkbox" checked={controls.wajar_enabled} onChange={(event) => change("wajar_enabled", event.target.checked)} /><i aria-hidden="true" /></label>
+            <label className="control-toggle"><span><strong>Axiom operating agent</strong><small>Allow signed-in staff to prepare read, navigation, and governed Admin actions.</small></span><input type="checkbox" checked={controls.wajar_enabled} onChange={(event) => change("wajar_enabled", event.target.checked)} /><i aria-hidden="true" /></label>
             <label className="control-toggle risk"><span><strong>Automatic financial resolution</strong><small>When off, otherwise eligible PASS cases stop at human review. It never expands a pack threshold.</small></span><input type="checkbox" checked={controls.automatic_resolution_enabled} onChange={(event) => change("automatic_resolution_enabled", event.target.checked)} /><i aria-hidden="true" /></label>
           </div>
           <div className="control-proof">

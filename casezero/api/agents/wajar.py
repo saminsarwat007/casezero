@@ -1,6 +1,6 @@
-"""Wajar — the governed natural-language operating agent.
+"""Axiom — the governed natural-language operating agent.
 
-Wajar is deliberately not a general-purpose chat completion sitting next to the
+Axiom is deliberately not a general-purpose chat completion sitting next to the
 bank. It is a constrained planner over named CaseZero capabilities. Natural
 language selects an action; code resolves its scope, role, confirmation and gate.
 Write actions are planned first and then re-planned server-side at execution, so
@@ -61,7 +61,7 @@ class WajarPlan:
 
 def _plan_id(command: str, role: str, action: str) -> str:
     material = f"{role}|{action}|{' '.join(command.lower().split())}"
-    return "WJP-" + hashlib.sha256(material.encode()).hexdigest()[:12].upper()
+    return "AXP-" + hashlib.sha256(material.encode()).hexdigest()[:12].upper()
 
 
 def _make(
@@ -156,7 +156,7 @@ def _setting_request(command: str) -> tuple[str, Any] | None:
             return "automatic_resolution_enabled", False
         if re.search(r"\b(on|enable|enabled|start)\b", lower):
             return "automatic_resolution_enabled", True
-    if "wajar" in lower:
+    if "axiom" in lower or "wajar" in lower:  # legacy command name remains accepted
         if re.search(r"\b(off|disable|disabled)\b", lower):
             return "wajar_enabled", False
         if re.search(r"\b(on|enable|enabled)\b", lower):
@@ -181,7 +181,7 @@ def plan(command: str, role: str, db: Any) -> WajarPlan:
             command,
             role,
             "HELP",
-            title="What should Wajar do?",
+            title="What should Axiom do?",
             summary="Ask for the operating summary, cases at SLA risk, a case chain check, navigation, an operator invitation, or an administrative control change.",
             effect="No action has been selected.",
         )
@@ -208,9 +208,9 @@ def plan(command: str, role: str, db: Any) -> WajarPlan:
             cleaned,
             role,
             "REFUSED",
-            title="Wajar is paused",
+            title="Axiom is paused",
             summary="An administrator disabled the operating agent in the control register.",
-            effect="Nothing was read or changed. An Admin can re-enable Wajar in Settings.",
+            effect="Nothing was read or changed. An Admin can re-enable Axiom in Settings.",
             authority="Admin control register",
             permitted=False,
             route="/settings",
@@ -377,5 +377,5 @@ def receipt_payload(
         separators=(",", ":"),
         default=str,
     )
-    receipt_id = "WJR-" + hashlib.sha256(material.encode()).hexdigest()[:16].upper()
+    receipt_id = "AXR-" + hashlib.sha256(material.encode()).hexdigest()[:16].upper()
     return {"receipt_id": receipt_id, "command_hash": command_hash}

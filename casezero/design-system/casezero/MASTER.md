@@ -14,7 +14,7 @@ project-specific Security Print direction.
   unmistakable.
 - **Structural metaphor:** double-entry bookkeeping. `CLAIMED` and `OF RECORD`
   form the two sides of every case; verification makes them balance.
-- **Operating agent:** Wajar is a docket, not a chat bubble. It must expose action,
+- **Operating agent:** Axiom is a docket, not a chat bubble. It must expose action,
   authority, effect, gates and result before an irreversible operation.
 
 ## Tokens
@@ -61,7 +61,7 @@ black.
 3. **VOID pantograph:** visible only when chain verification fails.
 4. **Working-day strip:** weekends are physical gaps, not coloured cells.
 5. **Microtext rule:** `CASEZERO·MYBANK·AUDIT·` repeats at section boundaries.
-6. **Wajar action docket:** a fixed, accessible control sheet with a visible close,
+6. **Axiom action docket:** a fixed, accessible control sheet with a visible close,
    explicit confirmation zone and hash-addressed receipt. Never render anthropomorphic
    typing dots or imply a write happened before the server confirms it.
 
@@ -130,4 +130,4 @@ black.
 - Decorative motion, spring bounce, fade-up-on-scroll and fixed-height mobile
   hero sections.
 - Consumer chat bubbles, autonomous-looking write actions or vague “AI is working”
-  states. Wajar is an accountable operating control, not a mascot.
+  states. Axiom is an accountable operating control, not a mascot.

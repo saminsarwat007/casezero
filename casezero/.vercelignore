@@ -8,6 +8,7 @@ evals/
 output/
 tmp/
 proof/
+submission/
 corpus/v1/*.eml
 corpus/v1/*.pdf
 **/__pycache__/

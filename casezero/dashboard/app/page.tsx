@@ -9,7 +9,7 @@ import { Stamp } from "@/components/design/stamp";
 const route = [
   ["01", "Take the shift", "See the cases that need a person, already ordered by deadline risk.", "/simple"],
   ["02", "Read the operation", "Move from pipeline state to measured quality, latency, cost, and workload.", "/pro"],
-  ["03", "Ask Wajar", "Use plain language to summarise, navigate, verify evidence, or prepare a governed Admin action.", "/pro"],
+  ["03", "Ask Axiom", "Use plain language to summarise, navigate, verify evidence, or prepare a governed Admin action.", "/pro"],
   ["04", "Set the controls", "Change operational settings directly; send regulated rule changes through simulation and Compliance approval.", "/settings"],
   ["05", "Prove the record", "Recompute any case chain and package its evidence for review or FMOS escalation.", "/audit"],
 ] as const;
@@ -45,7 +45,7 @@ export default function Home() {
           <p className="safe-path mono">SAFE REHEARSAL · SYNTHETIC CUSTOMER DATA · ZERO BANK WRITES</p>
         </div>
         <div className="welcome-seal" aria-label="Operating system summary">
-          <div><Stamp>Stakeholder ready</Stamp><p className="seal-line">Wajar by CaseZero</p><p className="muted">The operating agent that must show its authority before it acts.</p></div>
+          <div><Stamp>Stakeholder ready</Stamp><p className="seal-line">Axiom by CaseZero</p><p className="muted">The operating agent that must show its authority before it acts.</p></div>
           <dl className="seal-facts">
             <div><dt>Baseline</dt><dd>90 min / case</dd></div>
             <div><dt>Target</dt><dd>&lt; 05 min PASS</dd></div>
@@ -85,7 +85,7 @@ export default function Home() {
         </ol>
       </section>
 
-      <footer className="welcome-foot mono">CASEZERO · WAJAR OPERATING AGENT · BUILT FOR MALAYSIAN BANK COMPLAINT OPERATIONS</footer>
+      <footer className="welcome-foot mono">CASEZERO · AXIOM OPERATING AGENT · BUILT FOR MALAYSIAN BANK COMPLAINT OPERATIONS</footer>
     </main>
   );
 }

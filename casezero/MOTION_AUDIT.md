@@ -26,9 +26,9 @@ behaviour now preserve feedback without movement.
 not animate, interaction durations stay under 300ms, and ambient movement is both
 purposeful and suppressible.
 
-## Wajar release addendum
+## Axiom release addendum
 
-Wajar opens as a short mechanical registration of the docket, never as chat typing
+Axiom opens as a short mechanical registration of the docket, never as chat typing
 theatre. The visible demo cursor and click ripple exist only in the recording script,
 not the product. Reduced-motion removes the docket transform while retaining state
 and confirmation feedback. Mobile navigation and stage changes are immediate, so an

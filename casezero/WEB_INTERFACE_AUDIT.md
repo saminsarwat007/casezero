@@ -48,9 +48,9 @@ are rerun as release gates.
 - Pro no longer compresses all pipeline lanes on a narrow viewport. At 390px a
   labelled selector renders one complete lane; at 1,440px all lanes remain visible.
 - The app shell now exposes a real mobile menu instead of clipping primary routes.
-- Wajar uses an accessible dialog with a close control, Escape handling, labelled
+- Axiom uses an accessible dialog with a close control, Escape handling, labelled
   input, explicit write confirmation and a visible execution receipt.
 - Settings fields have persistent labels and make the automatic-resolution effect
   explicit. Save confirmation includes the new settings-chain receipt.
-- Screenshots of home, Pro, Settings, Wajar and the expanded mobile menu all measured
+- Screenshots of home, Pro, Settings, Axiom and the expanded mobile menu all measured
   `scrollWidth == clientWidth`. The 11-journey Playwright release suite passed.

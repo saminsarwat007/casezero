@@ -14,7 +14,7 @@ They do not control compliance or money. A deterministic kernel enforces confide
 routing, `PASS`-only posting, signed authorisation tickets, dual control, balanced
 journals, working-day deadlines and mandatory FMOS disclosure.
 
-**Wajar by CaseZero** is the stakeholder's governed operating agent. It accepts
+**Axiom by CaseZero** is the stakeholder's governed operating agent. It accepts
 natural language, but presents an action docket—not a conversational promise—with
 the required authority, effect and safety gates. Reads may run immediately. Invites
 and settings changes require an eligible role, explicit confirmation and a durable
@@ -62,7 +62,7 @@ sends a single-use invitation, and Postgres RLS enforces that role after passwor
 setup.
 
 The Pro surface now behaves as an operations board on desktop and a focused
-single-stage register on mobile. Settings, the mobile menu and Wajar use the same
+single-stage register on mobile. Settings, the mobile menu and Axiom use the same
 Security Print system, with no horizontal page overflow at 390 or 1,440 pixels.
 
 ## 4. Business value — quantified
@@ -84,8 +84,9 @@ FMOS pack, reducing both operating time and regulator-file preparation.
 - Full CodeBuddy conversation-history export.
 - At least 3 genuine dated CodeBuddy/WorkBuddy screenshots (target 10+).
 - WorkBuddy build/run screenshots plus the CaseZero API call log.
-- 380×216 cover image.
-- 5–8 minute demo video opening with “Case Study 1”.
-- Public dashboard/API URL after deployment.
+- 380×216 cover: `submission/03-cover/casezero-cover-380x216.png` — ready.
+- 6:08 narrated demo: `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` — ready.
+- Rubric-ordered PPTX/PDF: `submission/02-deck/` — ready.
+- Public dashboard/API URL: <https://casezero-alpha.vercel.app> — ready.
 
 Never fabricate proof: Tencent can verify product-side activity.

@@ -19,11 +19,11 @@ mint a posting ticket, remove the FMOS clause, write a journal entry, or bypass 
 - Double-entry reversals/credits, confidence routing and dual-control thresholds.
 - Policy Composer: English instruction → typed intent → protected diff → 200-case
   replay → Compliance apply/reject → versioned hash chain.
-- **Wajar by CaseZero:** a governed operating agent that turns natural-language
+- **Axiom by CaseZero:** a governed operating agent that turns natural-language
   requests into an inspectable action docket. Reads execute safely; writes require
   role checks, explicit confirmation and a hash-addressed receipt.
 - Stakeholder Control Register for bank identity, complaint contact, timezone,
-  warning horizon, default workspace, Wajar availability and the automatic
+  warning horizon, default workspace, Axiom availability and the automatic
   resolution kill switch. Every change is chained.
 - Supabase Auth/RLS for OPS, INVESTIGATOR, COMPLIANCE and ADMIN.
 - Admin-only work-email invitations with single-use password setup; the public
@@ -46,7 +46,7 @@ RFC822 / WorkBuddy / Proactive alert
                                                           │
  Supabase RLS + encrypted PII + append-only hash chains + balanced journal
                                                           │
- Next.js operations PWA ← authenticated API + incremental SSE ← Wajar docket
+ Next.js operations PWA ← authenticated API + incremental SSE ← Axiom docket
 ```
 
 ## Local setup
@@ -99,7 +99,7 @@ public staff registration endpoint.
    Malaysian timezone, SLA warning horizon and automation posture.
 3. Open **Operators**, enter each colleague's work email and assign the least
    privileged role. The invitation is single use; there is no open registration.
-4. Use **Wajar** from any staff page. It shows the action, authority, effect and
+4. Use **Axiom** from any staff page. It shows the action, authority, effect and
    gates before execution. Settings and invitations always require confirmation.
 5. Keep automatic resolution off during shadow mode, validate the evaluation and
    journal evidence, then enable it only after Compliance approves the rule packs.
@@ -108,6 +108,11 @@ The stakeholder release is live at <https://casezero-alpha.vercel.app>. It is re
 today for onboarding, rehearsal and a synthetic-data pilot. Connecting real customer
 mail and financial posting requires the bank-controlled credentials listed in
 `DEPLOYMENT.md`; the repository never contains them.
+
+New operators can follow [STAKEHOLDER_GUIDE.md](STAKEHOLDER_GUIDE.md). The
+case-study gap analysis and production boundary are recorded in
+[STAKEHOLDER_READINESS_REVIEW.md](STAKEHOLDER_READINESS_REVIEW.md), and every
+hackathon upload artifact is organised under [submission/](submission/README.md).
 
 ## Verification
 
@@ -126,19 +131,20 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-The current release gate is **464 Python tests**, **11 Playwright stakeholder
+The current release gate is **465 Python tests**, **11 Playwright stakeholder
 journeys**, a clean production build/typecheck and **0 npm vulnerabilities**.
 
-Record the production walkthrough at 1920×1080 with a visible cursor and click
-feedback, then create an upload-friendly MP4:
+Record the chaptered stakeholder walkthrough at 1920×1080, then build the narrated
+H.264 film and WebVTT transcript from the exact captured timeline:
 
 ```bash
 cd dashboard
 DEMO_BASE_URL=https://casezero-alpha.vercel.app npm run demo:record
-ffmpeg -i ../proof/video/casezero-stakeholder-demo.webm \
-  -c:v libx264 -crf 20 -preset medium -movflags +faststart -pix_fmt yuv420p \
-  ../proof/video/casezero-stakeholder-demo.mp4
+npm run demo:build
 ```
+
+The verified submission film is `submission/04-demo/CaseZero-Stakeholder-Demo.mp4`
+(6:08, 1080p, narrated) with `CaseZero-Stakeholder-Demo.en.vtt` captions.
 
 Regenerate and evaluate the synthetic corpus:
 

@@ -32,16 +32,16 @@ test("mission control exposes pipeline, agents and measured evals", async ({ pag
   await expect(page.getByText("P50 / P95 4.63s")).toBeVisible();
 });
 
-test("Wajar prepares a governed action and issues a rehearsal receipt", async ({ page }) => {
+test("Axiom prepares a governed action and issues a rehearsal receipt", async ({ page }) => {
   await rehearsal(page);
   await page.goto("/pro");
-  await page.getByRole("button", { name: "Open Wajar operating agent" }).click();
+  await page.getByRole("button", { name: "Open Axiom operating agent" }).click();
   await page.getByLabel("What needs to happen?").fill("Set SLA warning to 12 hours");
   await page.getByRole("button", { name: "Prepare action" }).click();
   await expect(page.getByRole("heading", { name: "Change an operating control" })).toBeVisible();
   await expect(page.getByText("Admin role", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /Confirm and execute/ }).click();
-  await expect(page.getByRole("status")).toContainText("WJR-");
+  await expect(page.getByRole("status")).toContainText("AXR-");
   await expect(page.getByRole("status")).toContainText("no live control changed", { ignoreCase: true });
 });
 

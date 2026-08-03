@@ -96,7 +96,7 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
   secret or a bank-owned webhook; a text field is not mailbox access.
 - Leave automatic resolution off until core banking/CRM MCP endpoints, signed ticket
   custody, rule packs and outbound templates have bank approval.
-- Wajar may summarise and navigate immediately. Its write capabilities remain
+- Axiom may summarise and navigate immediately. Its write capabilities remain
   allowlisted, role checked, explicitly confirmed and receipt logged.
 
 ## Rollback
@@ -116,5 +116,5 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 - `.env` absent from image layers and source control.
 - API logs expose no bearer tokens, PII, raw account numbers or encryption keys.
 - Four-role auth smoke, RLS visibility smoke and exact-chain verification pass.
-- 464-test Python suite, typecheck, production build, 11 Playwright journeys, MCP,
+- 465-test Python suite, typecheck, production build, 11 Playwright journeys, MCP,
   LLM, database and mailbox-channel smokes pass.

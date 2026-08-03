@@ -160,7 +160,7 @@ def test_wajar_replans_and_executes_admin_setting_with_receipt(
     )
     assert executed.status_code == 200, executed.text
     assert executed.json()["result"]["value"] == 18
-    assert executed.json()["receipt"]["receipt_id"].startswith("WJR-")
+    assert executed.json()["receipt"]["receipt_id"].startswith("AXR-")
     assert fake_db.assistant_receipts[0]["action"] == "UPDATE_SETTING"
 
 
@@ -363,6 +363,7 @@ def test_customer_proactive_confirmation_files_the_dispute(
     visible = api_client.get("/proactive/synthetic-proactive-token")
     assert visible.status_code == 200
     assert "account_no" not in visible.json()
+    assert visible.json()["bank_name"] == "MYBank Berhad"
 
     response = api_client.post(
         "/proactive/synthetic-proactive-token/respond",
@@ -371,3 +372,21 @@ def test_customer_proactive_confirmation_files_the_dispute(
     assert response.status_code == 200, response.text
     assert response.json()["alert"]["status"] == "DISPUTED"
     assert response.json()["case"]["status"] == "COMMUNICATED"
+
+
+def test_customer_tracker_uses_stakeholder_brand(api_client, fake_db) -> None:
+    fake_db.settings["bank_display_name"] = "Koperasi Amanah"
+    fake_db.settings["complaints_email"] = "care@amanah.example"
+    case = fake_db.create_case(
+        case_ref="MYB-2026-009999",
+        track_token="public-track-token",
+        status="COMMUNICATED",
+        amount_rm=120,
+    )
+    fake_db.append_event(case["id"], "CASE_RECEIVED", "intake", {"received_at": "2026-08-04T00:00:00+00:00"})
+
+    response = api_client.get("/track/public-track-token")
+
+    assert response.status_code == 200
+    assert response.json()["bank_name"] == "Koperasi Amanah"
+    assert response.json()["contact"] == "care@amanah.example"

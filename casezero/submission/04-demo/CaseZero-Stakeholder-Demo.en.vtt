@@ -1,0 +1,66 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:20.000
+CaseZero
+This is CaseZero, built for the AI Agent Track and Case Study One. It is a governed dispute operating system for a five-person, non-technical bank complaints team. Axiom can prepare work in natural language, but it cannot invent authority, bypass a gate, or move money by itself.
+
+2
+00:00:20.000 --> 00:00:50.002
+The clock starts before anyone understands the case.
+The scenario bank serves one point eight million retail and SME customers. Today, one dispute takes about ninety minutes across email, documents, core banking, CRM and several departments. Eleven percent of regulatory deadlines are missed. Bank Negara Malaysia and FMOS timelines run from five to twenty working days. The problem is not a lack of chat. It is fragmented evidence, unclear ownership and slow controlled execution.
+
+3
+00:00:50.002 --> 00:01:20.004
+Six agents propose. One kernel decides.
+CaseZero uses six specialists for intake, classification, evidence verification, resolution, customer communication and SLA supervision. They can work in parallel and return typed proposals. A deterministic kernel owns the irreversible decisions. That boundary is the central innovation: models propose, the kernel disposes. It gives the speed of agents without granting a probabilistic model financial or compliance authority.
+
+4
+00:01:20.004 --> 00:01:45.006
+The stakeholder starts with decisions, not agent internals.
+A new stakeholder lands on a first-shift guide, not a developer console. It says what needs attention, what automation may do, and what remains under human control. The public rehearsal uses synthetic data and makes no bank-data changes. Staff can explore immediately, while real operators later join with a work-email invitation and least-privilege role.
+
+5
+00:01:45.006 --> 00:02:15.008
+Only the exceptions need a person.
+The simple workspace is designed for the complaints officer. It collapses the pipeline into the few cases that need a person. Each card carries category, urgency, deadline, evidence state and the next decision. Intake has already parsed RFC eight-two-two email and PDF evidence, applied a pre-model injection firewall, encrypted personal data and produced a deterministic extraction record.
+
+6
+00:02:15.008 --> 00:02:50.010
+See the pressure before it becomes a breach.
+Mission Control gives the stakeholder the operating picture. Cases move through a continuous state model; there is no hidden lane. The supervisor forecasts SLA pressure from deadlines and human workload. The view also exposes agent health and persisted evaluation results. Pro mode is denser for oversight, while mobile and Simple mode keep one active stage visible for day-to-day work.
+
+7
+00:02:50.010 --> 00:03:25.010
+Ask. Inspect authority. Then act.
+Axiom is agentic, but deliberately not magical. The operator asks to verify a case. Before anything runs, Axiom shows the named capability, whether the request changes state, the required role and every gate still in force. The server replans the command, checks the role, requires confirmation for governed changes and returns a receipt. Axiom has no direct posting capability. Money still requires PASS evidence and a signed kernel ticket.
+
+8
+00:03:25.010 --> 00:03:55.013
+The customer sees the outcome, not the machinery.
+Here a customer rejects a proactive transaction alert. CaseZero files the pre-filled dispute, verifies the transaction evidence, and posts a two-thousand-four-hundred-and-fifty-ringgit adjustment only after the PASS gate. The customer receives a calm status page and plain-language reason. The communication layer lints every draft and preserves the FMOS right to refer an eligible dissatisfied claim within six months.
+
+9
+00:03:55.013 --> 00:04:25.016
+Trust the chain, not the screen.
+The Audit Explorer verifies a continuous SHA-two-fifty-six chain. This rehearsal alters sequence four. The screen does not merely show a warning; it names the broken link and marks the derived view void. Injection attempts are quarantined before a model call, so hostile instructions never enter extraction or classification. Financial postings also require a balanced double-entry journal.
+
+10
+00:04:25.016 --> 00:04:55.017
+Change the operation. Keep the controls visible.
+Settings belong to the stakeholder, not to a hidden environment file. An Admin can change the bank display name, complaints contact, operating timezone, default workspace and SLA warning horizon. Axiom and automatic financial resolution have separate authority switches. Every change is server-validated and hash-chained. In rehearsal, the interface issues a receipt without changing the live register.
+
+11
+00:04:55.017 --> 00:05:25.017
+One work email creates one least-privilege operator.
+This is how bank staff add their emails. The first Admin is provisioned during the controlled deployment handoff. That Admin opens Operators, enters a colleague's work email, selects the least-privilege role and sends the invite through Supabase authentication. There is no open public registration. The rehearsal proves the flow without sending email or creating a real account.
+
+12
+00:05:25.017 --> 00:05:50.021
+Measured, not merely demonstrated.
+The persisted live-model evaluation scores ninety-five point nine percent category accuracy and ninety-eight point nine-seven percent urgency accuracy across one hundred and ninety-five clean cases. All five injection attacks are blocked. Median model latency is two point six seconds, measured cost is about one-tenth of a sen per case, and the release carries four hundred and sixty-five backend tests plus eleven browser journeys.
+
+13
+00:05:50.021 --> 00:06:10.023
+Ready for a synthetic pilot today.
+The first controlled rollout targets unauthorised transactions and billing errors, together fifty-seven percent of scenario volume, with a stretch goal from ninety minutes to under five. CaseZero is ready for a synthetic pilot. Live rollout needs core and CRM credentials, the complaints mailbox, Compliance sign-off and the first Admin identity.

@@ -452,7 +452,7 @@ class Database:
             .data
         )
 
-    # ─── Stakeholder controls + Wajar receipts ────────────────────────────
+    # ─── Stakeholder controls + Axiom receipts ────────────────────────────
 
     def get_stakeholder_settings(self) -> dict[str, Any]:
         rows = (

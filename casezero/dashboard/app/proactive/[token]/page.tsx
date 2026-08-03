@@ -16,6 +16,7 @@ type Alert = {
   occurred_at?: string;
   status: "PENDING" | "CONFIRMED" | "DISPUTED" | "EXPIRED";
   expires_at: string;
+  bank_name: string;
 };
 type Response = { alert: Alert; accepted?: boolean; message?: string; case?: { status: string; outcome?: string; track_token?: string } };
 
@@ -27,6 +28,7 @@ const demo: Alert = {
   occurred_at: "2026-07-18T03:02:00+08:00",
   status: "PENDING",
   expires_at: "2026-12-31T23:59:59+08:00",
+  bank_name: "Demonstration Bank",
 };
 
 export default function ProactivePage() {
@@ -72,7 +74,7 @@ export default function ProactivePage() {
       <div className="phone-stage">
         <div className="phone-speaker" aria-hidden="true" />
         <div className="customer-sheet proactive-sheet">
-          <header className="page-header" style={{ minHeight: 210 }}><Guilloche className="guilloche" /><div className="header-copy"><p className="eyebrow mono">MYBank security check</p><h1 className="page-title">Was this you?</h1><p className="page-lede">One answer can open a pre-filled dispute. No email, form, or phone call.</p></div></header><MicroRule />
+          <header className="page-header" style={{ minHeight: 210 }}><Guilloche className="guilloche" /><div className="header-copy"><p className="eyebrow mono">{alert?.bank_name || "Your bank"} / security check</p><h1 className="page-title">Was this you?</h1><p className="page-lede">One answer can open a pre-filled dispute. No email, form, or phone call.</p></div></header><MicroRule />
           {rehearsal ? <div className="rehearsal-ribbon">OFFLINE REHEARSAL / NO BANK DATA CHANGES</div> : null}
           {error ? <div className="error-box section" role="alert">{error}</div> : null}
           {!alert ? <div className="skeleton section" role="status" aria-label="Loading transaction alert" /> : result?.case?.outcome === "RESOLVED_IN_FULL" ? (

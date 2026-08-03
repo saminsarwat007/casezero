@@ -360,7 +360,7 @@ h1, h2, h3 { text-wrap: balance; scroll-margin-top: 24px; }
   .skeleton::after { transform: translateX(220%); opacity: .45; }
 }
 
-/* ─── Stakeholder release / Wajar control language ─────────────────────── */
+/* ─── Stakeholder release / Axiom control language ────────────────────── */
 
 .rail-brand-row { display: block; }
 .mobile-menu { display: none; }
@@ -385,7 +385,7 @@ h1, h2, h3 { text-wrap: balance; scroll-margin-top: 24px; }
 @keyframes wajar-scrim { from { opacity: 0; } }
 @keyframes wajar-enter { from { opacity: 0; transform: translateX(44px); } }
 .wajar-head { margin: 0 -28px; min-height: 210px; padding: 32px 76px 28px 28px; position: relative; background: var(--negative); color: #e5eee7; border-bottom: 4px double #526158; }
-.wajar-head::after { content: "WAJAR / REASONABLE · JUSTIFIED · PROPER"; position: absolute; left: 28px; bottom: 12px; color: #718078; font: 8px/1 var(--font-martian), monospace; letter-spacing: .13em; }
+.wajar-head::after { content: "AXIOM / EVIDENCE · AUTHORITY · PROOF"; position: absolute; left: 28px; bottom: 12px; color: #718078; font: 8px/1 var(--font-martian), monospace; letter-spacing: .13em; }
 .wajar-head .eyebrow { color: #97a59b; }
 .wajar-head h2 { margin: 16px 0 8px; font-size: clamp(40px, 6vw, 64px); line-height: .9; letter-spacing: -.065em; }
 .wajar-head p:last-child { max-width: 48ch; margin: 0; color: #a9b5ac; }

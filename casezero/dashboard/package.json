@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "demo:record": "node scripts/record-stakeholder-demo.mjs"
+    "demo:record": "node scripts/record-stakeholder-demo.mjs",
+    "demo:build": "node scripts/build-demo-film.mjs"
   },
   "dependencies": {
     "@number-flow/react": "0.6.2",

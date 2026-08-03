@@ -15,8 +15,8 @@ const martian = Martian_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "CaseZero — MYBank", template: "%s · CaseZero" },
-  description: "AI agents resolve bank disputes in minutes, fully compliant.",
+  title: { default: "CaseZero — Governed dispute operations", template: "%s · CaseZero" },
+  description: "Axiom and six governed agents resolve banking disputes with deterministic financial and compliance controls.",
   applicationName: "CaseZero",
   manifest: "/manifest.webmanifest",
 };
