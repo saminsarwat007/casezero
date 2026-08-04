@@ -1,8 +1,7 @@
 # Owner handoff — what CaseZero still needs
 
-The product, deck, cover and release evidence are complete; the live-first demo is
-being regenerated from the deployed proof flow. These owner items cannot be
-fabricated or inferred.
+The product, redesigned Axiom deck, cover, live-first film and release evidence are
+complete. These owner items cannot be fabricated or inferred.
 
 ## Before the 5 August hackathon upload
 
@@ -12,7 +11,7 @@ fabricated or inferred.
    architecture, agent implementation, debugging/tests, deployment and final review.
 4. Add genuine WorkBuddy email/PDF/API screenshots if WorkBuddy is part of the claim.
 5. Open every public link in a private browser and submit before the stated deadline.
-6. Confirm the rebuilt live-first MP4 after its final visual/audio QA.
+6. Watch the final 5:55.77 MP4 once and approve it for upload.
 
 Without genuine CodeBuddy or WorkBuddy proof, the handbook says the project does not
 proceed to scoring.

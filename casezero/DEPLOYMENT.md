@@ -48,6 +48,12 @@ invitation-only: an Admin uses
 
 Current production origin: <https://casezero-alpha.vercel.app>.
 
+Verified deployment: `dpl_9BYCyTh68cTnYL7cYDYm9qmFTpTk` (`READY`, promoted to the
+origin above). The final public acceptance run is `MYB-2026-000031`: 26.54 seconds,
+`COMMUNICATED`, `PASS`, `POSTED`, three model calls, three in-process MCP bank-tool
+calls, balanced journal and 13 valid chain links. Proof:
+<https://casezero-alpha.vercel.app/live?run=CA1NdXDduzdYnVZXvzeBSHjTIQD4uIrcWz18oFvrMQI>.
+
 The Vercel deployment serves the interactive web/API boundary. The always-on SLA
 supervisor remains a separately deployed single worker; do not treat a serverless
 request as a scheduler. Until that worker is installed in the bank environment,

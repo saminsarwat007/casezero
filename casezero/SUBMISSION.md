@@ -87,8 +87,9 @@ FMOS pack, reducing both operating time and regulator-file preparation.
 - At least 3 genuine dated CodeBuddy/WorkBuddy screenshots (target 10+).
 - WorkBuddy build/run screenshots plus the CaseZero API call log.
 - 380×216 cover: `submission/03-cover/casezero-cover-380x216.png` — ready.
-- 6:08 narrated demo: `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` — ready.
-- Rubric-ordered PPTX/PDF: `submission/02-deck/` — ready.
+- 5:55.77 narrated demo: `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` — ready.
+- Final rubric-ordered deck: `submission/02-deck/Axiom-Case-Study-1-Submission-Deck.pptx`
+  and `.pdf` — ready, fully rendered and inspected.
 - Public dashboard/API URL: <https://casezero-alpha.vercel.app> — ready.
 
 Never fabricate proof: Tencent can verify product-side activity.

@@ -115,6 +115,11 @@ today for onboarding, rehearsal and a synthetic-data pilot. Connecting real cust
 mail and financial posting requires the bank-controlled credentials listed in
 `DEPLOYMENT.md`; the repository never contains them.
 
+The final production recheck created `MYB-2026-000031` and returned `COMMUNICATED`,
+`PASS`, `POSTED`, a balanced RM2,450 journal, three metered Gemini calls, three MCP
+bank-tool calls and a valid 13-link chain in 26.54 seconds. Its persisted public
+proof is <https://casezero-alpha.vercel.app/live?run=CA1NdXDduzdYnVZXvzeBSHjTIQD4uIrcWz18oFvrMQI>.
+
 New operators can follow [STAKEHOLDER_GUIDE.md](STAKEHOLDER_GUIDE.md). The
 case-study gap analysis and production boundary are recorded in
 [STAKEHOLDER_READINESS_REVIEW.md](STAKEHOLDER_READINESS_REVIEW.md), and every
@@ -150,7 +155,9 @@ npm run demo:build
 ```
 
 The verified submission film is `submission/04-demo/CaseZero-Stakeholder-Demo.mp4`
-(6:08, 1080p, narrated) with `CaseZero-Stakeholder-Demo.en.vtt` captions.
+(5:55.77, 1080p, narrated) with `CaseZero-Stakeholder-Demo.en.vtt` captions. Its
+explanatory frames come from the final Axiom deck; the archived decorative deck is
+not used in the film or submission.
 
 Regenerate and evaluate the synthetic corpus:
 

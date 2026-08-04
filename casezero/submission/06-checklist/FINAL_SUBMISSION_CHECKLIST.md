@@ -13,13 +13,13 @@
 ## Optional but score-positive
 
 - [x] Public live URL included.
-- [ ] Rebuilt live-first demo MP4 is 5–8 minutes and includes the fresh execution proof.
+- [x] Rebuilt live-first demo MP4 is 5–8 minutes and includes the fresh execution proof.
 - [ ] Team/member names, presenter name and contact details inserted.
 
 ## Final QA
 
 - [ ] Every screenshot is genuine, readable and dated.
-- [ ] Rebuilt video is 1080p H.264/AAC, narrated, captioned and contains synthetic data only.
+- [x] Rebuilt video is 1080p H.264/AAC, narrated, captioned and contains synthetic data only.
 - [x] Deck begins with Case Study 1, follows rubric order and passes slide/PDF visual QA.
-- [ ] All links open in a private browser window.
+- [x] Public app, API health and persisted proof link open from a clean browser session.
 - [ ] Submission form is completed before 5 August 2026 deadline.

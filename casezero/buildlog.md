@@ -37,11 +37,14 @@ All implementation dates are 2026 and all bank/customer data is synthetic.
 - Promoted the verified Vercel Services artifact to
   `https://casezero-alpha.vercel.app`; public UI/API smoke and the production
   error/warning scan were clean.
-- Replaced the confusing 60.8-second tour with a 6:08 narrated 1080p stakeholder
+- Replaced the confusing 60.8-second tour with a 5:55.77 narrated 1080p stakeholder
   film: 13 rubric-led chapters, visible cursor/click feedback, persistent captions,
   a WebVTT transcript and a 13-frame visual QA contact sheet.
-- Created a 10-slide Security Print submission deck in rubric order, rendered and
-  inspected every slide, exported a verified PDF and produced the exact 380×216 cover.
+- Rebuilt the 10-slide submission deck as **Axiom by CaseZero**: no generated mood
+  imagery, real production UI and financial evidence only, rubric-ordered narrative,
+  speaker notes, slide-by-slide visual inspection, verified PDF and exact 380×216 cover.
+- Corrected the demo recorder to source its explanatory frames from the final Axiom
+  render instead of the archived decorative deck, then repeated the public live capture.
 - Release gates after the live-first rebuild: **466 backend tests**, **14 browser tests**,
   TypeScript, production build, dependency audit, MCP, LLM/vision, live agent,
   database-integrity and scheduler smokes all passed.

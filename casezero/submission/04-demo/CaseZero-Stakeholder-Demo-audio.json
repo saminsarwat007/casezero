@@ -1,124 +1,124 @@
 {
-  "videoDurationSec": 368.779002,
+  "videoDurationSec": 355.773016,
   "voice": "Daniel",
   "rate": 178,
   "scenes": [
     {
       "id": "title",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/01-title.aiff",
-      "durationSec": 18.320544,
-      "slotSec": 20,
-      "targetSec": 18.75,
-      "tempo": 1,
+      "durationSec": 18.979955,
+      "slotSec": 18.001,
+      "targetSec": 16.751,
+      "tempo": 1.1330639961793325,
       "startMs": 0
     },
     {
       "id": "pain",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/02-pain.aiff",
       "durationSec": 27.757052,
-      "slotSec": 30.002,
-      "targetSec": 28.752,
-      "tempo": 1,
-      "startMs": 20000
+      "slotSec": 28.002,
+      "targetSec": 26.752,
+      "tempo": 1.0375692284688995,
+      "startMs": 18001
     },
     {
       "id": "architecture",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/03-architecture.aiff",
       "durationSec": 27.737823,
-      "slotSec": 30.002,
-      "targetSec": 28.752,
-      "tempo": 1,
-      "startMs": 50002
+      "slotSec": 28.001,
+      "targetSec": 26.751,
+      "tempo": 1.0368892004037231,
+      "startMs": 46003
     },
     {
       "id": "onboarding",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/04-onboarding.aiff",
-      "durationSec": 22.038957,
-      "slotSec": 25.002,
-      "targetSec": 23.752,
+      "durationSec": 17.441406,
+      "slotSec": 20,
+      "targetSec": 18.75,
       "tempo": 1,
-      "startMs": 80004
+      "startMs": 74004
+    },
+    {
+      "id": "live_run",
+      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/05-live_run.aiff",
+      "durationSec": 36.499546,
+      "slotSec": 65.001,
+      "targetSec": 63.751000000000005,
+      "tempo": 1,
+      "startMs": 94004
     },
     {
       "id": "human_queue",
-      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/05-human_queue.aiff",
+      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/06-human_queue.aiff",
       "durationSec": 24.622358,
-      "slotSec": 30.002,
-      "targetSec": 28.752,
-      "tempo": 1,
-      "startMs": 105006
+      "slotSec": 25,
+      "targetSec": 23.75,
+      "tempo": 1.0367308631578946,
+      "startMs": 159005
     },
     {
       "id": "mission_control",
-      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/06-mission_control.aiff",
+      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/07-mission_control.aiff",
       "durationSec": 23.187755,
-      "slotSec": 35.002,
-      "targetSec": 33.752,
+      "slotSec": 30,
+      "targetSec": 28.75,
       "tempo": 1,
-      "startMs": 135008
+      "startMs": 184005
     },
     {
       "id": "axiom",
-      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/07-axiom.aiff",
+      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/08-axiom.aiff",
       "durationSec": 28.134195,
-      "slotSec": 35,
-      "targetSec": 33.75,
+      "slotSec": 30.001,
+      "targetSec": 28.751,
       "tempo": 1,
-      "startMs": 170010
-    },
-    {
-      "id": "customer",
-      "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/08-customer.aiff",
-      "durationSec": 25.576508,
-      "slotSec": 30.003,
-      "targetSec": 28.753,
-      "tempo": 1,
-      "startMs": 205010
+      "startMs": 214005
     },
     {
       "id": "audit",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/09-audit.aiff",
       "durationSec": 23.914467,
-      "slotSec": 30.003,
-      "targetSec": 28.753,
-      "tempo": 1,
-      "startMs": 235013
+      "slotSec": 25.002,
+      "targetSec": 23.752,
+      "tempo": 1.006840139777703,
+      "startMs": 244006
     },
     {
       "id": "settings",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/10-settings.aiff",
       "durationSec": 25.299002,
-      "slotSec": 30.001,
-      "targetSec": 28.751,
-      "tempo": 1,
-      "startMs": 265016
+      "slotSec": 25.001,
+      "targetSec": 23.751,
+      "tempo": 1.0651762873142183,
+      "startMs": 269008
     },
     {
       "id": "operators",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/11-operators.aiff",
       "durationSec": 22.207664,
-      "slotSec": 30,
-      "targetSec": 28.75,
+      "slotSec": 25.001,
+      "targetSec": 23.751,
       "tempo": 1,
-      "startMs": 295017
+      "startMs": 294010
     },
     {
       "id": "proof",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/12-proof.aiff",
-      "durationSec": 25.969161,
-      "slotSec": 25.004,
-      "targetSec": 23.754,
-      "tempo": 1.0932542308663804,
-      "startMs": 325017
+      "durationSec": 26.085261,
+      "slotSec": 20,
+      "targetSec": 18.75,
+      "tempo": 1.39121392,
+      "startMs": 319011
     },
     {
       "id": "close",
       "file": "/Users/saminsmac/Projects/tencent copy 2/casezero/tmp/demo-audio/13-close.aiff",
       "durationSec": 21.650249,
-      "slotSec": 20.002,
-      "targetSec": 18.752,
-      "tempo": 1.1545567939419796,
-      "startMs": 350021
+      "slotSec": 18.002,
+      "targetSec": 16.752,
+      "tempo": 1.2923978629417383,
+      "startMs": 339011
     }
   ]
 }

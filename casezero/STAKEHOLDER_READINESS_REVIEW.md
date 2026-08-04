@@ -32,9 +32,11 @@ new evaluator. The public journey now has one job: run one complaint and read it
 live evidence rail. The operations workspace, Simple/Pro modes and Axiom remain
 secondary staff tools. Desktop and 390px mobile checks have no horizontal overflow.
 
-The old cross-route film is being replaced by a live-first, chapter-captioned story:
-the first product click waits for a fresh case, then shows model/tool receipts,
-balanced posting and the chain before entering the staff workspace.
+The old cross-route film has been replaced by a 5:55.77 live-first,
+chapter-captioned story. The first product click waits for a production execution,
+then shows model/tool receipts, balanced posting and the chain before entering the
+staff workspace. The final explanatory frames are sourced from the redesigned Axiom
+deck; none of the archived decorative imagery remains in the submission film.
 
 ## Axiom decision
 

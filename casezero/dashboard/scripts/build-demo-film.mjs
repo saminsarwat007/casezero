@@ -66,21 +66,22 @@ async function main() {
     "-c:a", "aac",
     "-b:a", "192k",
     "-movflags", "+faststart",
-    "-metadata", "title=CaseZero Stakeholder Demo",
+    "-metadata", "title=Axiom by CaseZero Stakeholder Demo",
     "-metadata", "comment=AI Agent Track · Case Study 1 · Axiom by CaseZero",
     "-shortest",
     outputVideo,
   ]);
 
+  const outputDurationMs = seconds(outputVideo) * 1000;
   const vtt = ["WEBVTT", ""];
   timeline.scenes.forEach((scene, index) => {
     vtt.push(String(index + 1));
-    vtt.push(`${vttTime(scene.startMs)} --> ${vttTime(scene.endMs)}`);
+    vtt.push(`${vttTime(scene.startMs)} --> ${vttTime(Math.min(scene.endMs, outputDurationMs))}`);
     vtt.push(`${scene.title}\n${scene.narration}`);
     vtt.push("");
   });
-  await writeFile(captionsFile, `${vtt.join("\n")}\n`);
-  await writeFile(timingsFile, `${JSON.stringify({ videoDurationSec: seconds(outputVideo), voice: "Daniel", rate: 178, scenes: audio }, null, 2)}\n`);
+  await writeFile(captionsFile, vtt.join("\n"));
+  await writeFile(timingsFile, `${JSON.stringify({ videoDurationSec: outputDurationMs / 1000, voice: "Daniel", rate: 178, scenes: audio }, null, 2)}\n`);
   console.log(`Narrated demo saved to ${outputVideo}`);
   console.log(`Captions saved to ${captionsFile}`);
   audio.forEach((item) => console.log(`${item.id}: voice ${item.durationSec.toFixed(1)}s / visual ${item.slotSec.toFixed(1)}s / tempo ${item.tempo.toFixed(2)}x`));

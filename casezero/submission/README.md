@@ -11,10 +11,10 @@ account evidence and team identity details require the owner.
 ## Final upload map
 
 1. `01-project-copy/PROJECT_DESCRIPTION.md` - title, under-10-word blurb and full description.
-2. `02-deck/CaseZero-Submission-Deck.pptx` - rubric-ordered presentation with speaker notes.
-3. `02-deck/CaseZero-Submission-Deck.pdf` - review/share copy of the same deck.
+2. `02-deck/Axiom-Case-Study-1-Submission-Deck.pptx` - final rubric-ordered presentation with speaker notes.
+3. `02-deck/Axiom-Case-Study-1-Submission-Deck.pdf` - verified review/share copy of the same deck.
 4. `03-cover/casezero-cover-380x216.png` - required online showcase cover.
-5. `04-demo/CaseZero-Stakeholder-Demo.mp4` - final 6:08 narrated 1080p video.
+5. `04-demo/CaseZero-Stakeholder-Demo.mp4` - final 5:55.77 narrated 1080p video.
 6. `04-demo/CaseZero-Stakeholder-Demo.en.vtt` - full subtitle/transcript track.
 7. `04-demo/DEMO_RUN_OF_SHOW.md` - exact scenes, chapter timing and claims guardrails.
 8. `05-proof/codebuddy/` - owner adds genuine CodeBuddy history/screenshots.

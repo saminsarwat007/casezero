@@ -2,10 +2,10 @@ export const demoScenes = [
   {
     id: "title",
     kicker: "AI AGENT TRACK / CASE STUDY 1",
-    title: "CaseZero",
+    title: "Axiom by CaseZero",
     caption: "Bank disputes resolved in minutes, governed end to end.",
     durationMs: 18000,
-    narration: "This is CaseZero, built for the AI Agent Track and Case Study One. It is a governed dispute operating system for a five-person, non-technical bank complaints team. Axiom can prepare work in natural language, but it cannot invent authority, bypass a gate, or move money by itself.",
+    narration: "This is Axiom by CaseZero, built for the AI Agent Track and Case Study One. It is a governed dispute operating system for a five-person, non-technical bank complaints team. Axiom can prepare work in natural language, but it cannot invent authority, bypass a gate, or move money by itself.",
   },
   {
     id: "pain",

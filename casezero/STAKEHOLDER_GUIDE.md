@@ -16,6 +16,9 @@ The public runner never accepts arbitrary uploads or real customer data. If a li
 provider fails, it shows a failure and offers the latest persisted run; it never
 substitutes a rehearsal result.
 
+For a known-good reference before running another case, open the final verified
+production proof for `MYB-2026-000031`: <https://casezero-alpha.vercel.app/live?run=CA1NdXDduzdYnVZXvzeBSHjTIQD4uIrcWz18oFvrMQI>.
+
 ## How staff emails are added
 
 There is no public sign-up. During deployment, one bank work email is provisioned as

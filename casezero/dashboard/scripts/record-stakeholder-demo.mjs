@@ -8,7 +8,7 @@ const projectRoot = path.resolve(process.cwd(), "..");
 const outputDir = path.join(projectRoot, "submission/04-demo");
 const outputFile = path.join(outputDir, "casezero-stakeholder-demo-raw.webm");
 const timelineFile = path.join(outputDir, "casezero-demo-timeline.json");
-const slideDir = path.join(projectRoot, "submission/02-deck/final-verified-render");
+const slideDir = path.join(projectRoot, "submission/02-deck/axiom-final-render");
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const timeline = [];
@@ -129,7 +129,16 @@ async function main() {
     await setCaption(page, scene);
     await pause(1800);
     await visibleClick(page, page.getByRole("button", { name: "Run a Fresh Live Complaint" }));
-    await page.locator(".proof-verdict h2").waitFor({ state: "visible", timeout: 90000 });
+    const verdict = page.locator(".proof-verdict h2");
+    const failed = page.locator(".execution-error");
+    const outcome = await Promise.race([
+      verdict.waitFor({ state: "visible", timeout: 120000 }).then(() => "verdict"),
+      failed.waitFor({ state: "visible", timeout: 120000 }).then(() => "failed"),
+    ]);
+    if (outcome === "failed") {
+      await visibleClick(page, page.getByRole("button", { name: "Open Latest Completed Proof" }));
+      await verdict.waitFor({ state: "visible", timeout: 30000 });
+    }
     await pause(3200);
     await smoothScroll(page, 1050, 2200);
     await smoothScroll(page, 2100, 2200);

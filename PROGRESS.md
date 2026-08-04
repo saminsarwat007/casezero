@@ -3,7 +3,7 @@
 **Read this first in a fresh session.** `MASTERPLAN.md` is the *design*; this file is
 the *state*. Where they disagree, this file is right.
 
-Last verified: **4 Aug 2026, 14:31 UTC+8**
+Last verified: **4 Aug 2026, 15:43 UTC+8**
 Repo root: `/Users/saminsmac/Projects/tencent copy 2`
 Code root: `casezero/`
 
@@ -192,9 +192,10 @@ allow-listed synthetic ledger transaction and executes the deployed orchestrator
 The returned evidence rail contains the fresh case reference, actual model
 telemetry, recorded bank-tool transport, PASS gate, balanced journal and verified
 chain. Public callers cannot upload arbitrary email/PII; failures never substitute
-rehearsal data. The first verified run was `MYB-2026-000026`: `COMMUNICATED`,
-Gemini 2.5 Flash (3 calls), 3 stdio MCP calls including `post_adjustment`, balanced
-journal and a valid 13-link chain in 23.442 seconds.
+rehearsal data. The final production recheck was `MYB-2026-000031`:
+`COMMUNICATED`, Gemini 2.5 Flash (3 metered calls), 3 in-process MCP bank-tool calls
+including `post_adjustment`, balanced journal and a valid 13-link chain in 26.54
+seconds. Persisted proof: `https://casezero-alpha.vercel.app/live?run=CA1NdXDduzdYnVZXvzeBSHjTIQD4uIrcWz18oFvrMQI`.
 
 All planned operational surfaces also exist: a themed first-shift stakeholder guide,
 Supabase login plus an explicitly labelled offline rehearsal, Admin Operators and
@@ -321,11 +322,11 @@ latest production evidence.
 | Database tamper proof | service-role writes refused; owner tamper located at exact event |
 | FMOS PDF visual QA | all four pages rendered, inspected, no clipping/overflow |
 | Stakeholder Supabase controls | migrations `005`/`006` + live-demo migration live; RLS on, anon/authenticated off, service-only writes audited |
-| Public live execution | `MYB-2026-000026` · `VERIFIED_LIVE` · `COMMUNICATED` · Gemini 3 calls · stdio bank tools 3 calls · balanced journal · 13-link chain |
-| Vercel production | **READY**, deployment `dpl_4NFX4xrkYAznnDb1Z8aThJuEocKx`, aliased to `https://casezero-alpha.vercel.app` |
+| Public live execution | `MYB-2026-000031` · `VERIFIED_LIVE` · `COMMUNICATED` · Gemini 3 calls · in-process MCP bank tools 3 calls · balanced journal · 13-link chain · 26.54s |
+| Vercel production | **READY**, deployment `dpl_9BYCyTh68cTnYL7cYDYm9qmFTpTk`, promoted to `https://casezero-alpha.vercel.app` |
 | Production runtime logs | zero error or warning entries after Axiom release smoke |
-| Demo capture | **6:08**, 1,920×1,080 H.264/AAC; narrated, chapter-captioned and 13-frame visual QA passed |
-| Submission deck | 10 rubric-ordered slides; PPTX overflow test passed; every slide and the 10-page PDF visually inspected |
+| Demo capture | **5:55.77**, 1,920×1,080 H.264/AAC; narrated, chapter-captioned and 13-frame visual QA passed; final Axiom frames used |
+| Submission deck | `Axiom-Case-Study-1-Submission-Deck.pptx` + PDF; 10 rubric-ordered slides, notes on every slide, overflow/fidelity tests passed, every slide/page visually inspected |
 | Showcase cover | exact **380×216 PNG**, visually inspected |
 
 ### 1.14 Operations and release packaging — complete
@@ -353,12 +354,15 @@ latest production evidence.
   the FastAPI/MCP contract, unauthenticated Settings correctly returns 401, and the
   post-release error/warning scan is empty.
 - `dashboard/scripts/record-stakeholder-demo.mjs` now produces a 13-chapter timed
-  capture. `build-demo-film.mjs` adds scene-aligned narration and WebVTT subtitles.
-  `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` is a verified 6:08 1080p
-  H.264/AAC stakeholder story; the 13-frame contact sheet passed visual review.
-- `submission/02-deck/CaseZero-Submission-Deck.pptx` and `.pdf` follow the rubric
-  order, include speaker notes and passed full-slide rendering/overflow review. The
-  online showcase cover is the exact required 380×216 size.
+  capture and sources all explanatory frames from the final Axiom render.
+  `build-demo-film.mjs` adds scene-aligned narration and WebVTT subtitles.
+  `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` is a verified 5:55.77 1080p
+  H.264/AAC stakeholder story; the new 13-frame contact sheet passed visual review.
+- `submission/02-deck/Axiom-Case-Study-1-Submission-Deck.pptx` and `.pdf` replace
+  the archived decorative deck. They use real production UI and evidence only,
+  follow rubric order, include speaker notes and passed full-slide rendering,
+  overflow, template-fidelity and 10-page PDF review. The online showcase cover is
+  the exact required 380×216 size.
 - A production authenticated read was not forced because the seeded Admin password
   is intentionally absent from local secrets. The same Settings/Axiom boundary is
   covered by API tests and direct live Supabase privilege checks. Onboarding the
@@ -368,10 +372,10 @@ latest production evidence.
 
 ## 2. What is left
 
-The live-first deployment and replacement video are the remaining release tasks.
-The system can already be used for stakeholder onboarding, verifiable execution on
-synthetic input, safe rehearsal and a synthetic pilot. Live bank use
-still needs bank-controlled integration material:
+The live-first deployment, redesigned deck and replacement video are complete. The
+system can be used for stakeholder onboarding, verifiable execution on synthetic
+input, safe rehearsal and a synthetic pilot. Live bank use still needs
+bank-controlled integration material:
 
 1. Real core-banking and CRM MCP endpoints, credentials, field mapping and a named
    owner for signed posting-ticket custody.

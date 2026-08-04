@@ -21,12 +21,12 @@ Examples:
 - [ ] WorkBuddy run showing the request accepted by `/intake/workbuddy`.
 - [x] Final public URL and public Playwright result.
 - [x] 380×216 cover image in `submission/03-cover/`.
-- [x] Final 6:08 narrated stakeholder film with captions and chapter QA.
+- [x] Final 5:55.77 narrated stakeholder film with captions and chapter QA.
 
 ## Repository-produced evidence
 
 - [x] Full backend acceptance suite: 466 passing tests.
-- [x] Eleven-journey Playwright stakeholder acceptance suite.
+- [x] Fourteen-journey Playwright stakeholder acceptance suite.
 - [x] Real MCP stdio smoke.
 - [x] Gemini/Groq/vision smoke.
 - [x] Live WorkBuddy HTTP intake smoke.
@@ -40,7 +40,7 @@ Examples:
 - Public product: <https://casezero-alpha.vercel.app>
 - Upload-ready MP4: `submission/04-demo/CaseZero-Stakeholder-Demo.mp4`
 - Transcript: `submission/04-demo/CaseZero-Stakeholder-Demo.en.vtt`
-- Capture: 6:08, 1,920×1,080, 25fps, H.264/AAC with fast-start metadata.
+- Capture: 5:55.77, 1,920×1,080, 25fps, H.264/AAC with fast-start metadata.
 - Sequence: case-study stakes → six-agent/kernel boundary → onboarding → Simple →
   Mission Control → Axiom → customer resolution → audit/quarantine → Settings →
   work-email invitation → measured proof → controlled rollout.

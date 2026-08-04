@@ -1,4 +1,4 @@
-# CaseZero live-first demo run of show
+# Axiom by CaseZero live-first demo run of show
 
 The rebuilt MP4 targets about 6 minutes, inside the handbook's 5–8 minute window. Every chapter has
 large on-screen context, narrated audio, visible cursor/click feedback and a WebVTT
@@ -6,7 +6,7 @@ transcript. It follows one case rather than touring the full navigation rail.
 
 | Time | Visual | Presenter job |
 |---|---|---|
-| 0:00-0:18 | Title: Case Study 1 / CaseZero | Chosen challenge, value line and Axiom's authority boundary. |
+| 0:00-0:18 | Title: Case Study 1 / Axiom by CaseZero | Chosen challenge, value line and Axiom's authority boundary. |
 | 0:18-0:46 | 1.8m / 90 min / 11% / 5-20 WD | Operational and regulatory pain. |
 | 0:46-1:14 | Six agents around one kernel | “Models propose; the kernel decides.” |
 | 1:14-1:34 | Public landing | Synthetic-person/live-execution boundary and one primary action. |
@@ -18,7 +18,7 @@ transcript. It follows one case rather than touring the full navigation rail.
 | 4:29-4:54 | Settings | Bank identity, SLA horizon and two independent kill switches. |
 | 4:54-5:19 | Operators | Work-email invitation and least-privilege role handoff. |
 | 5:19-5:39 | Release evidence | Accuracy, latency, cost, attacks, 466 tests and 14 browser journeys. |
-| 5:39-5:57 | Controlled rollout | 57% initial volume, under-5-minute target and bank-owned inputs. |
+| 5:39-5:55.77 | Controlled rollout | 57% initial volume, under-5-minute target and bank-owned inputs. |
 
 ## Narration guardrails
 
@@ -29,7 +29,7 @@ transcript. It follows one case rather than touring the full navigation rail.
 
 ## Final artifacts
 
-- `CaseZero-Stakeholder-Demo.mp4` — 1920×1080 H.264 + AAC, 6:08.
+- `CaseZero-Stakeholder-Demo.mp4` — 1920×1080 H.264 + AAC, 5:55.77.
 - `CaseZero-Stakeholder-Demo.en.vtt` — complete English transcript/subtitle track.
 - `CaseZero-Stakeholder-Demo-contact-sheet.png` — internal 13-scene visual QA proof.
 - `casezero-demo-timeline.json` — exact captured chapter starts and ends.
