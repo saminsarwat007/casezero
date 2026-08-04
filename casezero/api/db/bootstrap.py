@@ -25,7 +25,8 @@ from pathlib import Path
 from api.config import get_settings
 from api.db.management_api import run_sql
 
-MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
+LEGACY_MIGRATIONS_DIR = Path(__file__).resolve().parent / "migrations"
+SUPABASE_MIGRATIONS_DIR = Path(__file__).resolve().parent.parent.parent / "supabase" / "migrations"
 
 LEDGER_DDL = """
 create table if not exists _casezero_migrations (
@@ -40,9 +41,16 @@ GREEN, RED, YELLOW = "\033[32m", "\033[31m", "\033[33m"
 
 
 def discover() -> list[Path]:
-    if not MIGRATIONS_DIR.is_dir():
-        raise SystemExit(f"No migrations directory at {MIGRATIONS_DIR}")
-    return sorted(MIGRATIONS_DIR.glob("*.sql"))
+    """Return legacy and Supabase CLI migrations in application order."""
+    if not LEGACY_MIGRATIONS_DIR.is_dir():
+        raise SystemExit(f"No migrations directory at {LEGACY_MIGRATIONS_DIR}")
+    legacy = sorted(LEGACY_MIGRATIONS_DIR.glob("*.sql"))
+    standard = (
+        sorted(SUPABASE_MIGRATIONS_DIR.glob("*.sql"))
+        if SUPABASE_MIGRATIONS_DIR.is_dir()
+        else []
+    )
+    return legacy + standard
 
 
 def digest(path: Path) -> str:

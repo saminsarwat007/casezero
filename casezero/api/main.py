@@ -17,11 +17,17 @@ if __package__ in {None, ""}:
     sys.modules.setdefault("api", package)
 
 import base64
+import copy
+import hashlib
+import hmac
 import json
+import os
 import secrets
+import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
+from email.utils import format_datetime
 from typing import Any, Literal
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
@@ -52,6 +58,7 @@ from api.kernel.rules import load_yaml
 from api.mcp_tools.gateway import close_gateway
 from api.review import decide
 from api.reports.fmos_pack import build_fmos_pack
+from api.security.crypto import mask_account
 from api.web.auth import AuthUser, current_user, rls_database, service_database
 from api.web.sse import hub
 
@@ -135,6 +142,253 @@ def run_summary(run: CaseRun) -> dict[str, Any]:
         "cost_rm": run.cost_rm,
         "degraded": run.degraded,
         "timeline": run.timeline(),
+    }
+
+
+def _public_demo_fingerprint(request: Request) -> str:
+    """One-way rate key. No IP address or user agent is persisted."""
+    forwarded = (
+        request.headers.get("x-vercel-forwarded-for")
+        or request.headers.get("x-forwarded-for")
+        or (request.client.host if request.client else "unknown")
+    )
+    client_ip = forwarded.split(",", 1)[0].strip()
+    user_agent = request.headers.get("user-agent", "unknown")[:300]
+    secret = (settings.fernet_key or "casezero-unconfigured-demo-key").encode()
+    material = f"public-live-demo-v1|{client_ip}|{user_agent}".encode()
+    return hmac.new(secret, material, hashlib.sha256).hexdigest()
+
+
+def _public_demo_email(*, txn_ref: str, posted_at: datetime) -> bytes:
+    """An allow-listed test complaint; the public endpoint accepts no user PII."""
+    message = EmailMessage()
+    message["Subject"] = "Unauthorised card transaction"
+    message["From"] = "Ahmad bin Ismail <ahmad.live@example.my>"
+    message["To"] = settings.bank_complaints_email
+    message["Date"] = format_datetime(posted_at)
+    message.set_content(
+        "Dear Complaints Team,\n\n"
+        "I did not authorise the RM2,450.00 card payment to TECHWORLD KL on "
+        f"account 7142556890. The transaction reference is {txn_ref}. My card "
+        "has remained with me. Please investigate and reverse the charge.\n\n"
+        "Thank you,\nAhmad bin Ismail\n"
+    )
+    return message.as_bytes()
+
+
+def _event_stage(
+    rows: dict[str, dict[str, Any]],
+    *,
+    stage_id: str,
+    label: str,
+    event_type: str,
+    evidence: str,
+) -> dict[str, Any]:
+    event = rows.get(event_type) or {}
+    return {
+        "id": stage_id,
+        "label": label,
+        "status": "PASS" if event else "MISSING",
+        "event_type": event_type,
+        "seq": event.get("seq"),
+        "actor": event.get("actor"),
+        "recorded_at": event.get("created_at"),
+        "hash": event.get("hash"),
+        "evidence": evidence,
+    }
+
+
+def _build_public_demo_proof(
+    *,
+    token: str,
+    run: CaseRun,
+    ctx: AgentContext,
+    txn_ref: str,
+    started_at: datetime,
+    completed_at: datetime,
+    duration_ms: int,
+    model_start: int,
+    tool_start: int,
+) -> dict[str, Any]:
+    case_id = str(run.case_id)
+    event_rows = ctx.db.get_event_rows(case_id)
+    by_type = {str(row["event_type"]): row for row in event_rows}
+    chain = ctx.db.verify_case_chain(case_id)
+    journal_rows = ctx.db.get_journal(case_id)
+    model_calls = [
+        {
+            "agent": call.agent,
+            "provider": call.provider,
+            "model": call.model,
+            "tokens_in": call.tokens_in,
+            "tokens_out": call.tokens_out,
+            "latency_ms": call.latency_ms,
+            "cost_rm": round(float(call.cost_rm), 8),
+            "metered": call.metered,
+        }
+        for call in ctx.llm_calls[model_start:]
+    ]
+
+    gateway_calls = list(getattr(ctx.gateway, "calls", []))[tool_start:]
+    tool_calls = [
+        {
+            "server": call.server,
+            "tool": call.tool,
+            "transport": call.transport,
+            "latency_ms": call.latency_ms,
+            "ok": call.error is None,
+        }
+        for call in gateway_calls
+    ]
+    if not tool_calls:
+        tool_calls = [
+            {
+                "server": str(call.get("server", "core-banking")),
+                "tool": str(call.get("tool", "verify_claim")),
+                "transport": str(call.get("transport", getattr(ctx.gateway, "transport", "unknown"))),
+                "latency_ms": None,
+                "ok": bool(call.get("ok")),
+            }
+            for call in run.tool_calls
+        ]
+
+    classified = (by_type.get("CLASSIFIED") or {}).get("payload") or {}
+    urgency = (by_type.get("URGENCY_ASSIGNED") or {}).get("payload") or {}
+    verified = (by_type.get("VERIFICATION_COMPLETED") or {}).get("payload") or {}
+    gate = (by_type.get("GATE_DECISION") or {}).get("payload") or {}
+    posted = (by_type.get("JOURNAL_POSTED") or {}).get("payload") or {}
+    linted = (by_type.get("DRAFT_LINTED") or {}).get("payload") or {}
+    message = (by_type.get("MESSAGE_SENT") or {}).get("payload") or {}
+
+    stages = [
+        _event_stage(
+            by_type,
+            stage_id="intake",
+            label="Screen & extract",
+            event_type="INTAKE_EXTRACTED",
+            evidence="Deterministic injection scan passed before model access; account data was masked and encrypted.",
+        ),
+        _event_stage(
+            by_type,
+            stage_id="classify",
+            label="Classify complaint",
+            event_type="CLASSIFIED",
+            evidence=(
+                f"{classified.get('category', run.category)} at "
+                f"{float(classified.get('confidence', run.confidence or 0)):.1%} confidence."
+            ),
+        ),
+        _event_stage(
+            by_type,
+            stage_id="sla",
+            label="Apply urgency & SLA",
+            event_type="URGENCY_ASSIGNED",
+            evidence=(
+                f"{urgency.get('urgency', run.urgency)} urgency; "
+                f"{urgency.get('sla_working_days', '—')} working-day policy window."
+            ),
+        ),
+        _event_stage(
+            by_type,
+            stage_id="verify",
+            label="Verify bank evidence",
+            event_type="VERIFICATION_COMPLETED",
+            evidence=(
+                f"Core banking returned {verified.get('result', run.verification_result)} "
+                f"with {len(verified.get('evidence') or [])} checkable evidence tests."
+            ),
+        ),
+        _event_stage(
+            by_type,
+            stage_id="gate",
+            label="Authorize action",
+            event_type="GATE_DECISION",
+            evidence=f"Deterministic financial gate ruled {gate.get('action', '—')}.",
+        ),
+        _event_stage(
+            by_type,
+            stage_id="journal",
+            label="Post balanced journal",
+            event_type="JOURNAL_POSTED",
+            evidence=(
+                f"RM {float(posted.get('amount_rm') or 0):,.2f}; "
+                f"balanced={str(bool(posted.get('balanced'))).lower()}; signed ticket required."
+            ),
+        ),
+        _event_stage(
+            by_type,
+            stage_id="communicate",
+            label="Lint & release response",
+            event_type="MESSAGE_SENT",
+            evidence=(
+                f"{linted.get('summary', 'Compliance lint completed')}; "
+                f"send gate {message.get('action', '—')}."
+            ),
+        ),
+    ]
+
+    safe_journal = [
+        {
+            "entry_type": row.get("entry_type"),
+            "debit_account": row.get("debit_account"),
+            "credit_account_masked": mask_account(str(row.get("credit_account", ""))),
+            "amount_rm": float(row.get("amount_rm") or 0),
+            "posted_by": row.get("posted_by"),
+            "posted_at": row.get("posted_at"),
+        }
+        for row in journal_rows
+    ]
+    degraded = list(run.degraded)
+    completed = run.status == "COMMUNICATED" and run.posted and chain.ok
+    assurance = "VERIFIED_LIVE" if completed and model_calls and not degraded else "LIVE_DEGRADED"
+
+    return {
+        "schema_version": "1.0",
+        "execution": {
+            "token": token,
+            "case_ref": run.case_ref,
+            "started_at": started_at.isoformat(),
+            "completed_at": completed_at.isoformat(),
+            "duration_ms": duration_ms,
+            "runtime": "Vercel" if os.getenv("VERCEL") else "local",
+            "assurance": assurance,
+            "reused": False,
+            "source": "SYNTHETIC_INPUT",
+            "execution_mode": "LIVE_EXECUTION",
+        },
+        "input": {
+            "fixture": "unauthorised_transaction_v1",
+            "sender": "ahmad.live@example.my",
+            "subject": "Unauthorised card transaction",
+            "account_no_masked": "******6890",
+            "amount_rm": 2450.0,
+            "merchant": "TECHWORLD KL",
+            "txn_ref": txn_ref,
+        },
+        "result": {
+            "status": run.status,
+            "outcome": run.outcome,
+            "verification_result": run.verification_result,
+            "category": run.category,
+            "urgency": run.urgency,
+            "confidence": run.confidence,
+            "posted": run.posted,
+            "degraded": degraded,
+        },
+        "stages": stages,
+        "models": model_calls,
+        "tools": tool_calls,
+        "journal": {
+            "balanced": bool(posted.get("balanced")) and bool(safe_journal),
+            "entries": safe_journal,
+        },
+        "chain": {
+            "ok": chain.ok,
+            "links": len(event_rows),
+            "head_hash": event_rows[-1]["hash"] if event_rows else None,
+            "first_bad_seq": chain.first_bad_seq,
+            "reason": chain.reason,
+        },
     }
 
 
@@ -237,6 +491,151 @@ def health() -> dict[str, Any]:
         "provider": settings.active_provider,
         "mcp_transport": settings.mcp_transport,
     }
+
+
+def _public_demo_response(row: dict[str, Any], *, reused: bool = False) -> dict[str, Any]:
+    proof = copy.deepcopy(row.get("proof") or {})
+    if proof and reused:
+        proof.setdefault("execution", {})["reused"] = True
+    return {
+        "state": row.get("state"),
+        "token": row.get("token"),
+        "started_at": row.get("started_at"),
+        "finished_at": row.get("finished_at"),
+        "proof": proof or None,
+    }
+
+
+@app.get("/demo/live/latest")
+def latest_public_live_demo(
+    db: Database = Depends(service_database),
+) -> dict[str, Any]:
+    """Show the latest completed proof when the metered run budget is exhausted."""
+    row = db.latest_public_demo_run()
+    if row is None:
+        raise HTTPException(404, "No completed live execution is available yet.")
+    return _public_demo_response(row, reused=True)
+
+
+@app.get("/demo/live/{token}")
+def public_live_demo_result(
+    token: str,
+    db: Database = Depends(service_database),
+) -> dict[str, Any]:
+    if len(token) < 24 or len(token) > 96:
+        raise HTTPException(404, "Live execution proof not found.")
+    row = db.get_public_demo_run(token)
+    if row is None:
+        raise HTTPException(404, "Live execution proof not found.")
+    return _public_demo_response(row)
+
+
+@app.post("/demo/live", status_code=status.HTTP_201_CREATED)
+async def run_public_live_demo(
+    request: Request,
+    ctx: AgentContext = Depends(agent_context),
+) -> dict[str, Any]:
+    """Execute one sanitized fixture through the same live production pipeline."""
+    if not settings.public_live_demo_enabled:
+        raise HTTPException(
+            503,
+            "The public live runner is disabled. Staff can still inject an RFC822 email after sign-in.",
+        )
+    ctx.settings.require("fernet_key")
+
+    requested_token = secrets.token_urlsafe(32)
+    try:
+        reservation = ctx.db.reserve_public_demo_run(
+            fingerprint_hash=_public_demo_fingerprint(request),
+            token=requested_token,
+            daily_limit=settings.public_live_demo_daily_limit,
+            hourly_limit=settings.public_live_demo_hourly_limit,
+        )
+    except Exception as exc:  # PostgREST carries the named SQL limit in its message.
+        reason = str(exc)
+        if "PUBLIC_DEMO_DAILY_LIMIT" in reason:
+            raise HTTPException(
+                429,
+                "Today’s live-run budget is complete. Open the latest verified run or ask the deployment owner to raise the governed limit.",
+            ) from exc
+        if "PUBLIC_DEMO_HOURLY_LIMIT" in reason:
+            raise HTTPException(
+                429,
+                "This device has used its hourly live-run allowance. Reopen your prior proof or try again later.",
+            ) from exc
+        raise
+
+    token = str(reservation["token"])
+    if token != requested_token:
+        if reservation.get("state") == "COMPLETED" and reservation.get("proof"):
+            return _public_demo_response(reservation, reused=True)
+        raise HTTPException(
+            409,
+            "A live execution from this device is still running. Reopen it in a moment.",
+        )
+
+    started_at = datetime.now(timezone.utc)
+    started_clock = time.perf_counter()
+    model_start = len(ctx.llm_calls)
+    tool_start = len(getattr(ctx.gateway, "calls", []))
+    txn_ref = f"CZLIVE-{started_at:%Y%m%d}-{secrets.token_hex(4).upper()}"
+
+    try:
+        if ctx.db.get_account("7142556890") is None:
+            raise RuntimeError("The sanitized demo account has not been provisioned.")
+        posted_at = started_at - timedelta(minutes=3)
+        ctx.db.create_demo_transaction(
+            txn_ref=txn_ref,
+            account_no="7142556890",
+            merchant="TECHWORLD KL",
+            amount_rm=2450.0,
+            direction="DEBIT",
+            channel="online",
+            country="MY",
+            device_id=f"public_demo_{token[:10]}",
+            posted_at=posted_at.isoformat(),
+            is_disputed=False,
+        )
+        run = await Orchestrator(ctx).process(
+            _public_demo_email(txn_ref=txn_ref, posted_at=posted_at),
+            channel="MANUAL_INJECT",
+        )
+        await publish_run(run)
+        completed_at = datetime.now(timezone.utc)
+        proof = _build_public_demo_proof(
+            token=token,
+            run=run,
+            ctx=ctx,
+            txn_ref=txn_ref,
+            started_at=started_at,
+            completed_at=completed_at,
+            duration_ms=int((time.perf_counter() - started_clock) * 1000),
+            model_start=model_start,
+            tool_start=tool_start,
+        )
+        completed = ctx.db.complete_public_demo_run(
+            token,
+            state="COMPLETED",
+            proof=proof,
+            case_id=run.case_id,
+            case_ref=run.case_ref,
+        )
+        return _public_demo_response(completed)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        try:
+            ctx.db.complete_public_demo_run(
+                token,
+                state="FAILED",
+                error_code=type(exc).__name__,
+            )
+        except Exception:
+            pass
+        raise HTTPException(
+            502,
+            "The live execution stopped and no rehearsal result was substituted. Try once more or open the latest completed proof.",
+        ) from exc
 
 
 @app.get("/auth/config")

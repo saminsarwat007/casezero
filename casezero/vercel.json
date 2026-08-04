@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "env": {
+    "PUBLIC_LIVE_DEMO_ENABLED": "1",
+    "PUBLIC_LIVE_DEMO_DAILY_LIMIT": "24",
+    "PUBLIC_LIVE_DEMO_HOURLY_LIMIT": "2"
+  },
   "services": {
     "web": {
       "root": "dashboard/",

@@ -26,8 +26,10 @@ mint a posting ticket, remove the FMOS clause, write a journal entry, or bypass 
   warning horizon, default workspace, Axiom availability and the automatic
   resolution kill switch. Every change is chained.
 - Supabase Auth/RLS for OPS, INVESTIGATOR, COMPLIANCE and ADMIN.
-- Admin-only work-email invitations with single-use password setup; the public
-  rehearsal needs no account and cannot write to bank systems.
+- Admin-only work-email invitations with single-use password setup.
+- A rate-limited public live runner: one allow-listed synthetic RFC822 complaint
+  executes through the deployed model, MCP bank tools, Supabase records, signed
+  posting gate, balanced journal and hash chain. Arbitrary public uploads are refused.
 - Next.js PWA with Simple/Pro operations views, review queue, Agent Theater SSE,
   fraud-ring radar, quarantine, audit proof, customer tracker and proactive alert.
 - Four-page FMOS Referral Pack export.
@@ -79,8 +81,10 @@ Copy the public Supabase URL/anon key and API URL into
 cd dashboard && npm run dev
 ```
 
-Open `http://localhost:3000`. A new visitor first sees the complete first-shift guide
-and can enter the labelled safe rehearsal without an account. Staff select
+Open `http://localhost:3000`. A new visitor first sees one clear action: **Run a
+Live Complaint**. The input is an allow-listed fictional customer, while the API,
+model, tool calls, Supabase writes, journal and audit proof are live. The existing
+mutation-free operating rehearsal remains a secondary option. Staff select
 **Staff sign in**. The four synthetic identities are
 `ops@casezero.my`, `investigator@casezero.my`, `compliance@casezero.my` and
 `admin@casezero.my`; they use the password supplied to the seeder. Offline
@@ -93,15 +97,17 @@ public staff registration endpoint.
 
 ## First day for a stakeholder
 
-1. Open the public guide and run **Start safe rehearsal**; this uses synthetic data
-   and cannot post money or contact a customer.
-2. Sign in as an Admin and open **Settings** to set the bank name, complaint inbox,
+1. Open **Run a Live Complaint** and inspect the fresh case reference, actual model
+   and MCP receipts, PASS gate, balanced journal and verified chain.
+2. Use **Explore the Operations Workspace** only after the live case is clear; its
+   records and mutations remain an explicitly labelled rehearsal.
+3. Sign in as an Admin and open **Settings** to set the bank name, complaint inbox,
    Malaysian timezone, SLA warning horizon and automation posture.
-3. Open **Operators**, enter each colleague's work email and assign the least
+4. Open **Operators**, enter each colleague's work email and assign the least
    privileged role. The invitation is single use; there is no open registration.
-4. Use **Axiom** from any staff page. It shows the action, authority, effect and
+5. Use **Axiom** from any staff page. It shows the action, authority, effect and
    gates before execution. Settings and invitations always require confirmation.
-5. Keep automatic resolution off during shadow mode, validate the evaluation and
+6. Keep automatic resolution off during shadow mode, validate the evaluation and
    journal evidence, then enable it only after Compliance approves the rule packs.
 
 The stakeholder release is live at <https://casezero-alpha.vercel.app>. It is ready
@@ -131,7 +137,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-The current release gate is **465 Python tests**, **11 Playwright stakeholder
+The current release gate is **466 Python tests**, **14 Playwright stakeholder
 journeys**, a clean production build/typecheck and **0 npm vulnerabilities**.
 
 Record the chaptered stakeholder walkthrough at 1920×1080, then build the narrated

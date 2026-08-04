@@ -25,7 +25,7 @@ Examples:
 
 ## Repository-produced evidence
 
-- [x] Full backend acceptance suite: 465 passing tests.
+- [x] Full backend acceptance suite: 466 passing tests.
 - [x] Eleven-journey Playwright stakeholder acceptance suite.
 - [x] Real MCP stdio smoke.
 - [x] Gemini/Groq/vision smoke.

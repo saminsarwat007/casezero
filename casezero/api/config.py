@@ -90,6 +90,12 @@ class Settings(BaseSettings):
     # ─── Demo ───────────────────────────────────────────────────────────────
     demo_replay: bool = False
     demo_speed: float = 1.0
+    #: Public judges may run an allow-listed synthetic complaint through the
+    #: deployed stack. It is off by default so a cloned bank deployment cannot
+    #: accidentally expose a metered endpoint.
+    public_live_demo_enabled: bool = False
+    public_live_demo_daily_limit: int = Field(default=24, ge=1, le=200)
+    public_live_demo_hourly_limit: int = Field(default=2, ge=1, le=10)
     #: Shared only by the four synthetic staff accounts created by seed_users.
     #: It has no default so an operator cannot accidentally ship a known password.
     demo_user_password: str | None = None

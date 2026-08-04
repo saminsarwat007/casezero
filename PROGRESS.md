@@ -3,7 +3,7 @@
 **Read this first in a fresh session.** `MASTERPLAN.md` is the *design*; this file is
 the *state*. Where they disagree, this file is right.
 
-Last verified: **4 Aug 2026, 04:27 UTC+8**
+Last verified: **4 Aug 2026, 14:31 UTC+8**
 Repo root: `/Users/saminsmac/Projects/tencent copy 2`
 Code root: `casezero/`
 
@@ -23,7 +23,7 @@ Three things will waste an hour each if you miss them.
 ```bash
 cd "/Users/saminsmac/Projects/tencent copy 2/casezero"
 
-.venv/bin/python -m pytest api/tests -q          # 465 tests, ~7s
+.venv/bin/python -m pytest api/tests -q          # 466 tests, ~7s
 .venv/bin/python -m api.agents.smoke             # live six-agent E2E, 6 checks
 .venv/bin/python -m api.mcp_tools.smoke          # MCP over real stdio, 6 checks
 .venv/bin/python -m api.llm.smoke                # Gemini + Groq + vision OCR gate
@@ -115,7 +115,8 @@ fallback so a subprocess failure mid-demo degrades instead of dying).
 
 ### 1.4 Everything else already standing
 
-- **Schema live on Supabase** — migrations `001`–`006`, including policy/proactive
+- **Schema live on Supabase** — migrations `001`–`006` plus the Supabase CLI
+  live-demo migration, including policy/proactive
   data, stakeholder settings, Axiom receipts and an explicit privilege-hardening
   pass that removes default public grants from the new tables.
 - **Tamper-evidence proven live** — `api/db/verify_integrity.py`: the service role is refused by Postgres privileges, and a table-owner tamper is caught by `verify_chain` at the exact event.
@@ -140,7 +141,7 @@ fallback so a subprocess failure mid-demo degrades instead of dying).
 | `api/agents/orchestrator.py` | Legal status transitions and one continuous SHA-256 chain across every stage |
 | `api/agents/wajar.py` | Axiom's deterministic natural-language capability planner; role, confirmation and receipt contract |
 
-**465 total tests, all passing.** Fixtures include a real-chain `FakeDatabase`, a
+**466 total tests, all passing.** Fixtures include a real-chain `FakeDatabase`, a
 prompt-recording scripted provider, and four checked-in RFC822 files under
 `api/tests/fixtures/eml/`. The acceptance test replays `happy_path.eml` and proves
 `PASS` → signed balanced reversal → `FINANCIALLY_RESOLVED` → `COMMUNICATED`, with
@@ -176,7 +177,7 @@ PASS evidence, while dual control and the PASS-only invariant remain mandatory.
 case detail/chain/journal/cost, WorkBuddy token refusal, human resume, and the
 SLA-aware request-info path. `api/tests/test_invitations.py` additionally proves
 normalisation, duplicate refusal and role validation before an Auth identity is
-created. Full suite: **465 passed, zero warnings**.
+created. Full suite: **466 passed, zero warnings**.
 
 ### 1.7 Dashboard and Security Print design system — complete and verified
 
@@ -186,7 +187,16 @@ linework, endorsement stamps, microtype rules, punched SLA strips and a VOID
 tamper state. It deliberately uses no gradients, glass, shadows, or generic rounded
 dashboard cards. Instrument Sans and Martian Mono are loaded through `next/font`.
 
-All planned operational surfaces now exist: a themed first-shift stakeholder guide,
+The public entry is now deliberately live-first: one button provisions an
+allow-listed synthetic ledger transaction and executes the deployed orchestrator.
+The returned evidence rail contains the fresh case reference, actual model
+telemetry, recorded bank-tool transport, PASS gate, balanced journal and verified
+chain. Public callers cannot upload arbitrary email/PII; failures never substitute
+rehearsal data. The first verified run was `MYB-2026-000026`: `COMMUNICATED`,
+Gemini 2.5 Flash (3 calls), 3 stdio MCP calls including `post_adjustment`, balanced
+journal and a valid 13-link chain in 23.442 seconds.
+
+All planned operational surfaces also exist: a themed first-shift stakeholder guide,
 Supabase login plus an explicitly labelled offline rehearsal, Admin Operators and
 single-use password setup, Simple mode, Pro Mission Control, Agent Theater, case
 detail with rule-key “Why?” evidence, keyboard review queue, Policy Studio, Fraud
@@ -205,9 +215,9 @@ Verification on 4 Aug 2026:
   the real mobile menu and focused Pro stage selector have zero page overflow.
 - Reduced-motion rules, visible focus, skip-link, semantic headings/form labels and
   non-colour status labels are present in the shared design system.
-- The public `/` route explains the complete first shift. The rehearsal button
-  needs no email, sets mutation-free rehearsal mode, and opens a persistent guided
-  callout. Admins invite real staff from `/admin/users`; recipients land on
+- The public `/` route explains synthetic input versus live execution and makes the
+  live case the only primary action. The rehearsal remains secondary and mutation-free.
+  Admins invite real staff from `/admin/users`; recipients land on
   `/set-password`, while Postgres RLS remains the authorisation boundary.
 
 ### 1.8 Axiom and the stakeholder Control Register — complete
@@ -238,7 +248,7 @@ Verification on 4 Aug 2026:
   design language.
 - Visual checks at 1,440px and 390px covered home, Pro, Settings, Axiom and mobile
   navigation. Every page reported `scrollWidth == clientWidth`.
-- Playwright now covers 11 stakeholder journeys. A separate 1,920×1,080 recording
+- Playwright now covers 14 stakeholder journeys. A separate 1,920×1,080 recording
   script adds a visible cursor and click ripple and never mutates live bank data.
 
 ### 1.10 Policy Composer — complete, versioned and live
@@ -300,8 +310,8 @@ latest production evidence.
 
 | Check | Result |
 |---|---|
-| Python suite | **465 passed** |
-| Playwright browser acceptance | **11 passed** |
+| Python suite | **466 passed** |
+| Playwright browser acceptance | **14 passed** |
 | Next.js typecheck and production build | **clean** |
 | npm dependency audit | **0 vulnerabilities** |
 | MCP protocol smoke | **6 / 6** |
@@ -310,7 +320,8 @@ latest production evidence.
 | Live WorkBuddy HTTP intake | `MYB-2026-000016` communicated; FAIL safely blocked posting |
 | Database tamper proof | service-role writes refused; owner tamper located at exact event |
 | FMOS PDF visual QA | all four pages rendered, inspected, no clipping/overflow |
-| Stakeholder Supabase controls | migrations `005`/`006` live; grants and RLS explicitly audited |
+| Stakeholder Supabase controls | migrations `005`/`006` + live-demo migration live; RLS on, anon/authenticated off, service-only writes audited |
+| Public live execution | `MYB-2026-000026` · `VERIFIED_LIVE` · `COMMUNICATED` · Gemini 3 calls · stdio bank tools 3 calls · balanced journal · 13-link chain |
 | Vercel production | **READY**, deployment `dpl_4NFX4xrkYAznnDb1Z8aThJuEocKx`, aliased to `https://casezero-alpha.vercel.app` |
 | Production runtime logs | zero error or warning entries after Axiom release smoke |
 | Demo capture | **6:08**, 1,920×1,080 H.264/AAC; narrated, chapter-captioned and 13-frame visual QA passed |
@@ -357,8 +368,9 @@ latest production evidence.
 
 ## 2. What is left
 
-No product-code or acceptance-test work remains. The hosted system can be used now
-for stakeholder onboarding, safe rehearsal and a synthetic pilot. Live bank use
+The live-first deployment and replacement video are the remaining release tasks.
+The system can already be used for stakeholder onboarding, verifiable execution on
+synthetic input, safe rehearsal and a synthetic pilot. Live bank use
 still needs bank-controlled integration material:
 
 1. Real core-banking and CRM MCP endpoints, credentials, field mapping and a named
@@ -415,8 +427,9 @@ casezero/
     security/crypto.py     Fernet + masking + redact_pii
     corpus/                statement_pdf.py
     web/                   Supabase JWT/RLS auth + SSE hub
-    main.py                FastAPI intake, cases, review, tracker, event stream
-    tests/                 465 tests; fake DB + scripted LLM + `.eml` replay corpus
+    main.py                FastAPI intake, public live proof, cases, review, tracker, event stream
+    tests/                 466 tests; fake DB + scripted LLM + `.eml` replay corpus
+  supabase/migrations/     CLI-managed public live-demo reservation/proof schema
   mcp_servers/             core_banking_server.py, crm_server.py  ← real MCP, stdio
   rule_packs/              7 YAML packs
   .env                     secrets (git-ignored)

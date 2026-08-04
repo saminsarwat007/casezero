@@ -53,4 +53,17 @@ are rerun as release gates.
 - Settings fields have persistent labels and make the automatic-resolution effect
   explicit. Save confirmation includes the new settings-chain receipt.
 - Screenshots of home, Pro, Settings, Axiom and the expanded mobile menu all measured
-  `scrollWidth == clientWidth`. The 11-journey Playwright release suite passed.
+  `scrollWidth == clientWidth`.
+
+## Live-first addendum
+
+- `/` now has one primary navigation action, **Run a Live Complaint**; Simple/Pro
+  choices are kept inside the secondary staff workspace.
+- `/live` separates the truth boundary before action: synthetic customer input,
+  live services, no arbitrary public upload and no substituted success state.
+- The running region uses `aria-live`, `aria-busy` and an indeterminate state; no
+  stage is marked PASS until the API returns its persisted event/hash.
+- Stateful proof URLs include the opaque run token, dates/currency use `Intl`, long
+  hashes and provider names truncate safely, and all actions are semantic controls.
+- Desktop and 390px browser acceptance both pass with `scrollWidth == clientWidth`.
+  The full Playwright release suite now contains 14 journeys.

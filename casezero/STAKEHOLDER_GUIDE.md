@@ -3,10 +3,18 @@
 ## Start in two minutes
 
 1. Open <https://casezero-alpha.vercel.app>.
-2. Choose **Explore the operating workspace** for the mutation-free synthetic rehearsal.
-3. Start in **Today / Simple**. The queue contains only cases that need a person.
-4. Open **Mission Control** when you need deadlines, workload, agent health or evaluation evidence.
-5. Open **Axiom** from any staff screen. Read the capability, authority, side effect and gates before continuing.
+2. Choose **Run a Live Complaint**. The fictional customer protects privacy; the
+   API, model, MCP bank tools, Supabase case, journal and chain are executed live.
+3. Confirm the fresh case reference reaches `COMMUNICATED`, verification is `PASS`,
+   the journal is balanced and every stage carries a sequence/hash receipt.
+4. Choose **Explore the Operations Workspace** for the mutation-free synthetic
+   interface rehearsal, then start in **Today / Simple**.
+5. Open **Mission Control** for deadlines, workload, agent health and evaluation;
+   open **Axiom** for governed natural-language actions.
+
+The public runner never accepts arbitrary uploads or real customer data. If a live
+provider fails, it shows a failure and offers the latest persisted run; it never
+substitutes a rehearsal result.
 
 ## How staff emails are added
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 import pytest
 
-from api.main import agent_context, app
+from api.main import agent_context, app, settings
 from api.db.invitations import invitation_service
 from api.web.auth import AuthUser, current_user, rls_database, service_database
 
@@ -86,6 +86,37 @@ def test_vercel_service_prefix_reaches_the_same_health_route() -> None:
         response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json()["service"] == "casezero-api"
+
+
+def test_public_live_demo_runs_real_pipeline_and_returns_verifiable_proof(
+    api_client, fake_db, monkeypatch
+) -> None:
+    monkeypatch.setattr(settings, "public_live_demo_enabled", True)
+
+    response = api_client.post(
+        "/demo/live",
+        headers={"User-Agent": "casezero-acceptance-test"},
+    )
+
+    assert response.status_code == 201, response.text
+    payload = response.json()
+    proof = payload["proof"]
+    assert payload["state"] == "COMPLETED"
+    assert proof["execution"]["source"] == "SYNTHETIC_INPUT"
+    assert proof["execution"]["execution_mode"] == "LIVE_EXECUTION"
+    assert proof["result"]["status"] == "COMMUNICATED"
+    assert proof["result"]["verification_result"] == "PASS"
+    assert proof["journal"]["balanced"] is True
+    assert proof["chain"]["ok"] is True
+    assert proof["chain"]["links"] >= 9
+    assert {stage["status"] for stage in proof["stages"]} == {"PASS"}
+    assert proof["models"]
+    assert proof["tools"][0]["tool"] == "verify_claim"
+    assert fake_db.public_demo_runs[0]["case_ref"].startswith("MYB-2026-")
+
+    reopened = api_client.get(f"/demo/live/{payload['token']}")
+    assert reopened.status_code == 200
+    assert reopened.json()["proof"]["chain"]["head_hash"] == proof["chain"]["head_hash"]
 
 
 def test_case_reads_require_a_bearer_token() -> None:

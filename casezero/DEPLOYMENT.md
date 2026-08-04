@@ -38,8 +38,10 @@ origin to Supabase Auth's allowed redirect URLs/site URL. Keep `MCP_TRANSPORT=in
 on Vercel; stdio MCP remains the preferred container deployment. The SLA supervisor
 is a separate long-running process and must not be started inside a serverless API.
 
-New stakeholders only need the production URL. `/` explains the operating model and
-starts a labelled, read-only rehearsal without login. Staff accounts are
+New stakeholders only need the production URL. `/` sends them to `/live`, where an
+allow-listed synthetic complaint runs through the real deployed API and produces a
+persisted proof. Public callers cannot submit their own email or PII. The older
+read-only operations rehearsal remains secondary. Staff accounts are
 invitation-only: an Admin uses
 **Operators**, Supabase emails the recipient, and the recipient creates a password at
 `/set-password`.
@@ -64,6 +66,8 @@ Required for the live web path:
 - `FERNET_KEY`, `WORKBUDDY_INTAKE_TOKEN`
 - `API_BASE_URL`, `DASHBOARD_BASE_URL`
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (dashboard build)
+- `PUBLIC_LIVE_DEMO_ENABLED`, `PUBLIC_LIVE_DEMO_DAILY_LIMIT`,
+  `PUBLIC_LIVE_DEMO_HOURLY_LIMIT` (non-secret deployment controls)
 
 Optional channel credentials: Gmail IMAP/app password, Telegram bot token and VAPID
 keys. The presenter-mode proactive alert does not depend on browser push permission.
@@ -71,17 +75,18 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 ## Release order
 
 1. Apply all SQL migrations in numeric order with `python -m api.db.bootstrap`.
-   Production must include `005_stakeholder_controls.sql` and
-   `006_stakeholder_privilege_hardening.sql`; the latter removes default public
-   table grants before the UI is released.
+   Production must include `005_stakeholder_controls.sql`,
+   `006_stakeholder_privilege_hardening.sql` and the Supabase CLI migration
+   `20260804060651_public_live_demo.sql`. The latter owns atomic case references,
+   RLS-protected run proofs and server-only rate-limit reservation.
 2. Run `python -m api.db.seed`; it is idempotent and contains synthetic data only.
 3. Set a temporary `DEMO_USER_PASSWORD` and run `python -m api.db.seed_users`.
 4. Build and release the API; require `/health` to return `ok: true`.
 5. Run `python -m api.jobs --once`, then start exactly one scheduler worker.
 6. Build the dashboard with the final public API/Supabase values and release it.
 7. Sign in once as every role; confirm the investigator's RLS-filtered register.
-8. Run all 11 Playwright journeys against the public URL and execute one live
-   mailbox-channel smoke when credentials are available.
+8. Run all 14 Playwright journeys, then execute `/demo/live` once and prove a fresh
+   `COMMUNICATED` case, actual telemetry/tool receipts, balanced journal and valid chain.
 9. Remove `DEMO_USER_PASSWORD` from the long-lived runtime after identities exist.
 
 ## Stakeholder control and inbox onboarding
@@ -116,5 +121,5 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 - `.env` absent from image layers and source control.
 - API logs expose no bearer tokens, PII, raw account numbers or encryption keys.
 - Four-role auth smoke, RLS visibility smoke and exact-chain verification pass.
-- 465-test Python suite, typecheck, production build, 11 Playwright journeys, MCP,
+- 466-test Python suite, typecheck, production build, 14 Playwright journeys, MCP,
   LLM, database and mailbox-channel smokes pass.

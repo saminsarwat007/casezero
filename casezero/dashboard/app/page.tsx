@@ -1,26 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Guilloche } from "@/components/design/guilloche";
 import { MicroRule } from "@/components/design/micro-rule";
 import { Stamp } from "@/components/design/stamp";
 
 const route = [
-  ["01", "Take the shift", "See the cases that need a person, already ordered by deadline risk.", "/simple"],
-  ["02", "Read the operation", "Move from pipeline state to measured quality, latency, cost, and workload.", "/pro"],
-  ["03", "Ask Axiom", "Use plain language to summarise, navigate, verify evidence, or prepare a governed Admin action.", "/pro"],
-  ["04", "Set the controls", "Change operational settings directly; send regulated rule changes through simulation and Compliance approval.", "/settings"],
-  ["05", "Prove the record", "Recompute any case chain and package its evidence for review or FMOS escalation.", "/audit"],
+  ["01", "Run one complaint", "Axiom provisions a fresh sanitized transaction and executes the deployed pipeline.", "/live"],
+  ["02", "Read the receipts", "See actual model calls, MCP evidence, the financial gate, balanced posting, and the chain hash.", "/live"],
+  ["03", "Enter operations", "Staff sign in to work the queue, invite colleagues, change controls, and handle human-review cases.", "/login"],
 ] as const;
 
 export default function Home() {
-  const router = useRouter();
-
-  function openWorkspace() {
+  function markRehearsal() {
     localStorage.setItem("casezero_rehearsal", "1");
     localStorage.setItem("casezero_tour", "1");
-    router.push("/simple?tour=1");
   }
 
   return (
@@ -36,21 +30,17 @@ export default function Home() {
         <Guilloche className="welcome-guilloche" />
         <div className="welcome-copy">
           <p className="eyebrow mono">Complaint operations / Malaysia</p>
-          <h1 id="welcome-title" className="welcome-title">The complaint arrives.<br />The clock starts here.</h1>
-          <p className="welcome-lede">CaseZero turns email complaints into verified, policy-governed resolutions—with every model call, bank check, financial gate, letter, and deadline preserved as evidence.</p>
+          <h1 id="welcome-title" className="welcome-title">The complaint arrives.<br />Watch Axiom prove every action.</h1>
+          <p className="welcome-lede">Run one complaint through the live stack first. Then enter the operating workspace only when you understand the evidence, authority, and outcome.</p>
           <div className="welcome-actions">
-            <button className="btn primary" type="button" onClick={openWorkspace}>Explore the operating workspace <span aria-hidden="true">↗</span></button>
-            <a className="btn ghost" href="#guide">See the first-shift guide</a>
+            <Link className="btn primary" href="/live">Run a Live Complaint <span aria-hidden="true">↗</span></Link>
+            <Link className="btn ghost" href="/simple?tour=1" onClick={markRehearsal}>Explore the Operations Workspace</Link>
           </div>
-          <p className="safe-path mono">SAFE REHEARSAL · SYNTHETIC CUSTOMER DATA · ZERO BANK WRITES</p>
+          <p className="safe-path mono">SYNTHETIC CUSTOMER · LIVE MODEL + MCP + SUPABASE + JOURNAL</p>
         </div>
         <div className="welcome-seal" aria-label="Operating system summary">
           <div><Stamp>Stakeholder ready</Stamp><p className="seal-line">Axiom by CaseZero</p><p className="muted">The operating agent that must show its authority before it acts.</p></div>
-          <dl className="seal-facts">
-            <div><dt>Baseline</dt><dd>90 min / case</dd></div>
-            <div><dt>Target</dt><dd>&lt; 05 min PASS</dd></div>
-            <div><dt>Team</dt><dd>05 operators</dd></div>
-          </dl>
+          <dl className="seal-facts"><div><dt>Input</dt><dd>Synthetic</dd></div><div><dt>Execution</dt><dd>Live</dd></div><div><dt>Proof</dt><dd>Fresh + hashed</dd></div></dl>
         </div>
       </section>
 
@@ -58,8 +48,8 @@ export default function Home() {
 
       <section id="guide" className="welcome-section" aria-labelledby="guide-title">
         <div className="welcome-section-head">
-          <div><p className="eyebrow mono">A first shift, already arranged</p><h2 id="guide-title" className="section-title">Know what needs you. Trust what does not.</h2></div>
-          <p className="muted">The workspace starts with decisions, not agent internals. Rehearsal mode keeps every action synthetic while preserving the real operating vocabulary.</p>
+          <div><p className="eyebrow mono">One path / no mode decision</p><h2 id="guide-title" className="section-title">See it work. Verify it. Then operate it.</h2></div>
+          <p className="muted">The public path has one job: prove a fresh case. Simple and Pro remain inside the staff workspace, where they belong.</p>
         </div>
         <ol className="guide-route">
           {route.map(([index, title, description, href]) => (

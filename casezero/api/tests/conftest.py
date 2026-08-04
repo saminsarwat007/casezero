@@ -172,6 +172,11 @@ class FakeBank:
         if txn_ref in self.transactions:
             self.transactions[txn_ref]["is_disputed"] = True
 
+    def create_demo_transaction(self, **fields: Any):
+        row = {"id": f"t{len(self.transactions) + 1}", **fields}
+        self.transactions[str(row["txn_ref"])] = row
+        return row
+
     # CRM backend
     def get_customer(self, customer_id: str):
         return self.customers.get(customer_id)
@@ -220,6 +225,7 @@ class FakeDatabase(FakeBank):
         }
         self.settings_events: list[ChainEvent] = []
         self.assistant_receipts: list[dict[str, Any]] = []
+        self.public_demo_runs: list[dict[str, Any]] = []
         self._case_seq = 0
 
     # ─── Cases ──────────────────────────────────────────────────────────────
@@ -269,6 +275,20 @@ class FakeDatabase(FakeBank):
     def get_events(self, case_id: str) -> list[ChainEvent]:
         return list(self.events.get(case_id, []))
 
+    def get_event_rows(self, case_id: str) -> list[dict[str, Any]]:
+        return [
+            {
+                "seq": event.seq,
+                "event_type": event.event_type,
+                "actor": event.actor,
+                "payload": event.payload,
+                "prev_hash": event.prev_hash,
+                "hash": event.hash,
+                "created_at": "2026-08-03T00:00:00+00:00",
+            }
+            for event in self.get_events(case_id)
+        ]
+
     def verify_case_chain(self, case_id: str) -> ChainVerdict:
         return verify_chain(self.get_events(case_id))
 
@@ -297,6 +317,9 @@ class FakeDatabase(FakeBank):
             for row in self.llm_calls
             if row.get("case_id") == case_id
         )
+
+    def get_llm_calls(self, case_id: str) -> list[dict[str, Any]]:
+        return [row for row in self.llm_calls if row.get("case_id") == case_id]
 
     # ─── Rule packs + governed proposals ──────────────────────────────────
 
@@ -451,6 +474,72 @@ class FakeDatabase(FakeBank):
         if name in {"category_volumes", "investigator_workload", "detect_fraud_rings"}:
             return []
         raise KeyError(name)
+
+    # ─── Public live demo ────────────────────────────────────────────────
+
+    def reserve_public_demo_run(
+        self,
+        *,
+        fingerprint_hash: str,
+        token: str,
+        daily_limit: int,
+        hourly_limit: int,
+    ) -> dict[str, Any]:
+        completed = [
+            row
+            for row in self.public_demo_runs
+            if row["fingerprint_hash"] == fingerprint_hash
+            and row["state"] == "COMPLETED"
+        ]
+        if len(completed) >= hourly_limit:
+            return completed[-1]
+        if len(self.public_demo_runs) >= daily_limit:
+            raise RuntimeError("PUBLIC_DEMO_DAILY_LIMIT")
+        row = {
+            "id": f"demo-{len(self.public_demo_runs) + 1}",
+            "token": token,
+            "fingerprint_hash": fingerprint_hash,
+            "state": "RUNNING",
+            "fixture": "unauthorised_transaction_v1",
+            "proof": {},
+            "started_at": "2026-08-03T00:00:00+00:00",
+            "finished_at": None,
+        }
+        self.public_demo_runs.append(row)
+        return row
+
+    def complete_public_demo_run(
+        self,
+        token: str,
+        *,
+        state: str,
+        proof: dict[str, Any] | None = None,
+        case_id: str | None = None,
+        case_ref: str | None = None,
+        error_code: str | None = None,
+    ) -> dict[str, Any]:
+        row = next(item for item in self.public_demo_runs if item["token"] == token)
+        row.update(
+            {
+                "state": state,
+                "finished_at": "2026-08-03T00:00:05+00:00",
+                "error_code": error_code,
+            }
+        )
+        if proof is not None:
+            row["proof"] = proof
+        if case_id is not None:
+            row["case_id"] = case_id
+        if case_ref is not None:
+            row["case_ref"] = case_ref
+        return row
+
+    def get_public_demo_run(self, token: str) -> dict[str, Any] | None:
+        return next((row for row in self.public_demo_runs if row["token"] == token), None)
+
+    def latest_public_demo_run(self) -> dict[str, Any] | None:
+        completed = [row for row in self.public_demo_runs if row["state"] == "COMPLETED"]
+        return completed[-1] if completed else None
 
     def list_quarantine(self, limit: int = 100) -> list[dict[str, Any]]:
         return self.quarantined[:limit]

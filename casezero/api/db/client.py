@@ -61,20 +61,13 @@ class Database:
     # ─── Cases ──────────────────────────────────────────────────────────────
 
     def next_case_ref(self) -> str:
-        """MYB-2026-000123. Sequential and human-quotable on a phone call."""
-        year = datetime.now(timezone.utc).year
-        prefix = f"MYB-{year}-"
-        rows = (
-            self.sb.table("cases")
-            .select("case_ref")
-            .like("case_ref", f"{prefix}%")
-            .order("case_ref", desc=True)
-            .limit(1)
-            .execute()
-            .data
-        )
-        nxt = int(rows[0]["case_ref"].removeprefix(prefix)) + 1 if rows else 1
-        return f"{prefix}{nxt:06d}"
+        """Allocate a human-quotable reference without a concurrent max()+1 race."""
+        value = self.sb.rpc("allocate_case_ref").execute().data
+        if isinstance(value, list):
+            value = value[0] if value else None
+        if not isinstance(value, str) or not value:
+            raise RuntimeError("Database did not allocate a case reference.")
+        return value
 
     def create_case(self, **fields: Any) -> dict[str, Any]:
         fields.setdefault("case_ref", self.next_case_ref())
@@ -176,6 +169,17 @@ class Database:
             for r in rows
         ]
 
+    def get_event_rows(self, case_id: str) -> list[dict[str, Any]]:
+        """Timestamped event rows for the public proof view, with no case PII."""
+        return (
+            self.sb.table("case_events")
+            .select("seq,event_type,actor,payload,prev_hash,hash,created_at")
+            .eq("case_id", case_id)
+            .order("seq")
+            .execute()
+            .data
+        )
+
     def verify_case_chain(self, case_id: str) -> ChainVerdict:
         """Recompute a case's chain and report the first broken link, if any."""
         return verify_chain(self.get_events(case_id))
@@ -265,6 +269,10 @@ class Database:
 
     def mark_disputed(self, txn_ref: str) -> None:
         self.sb.table("transactions").update({"is_disputed": True}).eq("txn_ref", txn_ref).execute()
+
+    def create_demo_transaction(self, **fields: Any) -> dict[str, Any]:
+        """Provision one fresh, explicitly synthetic ledger row for a live demo."""
+        return self.sb.table("transactions").insert(fields).execute().data[0]
 
     # ─── Rule packs ─────────────────────────────────────────────────────────
 
@@ -437,6 +445,16 @@ class Database:
         rows = self.sb.table("llm_calls").select("cost_rm").eq("case_id", case_id).execute().data
         return sum(float(r["cost_rm"]) for r in rows)
 
+    def get_llm_calls(self, case_id: str) -> list[dict[str, Any]]:
+        return (
+            self.sb.table("llm_calls")
+            .select("agent,provider,model,tokens_in,tokens_out,latency_ms,cost_rm,ok,created_at")
+            .eq("case_id", case_id)
+            .order("created_at")
+            .execute()
+            .data
+        )
+
     # ─── Evaluation + analytics ───────────────────────────────────────────
 
     def record_eval_run(self, **fields: Any) -> dict[str, Any]:
@@ -543,6 +561,83 @@ class Database:
 
     def rpc(self, name: str, params: dict[str, Any] | None = None) -> Any:
         return self.sb.rpc(name, params or {}).execute().data
+
+    # ─── Public live demo ─────────────────────────────────────────────────
+
+    def reserve_public_demo_run(
+        self,
+        *,
+        fingerprint_hash: str,
+        token: str,
+        daily_limit: int,
+        hourly_limit: int,
+    ) -> dict[str, Any]:
+        row = self.sb.rpc(
+            "reserve_public_demo_run",
+            {
+                "p_fingerprint_hash": fingerprint_hash,
+                "p_token": token,
+                "p_daily_limit": daily_limit,
+                "p_hourly_limit": hourly_limit,
+            },
+        ).execute().data
+        if isinstance(row, list):
+            row = row[0] if row else None
+        if not isinstance(row, dict):
+            raise RuntimeError("Database did not reserve a public demo run.")
+        return row
+
+    def complete_public_demo_run(
+        self,
+        token: str,
+        *,
+        state: str,
+        proof: dict[str, Any] | None = None,
+        case_id: str | None = None,
+        case_ref: str | None = None,
+        error_code: str | None = None,
+    ) -> dict[str, Any]:
+        values: dict[str, Any] = {
+            "state": state,
+            "finished_at": _now(),
+            "error_code": error_code,
+        }
+        if proof is not None:
+            values["proof"] = proof
+        if case_id is not None:
+            values["case_id"] = case_id
+        if case_ref is not None:
+            values["case_ref"] = case_ref
+        return (
+            self.sb.table("public_demo_runs")
+            .update(values)
+            .eq("token", token)
+            .execute()
+            .data[0]
+        )
+
+    def get_public_demo_run(self, token: str) -> dict[str, Any] | None:
+        rows = (
+            self.sb.table("public_demo_runs")
+            .select("*")
+            .eq("token", token)
+            .limit(1)
+            .execute()
+            .data
+        )
+        return rows[0] if rows else None
+
+    def latest_public_demo_run(self) -> dict[str, Any] | None:
+        rows = (
+            self.sb.table("public_demo_runs")
+            .select("*")
+            .eq("state", "COMPLETED")
+            .order("finished_at", desc=True)
+            .limit(1)
+            .execute()
+            .data
+        )
+        return rows[0] if rows else None
 
     # ─── Proactive disputes ────────────────────────────────────────────────
 

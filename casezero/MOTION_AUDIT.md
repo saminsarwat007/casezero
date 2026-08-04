@@ -33,3 +33,10 @@ theatre. The visible demo cursor and click ripple exist only in the recording sc
 not the product. Reduced-motion removes the docket transform while retaining state
 and confirmation feedback. Mobile navigation and stage changes are immediate, so an
 operator never waits for decorative motion before acting on an SLA.
+
+## Live proof addendum
+
+The live runner uses one small transform/opacity pulse while the network request is
+pending. The evidence tape itself does not animate or pretend to stream stages; it
+appears only after persisted proof returns. Reduced-motion freezes the pulse while
+retaining the textual running state and elapsed time.

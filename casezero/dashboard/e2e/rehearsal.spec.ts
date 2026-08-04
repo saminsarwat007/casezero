@@ -7,9 +7,9 @@ async function rehearsal(page: import("@playwright/test").Page) {
 test("first visit onboards a stakeholder into a safe operating shift", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /The complaint arrives/ })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Know what needs you/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /See it work/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /One work email/ })).toBeVisible();
-  await page.getByRole("button", { name: /Explore the operating workspace/ }).click();
+  await page.getByRole("link", { name: /Explore the Operations Workspace/ }).click();
   await expect(page).toHaveURL(/\/simple\?tour=1$/);
   await expect(page.getByRole("heading", { name: "Start with the cases that need a person." })).toBeVisible();
 });

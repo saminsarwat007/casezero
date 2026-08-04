@@ -54,10 +54,12 @@ FastAPI boundary, Supabase Auth/RLS/PostgREST and one dedicated SLA worker. Live
 makes agent/tool execution observable without making the animation the source of
 truth.
 
-The public deployment opens on a themed first-shift stakeholder guide. A visitor can
-choose **Start safe rehearsal** without an email or password; every visible mutation
-is explicitly rehearsed against synthetic data. Production staff have no public
-sign-up path. An Admin enters a colleague's work email and role in **Operators**, Supabase
+The public deployment opens on one live proof path. A visitor can execute an
+allow-listed fictional complaint without an email or password; the deployed API,
+model, MCP bank tools, Supabase rows, signed journal and audit chain run for that
+fresh case. Arbitrary uploads are unavailable and the UI labels synthetic input
+separately from live execution. The mutation-free operations rehearsal is secondary.
+Production staff have no public sign-up path. An Admin enters a colleague's work email and role in **Operators**, Supabase
 sends a single-use invitation, and Postgres RLS enforces that role after password
 setup.
 

@@ -119,13 +119,28 @@ async function main() {
   await runScene(page, "onboarding", async (scene) => {
     await gotoApp(page, "/");
     await setCaption(page, scene);
-    await pause(2600);
-    await smoothScroll(page, 650, 1500);
-    await smoothScroll(page, 0, 1200);
+    await pause(3200);
+  });
+
+  await runScene(page, "live_run", async (scene) => {
+    await visibleClick(page, page.getByRole("link", { name: "Run a Live Complaint" }));
+    await page.waitForURL(/\/live/);
+    await installDemoChrome(page);
+    await setCaption(page, scene);
+    await pause(1800);
+    await visibleClick(page, page.getByRole("button", { name: "Run a Fresh Live Complaint" }));
+    await page.locator(".proof-verdict h2").waitFor({ state: "visible", timeout: 90000 });
+    await pause(3200);
+    await smoothScroll(page, 1050, 2200);
+    await smoothScroll(page, 2100, 2200);
+    await smoothScroll(page, 3400, 2200);
+    await smoothScroll(page, 4700, 2200);
   });
 
   await runScene(page, "human_queue", async (scene) => {
-    await visibleClick(page, page.getByRole("button", { name: /Explore the operating workspace/ }));
+    await gotoApp(page, "/");
+    await setCaption(page, scene);
+    await visibleClick(page, page.getByRole("link", { name: /Explore the Operations Workspace/ }));
     await page.waitForURL(/\/simple/);
     await installDemoChrome(page);
     await setCaption(page, scene);
@@ -150,19 +165,6 @@ async function main() {
     await command.pressSequentially("Verify MYB-2026-000012", { delay: 72 });
     await visibleClick(page, page.getByRole("button", { name: "Prepare action" }));
     await pause(4300);
-  });
-
-  await runScene(page, "customer", async (scene) => {
-    await gotoApp(page, "/proactive/demo-proactive-techworld-2026");
-    await setCaption(page, scene);
-    await pause(2500);
-    await visibleClick(page, page.getByRole("button", { name: "Not me — dispute it" }));
-    await pause(4300);
-    await visibleClick(page, page.getByRole("link", { name: "Open complaint tracker" }));
-    await page.waitForURL(/\/track\//);
-    await installDemoChrome(page);
-    await setCaption(page, scene);
-    await pause(2600);
   });
 
   await runScene(page, "audit", async (scene) => {
