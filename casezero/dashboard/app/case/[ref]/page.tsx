@@ -41,7 +41,7 @@ export default function CasePage() {
   return (
     <AppShell>
       <PageHeader eyebrow="Case file / Governance schema" title={params.ref} lede="The claim and the system of record are held in balance. Every decision names the rule and evidence that produced it." />
-      {error ? <div className="error-box" style={{ marginTop: 18 }}>{error}</div> : null}
+      {error ? <div className="error-box" role="alert" style={{ marginTop: 18 }}>{error}</div> : null}
       {!detail ? <div className="skeleton section" role="status" aria-label="Loading case record" /> : (
         <>
           <section className="section balance-grid" aria-label="Claimed compared with system of record">
@@ -88,11 +88,11 @@ export default function CasePage() {
 
           <section className="section panel panel-pad" aria-labelledby="journal-title">
             <p className="eyebrow mono">Double-entry journal</p><h2 id="journal-title" className="section-title">Money movement</h2>
-            {detail.journal.length ? <div className="table-wrap" style={{ marginTop: 16 }}><table className="data-table"><thead><tr><th>Entry</th><th>Debit</th><th>Credit</th><th>Amount</th><th>Posted by</th></tr></thead><tbody>{detail.journal.map((entry, index) => <tr key={index}><td>{String(entry.entry_type)}</td><td className="mono">{String(entry.debit_account)}</td><td className="mono">{String(entry.credit_account)}</td><td className="mono">RM {Number(entry.amount_rm).toFixed(2)}</td><td>{String(entry.posted_by)}</td></tr>)}</tbody></table></div> : <div className="empty" style={{ marginTop: 16 }}>No financial entry was authorised for this case.</div>}
+            {detail.journal.length ? <div className="table-wrap" style={{ marginTop: 16 }}><table className="data-table"><caption className="sr-only">Balanced journal entries for this case</caption><thead><tr><th scope="col">Entry</th><th scope="col">Debit</th><th scope="col">Credit</th><th scope="col">Amount</th><th scope="col">Posted by</th></tr></thead><tbody>{detail.journal.map((entry, index) => <tr key={index}><td>{String(entry.entry_type)}</td><td className="mono">{String(entry.debit_account)}</td><td className="mono">{String(entry.credit_account)}</td><td className="mono">RM {Number(entry.amount_rm).toFixed(2)}</td><td>{String(entry.posted_by)}</td></tr>)}</tbody></table></div> : <div className="empty" style={{ marginTop: 16 }}>No financial entry was authorised for this case.</div>}
           </section>
 
           <section className="section panel panel-pad" aria-labelledby="letter-title">
-            <div className="section-heading"><div><p className="eyebrow mono">Customer communication / Kernel linted</p><h2 id="letter-title" className="section-title">Released letter</h2></div><button className="btn ghost" disabled={exporting} onClick={() => void exportFmos()}>{exporting ? "Assembling…" : "Export FMOS pack"}</button></div>
+            <div className="section-heading"><div><p className="eyebrow mono">Customer communication / Kernel linted</p><h2 id="letter-title" className="section-title">Released letter</h2></div><button className="btn ghost" type="button" disabled={exporting} onClick={() => void exportFmos()}>{exporting ? "Assembling…" : "Export FMOS pack"}</button></div>
             {message ? <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", marginTop: 18 }}>{String(message.payload.body || "Message body was not retained.")}</pre> : <div className="empty" style={{ marginTop: 16 }}>No message has been released.</div>}
           </section>
         </>

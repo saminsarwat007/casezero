@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from fastapi.testclient import TestClient
 import pytest
 
@@ -382,14 +384,17 @@ def test_analytics_and_audit_surface_measured_state(api_client, eml_corpus) -> N
 def test_customer_proactive_confirmation_files_the_dispute(
     api_client, fake_db
 ) -> None:
+    # Relative to now: a hardcoded expiry silently turns this test into a time
+    # bomb that fails on the day it passes, which says nothing about the code.
+    now = datetime.now(timezone.utc)
     fake_db.create_proactive_alert(
         token="synthetic-proactive-token",
         account_no="7142556890",
         txn_ref="TXN-88213",
         amount_rm=2450,
         merchant="TECHWORLD KL",
-        occurred_at="2026-08-03T03:02:00+00:00",
-        expires_at="2026-08-06T00:00:00+00:00",
+        occurred_at=(now - timedelta(hours=6)).isoformat(),
+        expires_at=(now + timedelta(days=3)).isoformat(),
     )
     visible = api_client.get("/proactive/synthetic-proactive-token")
     assert visible.status_code == 200

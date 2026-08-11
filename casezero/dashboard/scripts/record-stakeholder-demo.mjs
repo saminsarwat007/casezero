@@ -128,6 +128,8 @@ async function main() {
     await installDemoChrome(page);
     await setCaption(page, scene);
     await pause(1800);
+    // The composer is the default surface now; the film narrates the fixture run.
+    await visibleClick(page, page.getByRole("tab", { name: /Use the sample/ }));
     await visibleClick(page, page.getByRole("button", { name: "Run a Fresh Live Complaint" }));
     const verdict = page.locator(".proof-verdict h2");
     const failed = page.locator(".execution-error");
@@ -172,7 +174,7 @@ async function main() {
     const command = page.getByLabel("What needs to happen?");
     await command.fill("");
     await command.pressSequentially("Verify MYB-2026-000012", { delay: 72 });
-    await visibleClick(page, page.getByRole("button", { name: "Prepare action" }));
+    await visibleClick(page, page.getByRole("button", { name: "Ask Axiom", exact: true }));
     await pause(4300);
   });
 

@@ -244,36 +244,90 @@ class ModelRouter:
     """
 
     #: agent -> (provider, model attribute on Settings)
+    #:
+    #: Each agent is a different job, so each gets the model that job needs
+    #: rather than one model doing everything. Reading a scanned statement and
+    #: reasoning about a complaint are Gemini work. Drafting a letter is bounded
+    #: by a deterministic lint immediately afterwards, so it runs on Groq's Llama
+    #: for latency and cost.
+    #:
+    #: `verifier` and `resolver` are deliberately absent. They make no model call
+    #: at all — the verifier compares MCP evidence and the resolver asks the
+    #: kernel gate — and an entry here would advertise a brain that never runs.
     ROUTES: dict[str, tuple[str, str]] = {
         "intake": ("gemini", "gemini_model"),
         "ocr": ("gemini", "gemini_model"),
         "classifier": ("gemini", "gemini_model"),
-        "verifier": ("gemini", "gemini_model"),
-        "communicator": ("gemini", "gemini_model"),
+        "communicator": ("groq", "groq_model"),
         "composer": ("gemini", "gemini_model"),
         "intel": ("gemini", "gemini_model"),
         "batch": ("groq", "groq_model"),
         "ticker": ("groq", "groq_model_fast"),
     }
 
+    #: provider -> the Settings attribute holding its credential.
+    CREDENTIALS: dict[str, str] = {
+        "gemini": "gemini_key",
+        "groq": "groq_api_key",
+        "hunyuan": "hunyuan_api_key",
+    }
+
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self._cache: dict[str, LLMProvider] = {}
+
+    def _has_key(self, provider_name: str) -> bool:
+        attr = self.CREDENTIALS.get(provider_name)
+        return bool(attr and getattr(self.settings, attr, None))
+
+    def describe(self, agent: str) -> dict[str, Any]:
+        """The routing that will actually run for `agent`, and why.
+
+        Resolved without constructing a provider, so a roster can be rendered on
+        a deployment that is missing a key. `fallback_from` is set when the
+        intended provider has no credential and the call will run somewhere
+        else — a UI that claimed four brains while running one would be lying,
+        and this is the field that stops it.
+        """
+        intended, model_attr = self.ROUTES.get(agent, ("gemini", "gemini_model"))
+        provider_name = intended
+        pinned = False
+        fallback_from: str | None = None
+
+        forced = self.settings.active_provider
+        if forced not in ("gemini", "groq"):
+            provider_name = forced
+            model_attr = "hunyuan_model"
+            pinned = True
+
+        if not self._has_key(provider_name):
+            default_name = "gemini" if self._has_key("gemini") else provider_name
+            if default_name != provider_name:
+                fallback_from = provider_name
+                provider_name = default_name
+                model_attr = "gemini_model"
+
+        return {
+            "agent": agent,
+            "provider": provider_name,
+            "model": getattr(self.settings, model_attr, ""),
+            "intended_provider": intended,
+            "pinned": pinned,
+            "fallback_from": fallback_from,
+        }
 
     def for_agent(self, agent: str) -> tuple[LLMProvider, str]:
         """(provider, model) for an agent.
 
         If .env pins a provider explicitly to something other than the default,
         that choice overrides routing — one var really does move everything.
+        A routed provider with no credential falls back rather than failing the
+        case; `describe()` reports that fallback so it is never silent.
         """
-        provider_name, model_attr = self.ROUTES.get(agent, ("gemini", "gemini_model"))
-
-        forced = self.settings.active_provider
-        if forced not in ("gemini", "groq"):
-            provider_name = forced
-            model_attr = "hunyuan_model"
+        resolved = self.describe(agent)
+        provider_name = str(resolved["provider"])
 
         if provider_name not in self._cache:
             self._cache[provider_name] = get_provider(provider_name, self.settings)
         provider = self._cache[provider_name]
-        return provider, getattr(self.settings, model_attr, provider.default_model)
+        return provider, str(resolved["model"]) or provider.default_model

@@ -1,8 +1,14 @@
-# Rubric evidence map
+# Demo Day judging evidence map
 
-| Rubric | Weight | Submission evidence |
-|---|---:|---|
-| AI innovation | 30 | Six specialised agents; pre-LLM firewall; Axiom capability planning; models propose/kernel decides; Policy Studio simulation. |
-| Technical excellence | 20 | Real MCP servers; signed tickets; PASS-only posting; balanced journal; Supabase RLS; PII encryption; continuous hash chain; 466 tests. |
-| User experience and demo | 25 | One-action live proof; first-shift guide; Simple/Pro workspaces; mobile stage selector; accessible Axiom docket; Settings; operator invitation; verified 5:55.77 film. |
-| Business value and viability | 25 | 90 min to under 5 min target; 57% initial-volume rollout; measured accuracy/latency/cost; shadow-mode rollout; stakeholder controls. |
+| Demo Day criterion | Submission evidence | Fastest proof |
+|---|---|---|
+| Impact & Relevance | A 1.8M-customer regional bank spends 90 minutes per complaint and misses 11% of regulatory deadlines. Axiom targets the evidence, authority and ownership drift between desks while preserving BNM and FMOS obligations. | Deck slides 2–3; project description. |
+| Human-Centered Design | The workflow is written for the complaints lead, customer, regulator and auditor. Plain-English stage copy replaces internal enums, and fail-safe states explain what a person must do next. | Deck slide 3; `/live`; Simple workspace. |
+| AI Interaction | Six specialised model-assisted seats propose; an explicit zero-model kernel owns deadlines, authority and financial gates. Axiom turns natural language into an allowlisted action docket showing authority, effect and gates before execution. | Deck slides 5–6; Axiom docket. |
+| Technical Execution | Real MCP bank adapters, typed proposals, pre-LLM firewall, signed scoped tickets, PASS-only posting, balanced double-entry journal, Supabase RLS, encrypted PII and a continuous hash chain. Release gate: 501 backend tests, 29 browser journeys and 0 high-or-above npm vulnerabilities. | Deck slides 8 and 11; proof pack; repository tests. |
+| Feasibility | FastAPI and the Next.js dashboard are deployed; Gemini/Groq routing, synthetic MCP services and Supabase are wired today. The deck names the bank-owned credentials, identities, sign-offs and scheduler host still required for rollout. | Deck slide 13; deployment docs. |
+| Demo & Storytelling | One visitor-written complaint moves through seven visible handoffs, each line opens its receipt, the kernel stamps the outcome, and the story peaks with a pre-model refusal. The 33.76-second embedded film is paced for a live presenter. | Deck slides 1–14; embedded film on slide 7. |
+| Innovation & Creativity | The differentiator is governance as product behavior: no model can move money, every visible sentence derives from a chained event, and refusal is shown as a first-class outcome rather than an error toast. | Deck slides 6, 8 and 9; Boardroom. |
+| UX & Accessibility | Boardroom relay at 390px, no horizontal overflow, keyboard-operable receipt/tabs, visible focus, live-region handoffs, reduced-motion checklist fallback, safe-area padding and readable refused/degraded/held states. | Deck slide 12; Playwright mobile/reduced-motion journeys. |
+| Responsible AI & Ethics | Prompt injection is blocked before the first model call; foreign identifiers are refused rather than silently scrubbed; ambiguous/low-confidence evidence fails safe; model absence is disclosed; refused cases claim no savings. | Deck slide 9; quarantine browser journey. |
+| Overall Quality | The deck and PDF pass full-slide/page visual inspection and overflow QA. Product claims are separated into measured, baseline and editable assumption tiers, with reproducible screenshots and a hash-linked audit trail. | Deck slides 10–11; manifest; value ledger. |

@@ -84,9 +84,9 @@ export default function OperatorsPage() {
       <section className="operators-grid section" aria-labelledby="invite-title">
         <form className="panel panel-pad invite-form" onSubmit={invite}>
           <div><p className="eyebrow mono">Invitation register</p><h2 id="invite-title" className="section-title">Add a colleague</h2></div>
-          <div className="field"><label htmlFor="full-name">Full name</label><input className="input" id="full-name" autoComplete="name" value={fullName} onChange={(event) => setFullName(event.target.value)} required /></div>
-          <div className="field"><label htmlFor="invite-email">Work email</label><input className="input" id="invite-email" type="email" autoComplete="email" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
-          <div className="field"><label htmlFor="invite-role">CaseZero role</label><select className="select" id="invite-role" value={role} onChange={(event) => setRole(event.target.value as Staff["role"])}>{Object.keys(roleHelp).map((name) => <option key={name}>{name}</option>)}</select><p className="field-help">{roleHelp[role]}</p></div>
+          <div className="field"><label htmlFor="full-name">Full name</label><input className="input" id="full-name" name="full_name" autoComplete="name" value={fullName} onChange={(event) => setFullName(event.target.value)} required /></div>
+          <div className="field"><label htmlFor="invite-email">Work email</label><input className="input" id="invite-email" name="email" type="email" autoComplete="email" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} required /></div>
+          <div className="field"><label htmlFor="invite-role">CaseZero role</label><select className="select" id="invite-role" name="role" autoComplete="off" value={role} onChange={(event) => setRole(event.target.value as Staff["role"])}>{Object.keys(roleHelp).map((name) => <option key={name}>{name}</option>)}</select><p className="field-help">{roleHelp[role]}</p></div>
           {notice ? <div className="success-box" role="status">{notice}</div> : null}
           {error ? <div className="error-box" role="alert">{error}</div> : null}
           <button className="btn primary" type="submit" disabled={busy}>{busy ? "Registering…" : rehearsal ? "Rehearse invitation" : "Send secure invitation"}</button>

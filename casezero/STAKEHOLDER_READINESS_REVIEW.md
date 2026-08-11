@@ -22,7 +22,7 @@ another dashboard or autonomous capability.
 | Compliant communication | Draft + deterministic lint/repair + FMOS six-month referral disclosure | Ready; approved sender still required |
 | Dashboard and natural language | Simple, Pro, mobile stage view, Axiom action docket, Settings and Operators | Ready |
 | Secure, auditable and scalable | JWT/RLS, encrypted PII, telemetry, continuous hash chain, exact tamper location, dedicated SLA worker contract | Ready; worker host required for continuous operation |
-| Measurable | 95.90% category, 98.97% urgency, 5/5 attacks, p50/p95 latency, cost, 466 tests and 14 browser journeys | Ready |
+| Measurable | 95.90% category, 98.97% urgency, 5/5 attacks, p50/p95 latency, cost, 501 tests and 29 browser journeys | Ready |
 
 ## UX decision
 

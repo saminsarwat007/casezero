@@ -41,7 +41,7 @@ export default function SimplePage() {
         eyebrow="Simple mode / Daily operating ledger"
         title="Only three cases need you."
         lede="Everything else has either resolved under policy or is moving within its working-day deadline."
-        action={<button className="btn primary" onClick={() => input.current?.click()} disabled={busy}><Upload aria-hidden="true" size={17} strokeWidth={1.5} />{busy ? "Processing…" : "Inject .eml"}</button>}
+        action={<button className="btn primary" type="button" onClick={() => input.current?.click()} disabled={busy}><Upload aria-hidden="true" size={17} strokeWidth={1.5} />{busy ? "Processing…" : "Inject .eml"}</button>}
       />
       {tour ? (
         <aside className="tour-note" aria-labelledby="tour-note-title">
@@ -51,7 +51,7 @@ export default function SimplePage() {
       ) : null}
       <input ref={input} hidden type="file" name="complaint_email" aria-label="Upload RFC822 complaint" accept=".eml,message/rfc822" onChange={(event) => void inject(event.target.files?.[0])} />
       {notice ? <div className={notice.includes("failed") ? "error-box" : "panel panel-pad"} role="status" style={{ marginTop: 18 }}>{notice}</div> : null}
-      {error && !rehearsal ? <div className="error-box" role="alert" style={{ marginTop: 18 }}>{error} <button className="btn ghost" style={{ marginLeft: 12 }} onClick={() => void refresh()}><RefreshCcw aria-hidden="true" size={15} />Retry</button></div> : null}
+      {error && !rehearsal ? <div className="error-box" role="alert" style={{ marginTop: 18 }}>{error} <button className="btn ghost" type="button" style={{ marginLeft: 12 }} onClick={() => void refresh()}><RefreshCcw aria-hidden="true" size={15} />Retry</button></div> : null}
       <section className="section" aria-labelledby="today-metrics">
         <h2 id="today-metrics" className="sr-only">Today&apos;s metrics</h2>
         <div className="metric-ledger panel">
@@ -65,7 +65,7 @@ export default function SimplePage() {
         <div className="chips">
           {[
             "Show cases at risk", "Open the review queue", "Summarise today", "Show quarantined input",
-          ].map((label) => <button key={label} className="chip" onClick={() => window.dispatchEvent(new CustomEvent("casezero:wajar", { detail: label }))}>{label}</button>)}
+          ].map((label) => <button key={label} className="chip" type="button" onClick={() => window.dispatchEvent(new CustomEvent("casezero:wajar", { detail: label }))}>{label}</button>)}
         </div>
       </section>
       <section className="section" aria-labelledby="needs-attention">

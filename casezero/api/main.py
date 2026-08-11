@@ -22,6 +22,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -35,9 +36,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from sse_starlette.sse import EventSourceResponse
 
+from api.agents import roster
 from api.agents.base import AgentContext, build_context
+from api.agents.handoff import build_handoffs, build_value
 from api.agents.orchestrator import CaseRun, Orchestrator
 from api.agents.wajar import plan as plan_wajar
+from api.agents.wajar import plan_with_model as plan_wajar_with_model
 from api.agents.wajar import receipt_payload
 from api.config import get_settings
 from api.corpus.labels import load_evaluation_labels
@@ -59,6 +63,18 @@ from api.mcp_tools.gateway import close_gateway
 from api.review import decide
 from api.reports.fmos_pack import build_fmos_pack
 from api.security.crypto import mask_account
+from api.security.public_intake import (
+    ALLOWED_ATTACHMENT_TYPES,
+    ALLOWED_PERSONAS,
+    MAX_ATTACHMENT_BYTES,
+    MAX_AMOUNT_RM,
+    MAX_BODY,
+    MAX_SUBJECT,
+    MIN_AMOUNT_RM,
+    AdmittedComplaint,
+    PublicIntakeRefused,
+    admit as admit_public_complaint,
+)
 from api.web.auth import AuthUser, current_user, rls_database, service_database
 from api.web.sse import hub
 
@@ -176,6 +192,13 @@ def _public_demo_email(*, txn_ref: str, posted_at: datetime) -> bytes:
     return message.as_bytes()
 
 
+#: The seven observable pipeline stages live in `api.agents.roster` alongside the
+#: seat that speaks at each one and the manual minutes it replaces. Re-exported
+#: here because the proof builder, the progress feed and existing callers all
+#: read it from this module.
+PIPELINE_STAGES = roster.PIPELINE_STAGES
+
+
 def _event_stage(
     rows: dict[str, dict[str, Any]],
     *,
@@ -183,12 +206,19 @@ def _event_stage(
     label: str,
     event_type: str,
     evidence: str,
+    skipped: bool = False,
 ) -> dict[str, Any]:
     event = rows.get(event_type) or {}
+    if event:
+        status = "PASS"
+    elif skipped:
+        status = "SKIPPED"
+    else:
+        status = "MISSING"
     return {
         "id": stage_id,
         "label": label,
-        "status": "PASS" if event else "MISSING",
+        "status": status,
         "event_type": event_type,
         "seq": event.get("seq"),
         "actor": event.get("actor"),
@@ -256,76 +286,153 @@ def _build_public_demo_proof(
     urgency = (by_type.get("URGENCY_ASSIGNED") or {}).get("payload") or {}
     verified = (by_type.get("VERIFICATION_COMPLETED") or {}).get("payload") or {}
     gate = (by_type.get("GATE_DECISION") or {}).get("payload") or {}
+    review = (by_type.get("REVIEW_REQUESTED") or {}).get("payload") or {}
     posted = (by_type.get("JOURNAL_POSTED") or {}).get("payload") or {}
     linted = (by_type.get("DRAFT_LINTED") or {}).get("payload") or {}
     message = (by_type.get("MESSAGE_SENT") or {}).get("payload") or {}
 
+    gate_action = str(gate.get("action") or "—")
+    gate_reasons = gate.get("reasons") or []
+    gate_inputs = gate.get("inputs") or {}
+    classify_source = str(classified.get("source") or "model")
+
+    # Stage 06/07 are intentionally skipped when the gate does not say POST.
+    # A stakeholder must see *why* they are missing, not just "missing".
+    journal_skipped = gate_action != "POST"
+    communicate_skipped = journal_skipped
+
+    # ── Plain-English helpers for non-technical stakeholders ──────────────
+    _CATEGORY_LABELS = {
+        "unauthorized_transaction": "an unauthorised transaction",
+        "billing_error": "a billing error",
+        "mis_selling": "mis-selling of a product",
+        "atm_debit_card": "an ATM or debit card problem",
+        "insurance_takaful": "an insurance or takaful issue",
+        "loan_financing": "a loan or financing issue",
+        "emoney_digital": "an e-wallet or digital payment issue",
+    }
+    _VERIFY_LABELS = {
+        "PASS": "confirmed the claim",
+        "FAIL": "did not support the claim",
+        "MANUAL_REVIEW": "could not fully confirm the claim",
+    }
+    _GATE_ACTION_LABELS = {
+        "POST": "approved automatically",
+        "MANUAL_REVIEW": "sent to a human for review",
+        "DENY": "refused",
+    }
+    _URGENCY_LABELS = {
+        "High": "high priority",
+        "Medium": "medium priority",
+        "Low": "low priority",
+    }
+
+    def _plain_gate_reason(reason: str) -> str:
+        """Turn a technical gate reason into plain English for a stakeholder."""
+        r = str(reason)
+        if "below the" in r and "floor" in r:
+            return "The AI was not sure enough about the category, so a human needs to decide."
+        if "meets the" in r and "floor" in r:
+            return "The AI was sure enough about the category."
+        if "Verification returned FAIL" in r:
+            return "The bank's records do not support this claim, so no money can be moved."
+        if "Verification is" in r and "required" in r:
+            return "The bank's records could not fully confirm the claim, so a human needs to check."
+        if "Verification returned PASS" in r:
+            return "The bank's records confirmed the claim."
+        if "exceeds the" in r and "dual-control" in r:
+            return "The amount is large enough that a second person must approve it."
+        if "above the dual-control" in r:
+            return "The amount is large enough that a second person must approve it."
+        if "within the" in r and "auto-approval" in r:
+            return "The amount is small enough to be resolved automatically."
+        if "above the" in r and "auto-approve" in r:
+            return "The amount is above the automatic limit, so a human must approve it."
+        if "No classification confidence" in r:
+            return "The AI did not provide a confidence score, so a human must decide."
+        if "missing or not positive" in r:
+            return "The disputed amount is missing or invalid, so the case cannot be processed automatically."
+        if "Dual control requires two different people" in r:
+            return "Two different people must approve this — the same person cannot approve twice."
+        if "Compliance lint passed" in r:
+            return "The response letter passed all compliance checks."
+        if "Compliance lint" in r and "fail" in r.lower():
+            return "The response letter did not pass compliance checks and needs to be fixed."
+        return r
+
+    category_label = _CATEGORY_LABELS.get(
+        str(classified.get("category") or run.category or ""),
+        str(classified.get("category") or run.category or "this complaint"),
+    )
+    verify_result = str(verified.get("result") or run.verification_result or "—")
+    verify_label = _VERIFY_LABELS.get(verify_result, verify_result)
+    gate_label = _GATE_ACTION_LABELS.get(gate_action, gate_action)
+    urgency_label = _URGENCY_LABELS.get(
+        str(urgency.get("urgency") or run.urgency or ""),
+        str(urgency.get("urgency") or run.urgency or "—"),
+    )
+    plain_gate_reasons = ". ".join(_plain_gate_reason(r) for r in gate_reasons) if gate_reasons else ""
+    confidence_pct = float(classified.get("confidence", run.confidence or 0))
+
+    evidence_by_stage = {
+        "intake": (
+            "The complaint was checked for harmful or injected content before any AI read it. "
+            "The customer's account number was hidden for safety."
+        ),
+        "classify": (
+            f"The AI read the complaint and identified it as {category_label}. "
+            f"It is {confidence_pct:.0%} sure about this"
+            + ("." if classify_source != "keyword_fallback"
+               else ", but used a simpler keyword match because the AI model was unavailable.")
+        ),
+        "sla": (
+            f"Marked as {urgency_label}. "
+            f"The bank's policy says this must be resolved within "
+            f"{urgency.get('sla_working_days', '—')} working days."
+        ),
+        "verify": (
+            f"The bank's records were checked against the claim. "
+            f"The system {verify_label} by examining "
+            f"{len(verified.get('evidence') or [])} pieces of evidence."
+        ),
+        "gate": (
+            f"The system {gate_label}."
+            + (f" Why: {plain_gate_reasons}." if plain_gate_reasons else "")
+        ),
+        "journal": (
+            f"Not done — the case was sent to a human for review, so no money was moved. "
+            f"A journal entry will be posted once a human approves the resolution."
+            if journal_skipped else
+            f"RM {float(posted.get('amount_rm') or 0):,.2f} was moved. "
+            f"The debit and credit sides match, so the books are balanced."
+        ),
+        "communicate": (
+            f"Not done — no letter is sent to the customer while the case is waiting for a human. "
+            f"The customer will be contacted once a decision is made."
+            if communicate_skipped else
+            f"The response letter was checked for compliance and approved for sending. "
+            f"The customer has been notified."
+        ),
+    }
+    _skipped_stages = {"journal", "communicate"} if journal_skipped else set()
     stages = [
         _event_stage(
             by_type,
-            stage_id="intake",
-            label="Screen & extract",
-            event_type="INTAKE_EXTRACTED",
-            evidence="Deterministic injection scan passed before model access; account data was masked and encrypted.",
-        ),
-        _event_stage(
-            by_type,
-            stage_id="classify",
-            label="Classify complaint",
-            event_type="CLASSIFIED",
-            evidence=(
-                f"{classified.get('category', run.category)} at "
-                f"{float(classified.get('confidence', run.confidence or 0)):.1%} confidence."
-            ),
-        ),
-        _event_stage(
-            by_type,
-            stage_id="sla",
-            label="Apply urgency & SLA",
-            event_type="URGENCY_ASSIGNED",
-            evidence=(
-                f"{urgency.get('urgency', run.urgency)} urgency; "
-                f"{urgency.get('sla_working_days', '—')} working-day policy window."
-            ),
-        ),
-        _event_stage(
-            by_type,
-            stage_id="verify",
-            label="Verify bank evidence",
-            event_type="VERIFICATION_COMPLETED",
-            evidence=(
-                f"Core banking returned {verified.get('result', run.verification_result)} "
-                f"with {len(verified.get('evidence') or [])} checkable evidence tests."
-            ),
-        ),
-        _event_stage(
-            by_type,
-            stage_id="gate",
-            label="Authorize action",
-            event_type="GATE_DECISION",
-            evidence=f"Deterministic financial gate ruled {gate.get('action', '—')}.",
-        ),
-        _event_stage(
-            by_type,
-            stage_id="journal",
-            label="Post balanced journal",
-            event_type="JOURNAL_POSTED",
-            evidence=(
-                f"RM {float(posted.get('amount_rm') or 0):,.2f}; "
-                f"balanced={str(bool(posted.get('balanced'))).lower()}; signed ticket required."
-            ),
-        ),
-        _event_stage(
-            by_type,
-            stage_id="communicate",
-            label="Lint & release response",
-            event_type="MESSAGE_SENT",
-            evidence=(
-                f"{linted.get('summary', 'Compliance lint completed')}; "
-                f"send gate {message.get('action', '—')}."
-            ),
-        ),
+            stage_id=stage_id,
+            label=label,
+            event_type=event_type,
+            evidence=evidence_by_stage[stage_id],
+            skipped=stage_id in _skipped_stages,
+        )
+        for stage_id, label, event_type, _agent in PIPELINE_STAGES
     ]
+
+    handoffs = build_handoffs(by_type)
+    value = build_value(
+        handoffs,
+        elapsed_seconds=duration_ms / 1000,
+        baseline_total=roster.BASELINE_MINUTES_TOTAL,
+    )
 
     safe_journal = [
         {
@@ -376,6 +483,12 @@ def _build_public_demo_proof(
             "degraded": degraded,
         },
         "stages": stages,
+        # The same handoffs the live feed rendered, frozen into the proof. A
+        # reopened run must tell the identical story, or the fallback path would
+        # quietly be a different product than the live one.
+        "handoffs": handoffs,
+        "value": value,
+        "roster": roster.roster(ctx.router)["seats"],
         "models": model_calls,
         "tools": tool_calls,
         "journal": {
@@ -480,6 +593,10 @@ class WajarCommandRequest(BaseModel):
 
 class WajarExecuteRequest(WajarCommandRequest):
     confirm: bool = False
+    #: The plan the operator actually inspected. The server re-plans and refuses to
+    #: act if its own conclusion differs, so a re-read can never quietly execute a
+    #: different action than the one that was shown and approved.
+    plan_id: str = Field(default="", max_length=32)
 
 
 @app.get("/health")
@@ -530,24 +647,120 @@ def public_live_demo_result(
     return _public_demo_response(row)
 
 
-@app.post("/demo/live", status_code=status.HTTP_201_CREATED)
-async def run_public_live_demo(
-    request: Request,
-    ctx: AgentContext = Depends(agent_context),
+@app.get("/demo/live/{token}/progress")
+def public_live_demo_progress(
+    token: str,
+    db: Database = Depends(service_database),
 ) -> dict[str, Any]:
-    """Execute one sanitized fixture through the same live production pipeline."""
-    if not settings.public_live_demo_enabled:
-        raise HTTPException(
-            503,
-            "The public live runner is disabled. Staff can still inject an RFC822 email after sign-in.",
-        )
-    ctx.settings.require("fernet_key")
+    """Stage-by-stage progress of an in-flight run, read from the hash chain itself.
 
-    requested_token = secrets.token_urlsafe(32)
+    The browser polls this while the execution request is still open, so the
+    stakeholder watches real persisted events land rather than a scripted
+    animation. A stage is only "done" once its chained event exists.
+    """
+    if not 24 <= len(token) <= 96:
+        raise HTTPException(404, "Live execution not found.")
+    row = db.get_public_demo_run(token)
+    if row is None:
+        raise HTTPException(404, "Live execution not found.")
+
+    case_id = row.get("case_id")
+    recorded: dict[str, dict[str, Any]] = {}
+    if case_id:
+        for event in db.get_event_rows(str(case_id)):
+            recorded.setdefault(str(event["event_type"]), event)
+
+    stages: list[dict[str, Any]] = []
+    for stage_id, label, event_type, agent in PIPELINE_STAGES:
+        event = recorded.get(event_type)
+        stages.append(
+            {
+                "id": stage_id,
+                "label": label,
+                "agent": agent,
+                "event_type": event_type,
+                "done": event is not None,
+                "seq": (event or {}).get("seq"),
+                "actor": (event or {}).get("actor"),
+                "recorded_at": (event or {}).get("created_at"),
+            }
+        )
+
+    quarantined = "QUARANTINED" in {
+        str((event.get("payload") or {}).get("to", "")) for event in recorded.values()
+    }
+
+    # What each agent said to the next one, assembled from the same rows the
+    # stages above were built from. No extra model call, and no line for a stage
+    # whose event has not landed yet.
+    handoffs = build_handoffs(recorded)
+    started_at = row.get("started_at")
+    latest = max(
+        (str(event.get("created_at") or "") for event in recorded.values()),
+        default="",
+    )
+    elapsed: float | None = None
+    if started_at and latest:
+        try:
+            elapsed = (
+                datetime.fromisoformat(latest.replace("Z", "+00:00"))
+                - datetime.fromisoformat(str(started_at).replace("Z", "+00:00"))
+            ).total_seconds()
+        except ValueError:
+            elapsed = None
+
+    return {
+        "state": row.get("state"),
+        "token": row.get("token"),
+        "case_ref": row.get("case_ref"),
+        "started_at": started_at,
+        "stages": stages,
+        "handoffs": handoffs,
+        "value": build_value(
+            handoffs,
+            elapsed_seconds=elapsed,
+            baseline_total=roster.BASELINE_MINUTES_TOTAL,
+        ),
+        "events_recorded": len(recorded),
+        "quarantined": quarantined,
+    }
+
+
+@app.get("/demo/agents")
+def public_demo_agents(ctx: AgentContext = Depends(agent_context)) -> dict[str, Any]:
+    """Who works a case, and which model is behind each one right now.
+
+    Resolved from the live `ModelRouter`, never from a constant in the frontend.
+    If a provider key is absent the router reports the fallback it will actually
+    use, so the panel cannot advertise a brain that is not running.
+    """
+    return roster.roster(ctx.router)
+
+
+@app.get("/demo/personas")
+def public_demo_personas() -> dict[str, Any]:
+    """The fictional customers a public visitor may file a complaint against."""
+    return {
+        "enabled": settings.public_live_demo_enabled,
+        "personas": [dict(persona) for persona in ALLOWED_PERSONAS],
+        "limits": {
+            "max_subject": MAX_SUBJECT,
+            "max_body": MAX_BODY,
+            "max_attachment_mb": MAX_ATTACHMENT_BYTES // (1024 * 1024),
+            "min_amount_rm": MIN_AMOUNT_RM,
+            "max_amount_rm": MAX_AMOUNT_RM,
+            "attachment_types": sorted(ALLOWED_ATTACHMENT_TYPES),
+            "runs_per_hour": settings.public_live_demo_hourly_limit,
+        },
+    }
+
+
+def _reserve_public_run(request: Request, ctx: AgentContext, token: str) -> dict[str, Any]:
+    """Claim this device's metered slot, translating SQL limits into plain errors."""
     try:
-        reservation = ctx.db.reserve_public_demo_run(
+        return ctx.db.reserve_public_demo_run(
             fingerprint_hash=_public_demo_fingerprint(request),
-            token=requested_token,
+            token=token,
             daily_limit=settings.public_live_demo_daily_limit,
             hourly_limit=settings.public_live_demo_hourly_limit,
         )
@@ -565,15 +778,23 @@ async def run_public_live_demo(
             ) from exc
         raise
 
-    token = str(reservation["token"])
-    if token != requested_token:
-        if reservation.get("state") == "COMPLETED" and reservation.get("proof"):
-            return _public_demo_response(reservation, reused=True)
-        raise HTTPException(
-            409,
-            "A live execution from this device is still running. Reopen it in a moment.",
-        )
 
+async def _execute_public_run(
+    *,
+    ctx: AgentContext,
+    token: str,
+    account_no: str,
+    merchant: str,
+    amount_rm: float,
+    build_email: Any,
+    input_summary: dict[str, Any],
+) -> dict[str, Any]:
+    """Provision one disputable transaction, run the real pipeline, persist the proof.
+
+    `build_email(txn_ref, posted_at) -> bytes` keeps the fixture runner and the
+    stakeholder composer on exactly one execution path, so neither can quietly
+    become the easier, less governed route.
+    """
     started_at = datetime.now(timezone.utc)
     started_clock = time.perf_counter()
     model_start = len(ctx.llm_calls)
@@ -581,14 +802,14 @@ async def run_public_live_demo(
     txn_ref = f"CZLIVE-{started_at:%Y%m%d}-{secrets.token_hex(4).upper()}"
 
     try:
-        if ctx.db.get_account("7142556890") is None:
+        if ctx.db.get_account(account_no) is None:
             raise RuntimeError("The sanitized demo account has not been provisioned.")
         posted_at = started_at - timedelta(minutes=3)
         ctx.db.create_demo_transaction(
             txn_ref=txn_ref,
-            account_no="7142556890",
-            merchant="TECHWORLD KL",
-            amount_rm=2450.0,
+            account_no=account_no,
+            merchant=merchant,
+            amount_rm=amount_rm,
             direction="DEBIT",
             channel="online",
             country="MY",
@@ -597,22 +818,25 @@ async def run_public_live_demo(
             is_disputed=False,
         )
         run = await Orchestrator(ctx).process(
-            _public_demo_email(txn_ref=txn_ref, posted_at=posted_at),
+            build_email(txn_ref, posted_at),
             channel="MANUAL_INJECT",
+            on_case_created=lambda case_id, case_ref: ctx.db.attach_public_demo_case(
+                token, case_id=case_id, case_ref=case_ref
+            ),
         )
         await publish_run(run)
-        completed_at = datetime.now(timezone.utc)
         proof = _build_public_demo_proof(
             token=token,
             run=run,
             ctx=ctx,
             txn_ref=txn_ref,
             started_at=started_at,
-            completed_at=completed_at,
+            completed_at=datetime.now(timezone.utc),
             duration_ms=int((time.perf_counter() - started_clock) * 1000),
             model_start=model_start,
             tool_start=tool_start,
         )
+        proof["input"].update(input_summary)
         completed = ctx.db.complete_public_demo_run(
             token,
             state="COMPLETED",
@@ -638,11 +862,169 @@ async def run_public_live_demo(
         ) from exc
 
 
+def _require_public_runner(ctx: AgentContext) -> None:
+    if not settings.public_live_demo_enabled:
+        raise HTTPException(
+            503,
+            "The public live runner is disabled. Staff can still inject an RFC822 email after sign-in.",
+        )
+    ctx.settings.require("fernet_key")
+
+
+def _claim_token(request: Request, ctx: AgentContext, requested: str) -> str:
+    """Reserve `requested`, or fail loudly if this device already holds a slot."""
+    reservation = _reserve_public_run(request, ctx, requested)
+    token = str(reservation["token"])
+    if token != requested:
+        if reservation.get("state") == "COMPLETED" and reservation.get("proof"):
+            raise _ReusedRun(_public_demo_response(reservation, reused=True))
+        raise HTTPException(
+            409,
+            "A live execution from this device is still running. Reopen it in a moment.",
+        )
+    return token
+
+
+class _ReusedRun(Exception):
+    """The metered budget returned an existing proof instead of a new slot."""
+
+    def __init__(self, payload: dict[str, Any]) -> None:
+        super().__init__("reused")
+        self.payload = payload
+
+
+@app.post("/demo/live", status_code=status.HTTP_201_CREATED)
+async def run_public_live_demo(
+    request: Request,
+    ctx: AgentContext = Depends(agent_context),
+) -> dict[str, Any]:
+    """Execute one sanitized fixture through the same live production pipeline."""
+    _require_public_runner(ctx)
+    try:
+        token = _claim_token(request, ctx, secrets.token_urlsafe(32))
+    except _ReusedRun as reused:
+        return reused.payload
+
+    return await _execute_public_run(
+        ctx=ctx,
+        token=token,
+        account_no="7142556890",
+        merchant="TECHWORLD KL",
+        amount_rm=2450.0,
+        build_email=lambda txn_ref, posted_at: _public_demo_email(
+            txn_ref=txn_ref, posted_at=posted_at
+        ),
+        input_summary={"authored_by": "FIXTURE"},
+    )
+
+
+def _composed_email(complaint: AdmittedComplaint, txn_ref: str, posted_at: datetime) -> bytes:
+    """Turn an admitted submission into the RFC822 message the pipeline expects."""
+    message = EmailMessage()
+    message["Subject"] = complaint.subject
+    message["From"] = f"{complaint.from_name} <{complaint.from_email}>"
+    message["To"] = settings.bank_complaints_email
+    message["Date"] = format_datetime(posted_at)
+    message.set_content(
+        f"{complaint.body}\n\n"
+        f"Account: {complaint.account_no}\n"
+        f"Disputed amount: RM{complaint.amount_rm:,.2f}\n"
+        f"Merchant: {complaint.merchant}\n"
+        f"Transaction reference: {txn_ref}\n"
+    )
+    if complaint.attachment_bytes:
+        message.add_attachment(
+            complaint.attachment_bytes,
+            maintype="application",
+            subtype="pdf",
+            filename=complaint.attachment_name or "evidence.pdf",
+        )
+    return message.as_bytes()
+
+
+@app.post("/demo/compose", status_code=status.HTTP_201_CREATED)
+async def compose_public_live_demo(
+    request: Request,
+    ctx: AgentContext = Depends(agent_context),
+) -> dict[str, Any]:
+    """Execute a complaint the visitor wrote themselves, with their own PDF evidence.
+
+    A fixed fixture proves the pipeline runs; it does not prove the pipeline reads.
+    So the wording, amount, merchant and attachment are the visitor's, while
+    `api.security.public_intake` keeps the channel from becoming a PII inbox: the
+    complaint must name an allow-listed fictional customer, and any foreign
+    account number or NRIC is refused rather than scrubbed.
+    """
+    _require_public_runner(ctx)
+
+    form = await request.form()
+    upload = form.get("attachment")
+    attachment_bytes: bytes | None = None
+    attachment_name: str | None = None
+    attachment_type: str | None = None
+    if upload is not None and hasattr(upload, "read"):
+        attachment_bytes = await upload.read()  # type: ignore[union-attr]
+        attachment_name = getattr(upload, "filename", None)
+        attachment_type = getattr(upload, "content_type", None)
+
+    client_token = str(form.get("token") or "").strip()
+    if not re.fullmatch(r"[A-Za-z0-9_-]{32,96}", client_token):
+        raise HTTPException(422, "A valid client run token is required.")
+
+    try:
+        complaint = admit_public_complaint(
+            account_no=str(form.get("account_no") or ""),
+            from_name=str(form.get("from_name") or ""),
+            from_email=str(form.get("from_email") or ""),
+            subject=str(form.get("subject") or ""),
+            body=str(form.get("body") or ""),
+            amount_rm=str(form.get("amount_rm") or "0"),
+            merchant=str(form.get("merchant") or ""),
+            attachment_name=attachment_name,
+            attachment_type=attachment_type,
+            attachment_bytes=attachment_bytes,
+        )
+    except PublicIntakeRefused as refused:
+        raise HTTPException(422, str(refused)) from refused
+
+    try:
+        token = _claim_token(request, ctx, client_token)
+    except _ReusedRun as reused:
+        return reused.payload
+
+    return await _execute_public_run(
+        ctx=ctx,
+        token=token,
+        account_no=complaint.account_no,
+        merchant=complaint.merchant,
+        amount_rm=complaint.amount_rm,
+        build_email=lambda txn_ref, posted_at: _composed_email(complaint, txn_ref, posted_at),
+        input_summary={
+            "authored_by": "STAKEHOLDER",
+            "subject": complaint.subject,
+            "sender": complaint.from_email,
+            "attachment": complaint.attachment_name if complaint.has_attachment else None,
+            "attachment_read_by": "vision OCR" if complaint.has_attachment else None,
+        },
+    )
+
+
 @app.get("/auth/config")
 def auth_config() -> dict[str, Any]:
     return {
         "supabase_url": settings.supabase_url,
         "supabase_anon_key": settings.supabase_anon_key,
+    }
+
+
+@app.get("/me")
+def current_operator(user: AuthUser = Depends(current_user)) -> dict[str, Any]:
+    """The signed-in operator's identity and role, so the UI can hide what they cannot use."""
+    return {
+        "id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": user.role,
     }
 
 
@@ -735,25 +1117,39 @@ def assistant_receipts(
 
 
 @app.post("/assistant/plan")
-def wajar_plan(
+async def wajar_plan(
     payload: WajarCommandRequest,
     user: AuthUser = Depends(current_user),
     db: Database = Depends(rls_database),
+    ctx: AgentContext = Depends(agent_context),
 ) -> dict[str, Any]:
-    return {"plan": plan_wajar(payload.command, user.role, db).as_dict()}
+    """Understand the request with the model; decide authority in code.
+
+    Reads run against `db` so RLS still applies to whatever Axiom summarises. The
+    model only resolves phrasing the deterministic matcher could not.
+    """
+    planned = await plan_wajar_with_model(payload.command, user.role, db, ctx)
+    return {"plan": planned.as_dict()}
 
 
 @app.post("/assistant/execute")
-def wajar_execute(
+async def wajar_execute(
     payload: WajarExecuteRequest,
     user: AuthUser = Depends(current_user),
     db: Database = Depends(service_database),
     invitations: StaffInvitationService = Depends(invitation_service),
+    ctx: AgentContext = Depends(agent_context),
 ) -> dict[str, Any]:
     # Re-plan against server state. The browser never chooses the action it runs.
-    planned = plan_wajar(payload.command, user.role, db)
+    planned = await plan_wajar_with_model(payload.command, user.role, db, ctx)
     if planned.action not in {"INVITE_OPERATOR", "UPDATE_SETTING"}:
         raise HTTPException(409, "This command has no confirmed write action.")
+    if payload.plan_id and payload.plan_id != planned.plan_id:
+        raise HTTPException(
+            409,
+            "Axiom re-read this request and reached a different action. "
+            "Review the new docket before confirming.",
+        )
     if not planned.permitted:
         raise HTTPException(403, planned.summary)
     if not payload.confirm:

@@ -31,6 +31,12 @@ blob-report/
 dumps/
 .cache/llm/
 tmp/
+.tmp/
+submission/04-demo/*.webm
+recordings/
+submission/02-deck/*.inspect.ndjson
+submission/02-deck/*-contact-sheet.webp
+submission/02-deck/*-render/*.layout.json
 
 # OS
 .DS_Store

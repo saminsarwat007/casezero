@@ -18,6 +18,7 @@ Everything else is a decision, and decisions belong to the kernel.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -114,6 +115,7 @@ class Orchestrator:
         channel: str = "MANUAL_INJECT",
         approved_by: str | None = None,
         dual_control_by: str | None = None,
+        on_case_created: Callable[[str, str], None] | None = None,
     ) -> CaseRun:
         ctx = self.ctx
         ctx.begin_run()
@@ -128,6 +130,13 @@ class Orchestrator:
         run.case_id = str(case["id"])
         run.case_ref = str(case.get("case_ref", ""))
         ctx.bind_case(run.case_id)
+        if on_case_created is not None:
+            # Lets a caller publish progress while this pipeline is still running.
+            # A bookkeeping failure must never abort a case that is mid-flight.
+            try:
+                on_case_created(run.case_id, run.case_ref)
+            except Exception:  # noqa: BLE001 - progress reporting is best-effort
+                pass
         self._append(run, parsed.events)
 
         if parsed.hostile:

@@ -616,6 +616,12 @@ class Database:
             .data[0]
         )
 
+    def attach_public_demo_case(self, token: str, *, case_id: str, case_ref: str) -> None:
+        """Link the case to its run as soon as it exists, so progress can be polled."""
+        self.sb.table("public_demo_runs").update(
+            {"case_id": case_id, "case_ref": case_ref}
+        ).eq("token", token).execute()
+
     def get_public_demo_run(self, token: str) -> dict[str, Any] | None:
         rows = (
             self.sb.table("public_demo_runs")

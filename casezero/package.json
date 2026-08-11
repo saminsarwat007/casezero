@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "playwright": "^1.62.1",
+    "tsx": "^4.23.5"
+  },
+  "devDependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}

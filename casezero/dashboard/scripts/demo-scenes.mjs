@@ -53,7 +53,7 @@ export const demoScenes = [
     title: "See the pressure before it becomes a breach.",
     caption: "Continuous case state · SLA forecast · agent health · measured evaluation",
     durationMs: 30000,
-    narration: "Mission Control gives the stakeholder the operating picture. Cases move through a continuous state model; there is no hidden lane. The supervisor forecasts SLA pressure from deadlines and human workload. The view also exposes agent health and persisted evaluation results. Pro mode is denser for oversight, while mobile and Simple mode keep one active stage visible for day-to-day work.",
+    narration: "The Pro dashboard gives the stakeholder the operating picture. Cases move through a continuous state model; there is no hidden lane. The supervisor forecasts SLA pressure from deadlines and human workload. The view also exposes agent health and persisted evaluation results. Pro mode is denser for oversight, while mobile and Simple mode keep one active stage visible for day-to-day work.",
   },
   {
     id: "axiom",
@@ -69,7 +69,7 @@ export const demoScenes = [
     title: "Trust the chain, not the screen.",
     caption: "Tamper location named · chain voided · unsafe intake quarantined pre-LLM",
     durationMs: 25000,
-    narration: "The Audit Explorer verifies a continuous SHA-two-fifty-six chain. This rehearsal alters sequence four. The screen does not merely show a warning; it names the broken link and marks the derived view void. Injection attempts are quarantined before a model call, so hostile instructions never enter extraction or classification. Financial postings also require a balanced double-entry journal.",
+    narration: "The audit trail verifies a continuous SHA-two-fifty-six chain. This rehearsal alters sequence four. The screen does not merely show a warning; it names the broken link and marks the derived view void. Injection attempts are quarantined before a model call, so hostile instructions never enter extraction or classification. Financial postings also require a balanced double-entry journal.",
   },
   {
     id: "settings",
@@ -91,9 +91,9 @@ export const demoScenes = [
     id: "proof",
     kicker: "RELEASE EVIDENCE",
     title: "Measured, not merely demonstrated.",
-    caption: "95.90% category · 98.97% urgency · 5/5 attacks blocked · 466 backend tests",
+    caption: "95.90% category · 98.97% urgency · 5/5 attacks blocked · 501 backend tests",
     durationMs: 20000,
-    narration: "The persisted live-model evaluation scores ninety-five point nine percent category accuracy and ninety-eight point nine-seven percent urgency accuracy across one hundred and ninety-five clean cases. All five injection attacks are blocked. Median model latency is two point six seconds, measured cost is about one-tenth of a sen per case, and the release carries four hundred and sixty-six backend tests plus fourteen browser journeys.",
+    narration: "The persisted live-model evaluation scores ninety-five point nine percent category accuracy and ninety-eight point nine-seven percent urgency accuracy across one hundred and ninety-five clean cases. All five injection attacks are blocked. Median model latency is two point six seconds, measured cost is about one-tenth of a sen per case, and the release carries five hundred and one backend tests plus twenty-nine browser journeys.",
   },
   {
     id: "close",

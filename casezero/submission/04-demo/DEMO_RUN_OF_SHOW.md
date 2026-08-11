@@ -1,24 +1,21 @@
-# Axiom by CaseZero live-first demo run of show
+# Axiom by CaseZero — Demo Day run of show
 
-The rebuilt MP4 targets about 6 minutes, inside the handbook's 5–8 minute window. Every chapter has
-large on-screen context, narrated audio, visible cursor/click feedback and a WebVTT
-transcript. It follows one case rather than touring the full navigation rail.
+This is a five-minute, deck-led story with a **33.76-second silent product film** embedded on slide 7. The presenter narrates the film live, then can open the deployed `/live` route for a visitor-written complaint if venue connectivity is stable. The older `CaseZero-Stakeholder-Demo.mp4` is retained only as an archive; it predates the composer and Boardroom and is not the Demo Day film.
 
-| Time | Visual | Presenter job |
-|---|---|---|
-| 0:00-0:18 | Title: Case Study 1 / Axiom by CaseZero | Chosen challenge, value line and Axiom's authority boundary. |
-| 0:18-0:46 | 1.8m / 90 min / 11% / 5-20 WD | Operational and regulatory pain. |
-| 0:46-1:14 | Six agents around one kernel | “Models propose; the kernel decides.” |
-| 1:14-1:34 | Public landing | Synthetic-person/live-execution boundary and one primary action. |
-| 1:34-2:39 | Fresh live complaint | Wait for the deployed stack, then inspect status, model/tool receipts, journal and chain. |
-| 2:39-3:04 | Simple workspace | Human exception queue after the live proof is understood. |
-| 3:04-3:34 | Mission Control | Case state, SLA forecast, agent health and measured evaluation. |
-| 3:34-4:04 | Axiom action docket | Verify a case; pause on authority, effect and gates before execution. |
-| 4:04-4:29 | Audit + quarantine | Exact broken chain link and zero-model-call injection quarantine. |
-| 4:29-4:54 | Settings | Bank identity, SLA horizon and two independent kill switches. |
-| 4:54-5:19 | Operators | Work-email invitation and least-privilege role handoff. |
-| 5:19-5:39 | Release evidence | Accuracy, latency, cost, attacks, 466 tests and 14 browser journeys. |
-| 5:39-5:55.77 | Controlled rollout | 57% initial volume, under-5-minute target and bank-owned inputs. |
+| Time | Slide / visual | Presenter job | Demo Day criteria |
+|---|---|---|---|
+| 0:00–0:25 | 1 — Axiom | “An AI dispute team that can be put on the record.” Name Case Study 1 and the evidence/authority boundary. | Impact & Relevance; Demo & Storytelling |
+| 0:25–0:55 | 2 — 90 minutes / 11% | Connect delay to evidence, authority and ownership drifting between desks. | Impact & Relevance |
+| 0:55–1:15 | 3 — who benefits | Complaints lead, customer, regulator/auditor; plain English over internal enums. | Human-Centered Design |
+| 1:15–1:40 | 4–6 — solution and seven seats | “Models propose. The kernel disposes.” Explain why Verifier, Resolver and the financial gate have no model. | AI Interaction; Innovation & Creativity |
+| 1:40–2:20 | 7 — embedded Boardroom film | Start the film. Narrate intake → classifier → verifier → kernel → resolver → communicator. Point out the receipt opening and the refusal ending. | Demo & Storytelling; Technical Execution |
+| 2:20–2:45 | 8 — every line has a receipt | Click a line if live. Show sequence, hash, event type and model-call count. | Technical Execution; Overall Quality |
+| 2:45–3:15 | 9 — refusal | “The most important action is the one that never happened.” Injection is blocked before any model call; downstream seats say “Never saw it”; no savings are claimed. | Responsible AI & Ethics |
+| 3:15–3:45 | 10 — value ledger | Separate measured timestamps, the 90-minute baseline and editable rate/volume assumptions. | Impact & Relevance; Feasibility |
+| 3:45–4:10 | 11 — checked evidence | 95.90% category accuracy, 98.97% urgency accuracy, 5/5 attacks, 501 backend tests, 29 browser journeys and 0 high-or-above npm vulnerabilities. | Overall Quality; Technical Execution |
+| 4:10–4:35 | 12 — UX/accessibility | 390px relay, keyboard receipts, screen-reader handoffs, reduced motion and honest degraded states. | UX & Accessibility; Human-Centered Design |
+| 4:35–4:50 | 13 — real now / bank supplies | Distinguish the deployed synthetic pipeline from bank-owned production inputs and sign-off. | Feasibility |
+| 4:50–5:00 | 14 — close | Invite the judge to write a complaint at `/live`: “Models propose. The kernel disposes.” | Demo & Storytelling |
 
 ## Narration guardrails
 
@@ -26,10 +23,12 @@ transcript. It follows one case rather than touring the full navigation rail.
 - Never claim a model approves money. Say “the model proposes; the signed kernel gate authorises.”
 - Pause at each before/after transition. The viewer should understand the outcome before the next click.
 - Keep the cursor visible, highlight each click and leave important evidence on screen for at least three seconds.
+- Do not call the short embedded film a mockup: it is a real browser capture of the shipped component tree with deterministic network fixtures.
+- Do not claim the stubbed film is proof of production connectivity. Use the deployed end-to-end check for that claim.
 
 ## Final artifacts
 
-- `CaseZero-Stakeholder-Demo.mp4` — 1920×1080 H.264 + AAC, 5:55.77.
-- `CaseZero-Stakeholder-Demo.en.vtt` — complete English transcript/subtitle track.
-- `CaseZero-Stakeholder-Demo-contact-sheet.png` — internal 13-scene visual QA proof.
-- `casezero-demo-timeline.json` — exact captured chapter starts and ends.
+- `Axiom-Boardroom-Demo.mp4` — 1440×900 H.264, 25fps, 33.76 seconds, silent presenter film embedded in slide 7.
+- `Axiom-Boardroom-Demo-poster.png` — fallback/poster frame for the embedded film.
+- `Axiom-Demo-Day-Deck.pptx` — 14-slide editable deck with embedded film.
+- `Axiom-Demo-Day-Deck.pdf` — visually verified font-independent fallback; the PDF shows the film poster.

@@ -32,17 +32,34 @@ test("mission control exposes pipeline, agents and measured evals", async ({ pag
   await expect(page.getByText("P50 / P95 4.63s")).toBeVisible();
 });
 
-test("Axiom prepares a governed action and issues a rehearsal receipt", async ({ page }) => {
+test("Axiom answers in conversation and attaches a governed docket", async ({ page }) => {
   await rehearsal(page);
   await page.goto("/pro");
   await page.getByRole("button", { name: "Open Axiom operating agent" }).click();
   await page.getByLabel("What needs to happen?").fill("Set SLA warning to 12 hours");
-  await page.getByRole("button", { name: "Prepare action" }).click();
+  await page.getByRole("button", { name: "Ask Axiom", exact: true }).click();
+  // The reply is a message; the docket hangs off it rather than replacing it.
+  await expect(page.getByText("Set SLA warning horizon to 12 hours.").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Change an operating control" })).toBeVisible();
   await expect(page.getByText("Admin role", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /Confirm and execute/ }).click();
   await expect(page.getByRole("status")).toContainText("AXR-");
   await expect(page.getByRole("status")).toContainText("no live control changed", { ignoreCase: true });
+});
+
+test("Axiom keeps each docket bound to the message that produced it", async ({ page }) => {
+  await rehearsal(page);
+  await page.goto("/pro");
+  await page.getByRole("button", { name: "Open Axiom operating agent" }).click();
+  await page.getByLabel("What needs to happen?").fill("Summarise operations");
+  await page.getByRole("button", { name: "Ask Axiom", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Operations summary" })).toBeVisible();
+  await page.getByLabel("What needs to happen?").fill("Show cases at SLA risk");
+  await page.getByRole("button", { name: "Ask Axiom", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Cases approaching deadline" })).toBeVisible();
+  // The earlier turn survives, so an older docket can still be inspected.
+  await expect(page.getByRole("heading", { name: "Operations summary" })).toBeVisible();
+  await expect(page.getByText("Matched without a model").first()).toBeVisible();
 });
 
 test("mobile Pro uses a real menu and one-stage case view", async ({ page }) => {

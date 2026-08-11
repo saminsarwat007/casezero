@@ -5,6 +5,20 @@ bank. It is a constrained planner over named CaseZero capabilities. Natural
 language selects an action; code resolves its scope, role, confirmation and gate.
 Write actions are planned first and then re-planned server-side at execution, so
 editing a browser payload cannot turn navigation into an administrative write.
+
+Two layers, and the split matters:
+
+* **Understanding is a model problem.** `resolve_intent` asks the deployed LLM to
+  map free-form English or Malay onto one action from a closed registry. This is
+  why an operator can say "which complaints will blow their deadline this week"
+  without knowing that the internal capability is called `SHOW_SLA_RISK`.
+* **Authority is not.** Every plan is still assembled by `_make`, which decides
+  role, confirmation and gates from code. The model chooses a *label*; it never
+  chooses whether an operator may act on it. A model that returned
+  `UPDATE_SETTING` for a non-Admin still yields `permitted=False`.
+
+The deterministic matcher runs first and answers most commands with zero tokens
+and zero latency. The model is the fallback for phrasing, not the primary path.
 """
 
 from __future__ import annotations
@@ -15,6 +29,8 @@ import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 from api.agents.firewall import scan
 
@@ -52,10 +68,17 @@ class WajarPlan:
     parameters: dict[str, Any] = field(default_factory=dict)
     gates: tuple[str, ...] = ()
     result: dict[str, Any] = field(default_factory=dict)
+    #: Plain-language answer shown in the conversation. Written by the model when
+    #: one was consulted, and by code otherwise. Never load-bearing.
+    reply: str = ""
+    #: "deterministic" or "model" — shown in the UI so an operator always knows
+    #: whether a language model was involved in reading their request.
+    understood_by: str = "deterministic"
 
     def as_dict(self) -> dict[str, Any]:
         payload = asdict(self)
         payload["gates"] = list(self.gates)
+        payload["reply"] = self.reply or self.summary
         return payload
 
 
@@ -79,6 +102,8 @@ def _make(
     parameters: dict[str, Any] | None = None,
     gates: tuple[str, ...] = (),
     result: dict[str, Any] | None = None,
+    reply: str = "",
+    understood_by: str = "deterministic",
 ) -> WajarPlan:
     return WajarPlan(
         plan_id=_plan_id(command, role, action),
@@ -93,6 +118,8 @@ def _make(
         parameters=parameters or {},
         gates=gates,
         result=result or {},
+        reply=reply,
+        understood_by=understood_by,
     )
 
 
@@ -173,8 +200,402 @@ def _setting_request(command: str) -> tuple[str, Any] | None:
     return None
 
 
-def plan(command: str, role: str, db: Any) -> WajarPlan:
-    """Translate one command into a closed, inspectable capability plan."""
+def _invite_parameters(cleaned: str) -> dict[str, Any]:
+    """Pull a name, work email and role out of an invitation request."""
+    email = EMAIL.search(cleaned)
+    role_match = re.search(r"\b(OPS|INVESTIGATOR|COMPLIANCE|ADMIN)\b", cleaned, re.I)
+    role_value = role_match.group(1).upper() if role_match else "OPS"
+    name = re.sub(r"\b(?:invite|add operator|add colleague)\b", "", cleaned, flags=re.I)
+    if email:
+        name = name.replace(email.group(0), "")
+    name = re.sub(r"\b(?:at|as|with role)\b", " ", name, flags=re.I)
+    name = re.sub(r"\b(?:OPS|INVESTIGATOR|COMPLIANCE|ADMIN)\b", "", name, flags=re.I)
+    name = " ".join(name.strip(" ,.-").split())
+    return {
+        "full_name": name,
+        "email": email.group(0).lower() if email else None,
+        "role": role_value,
+    }
+
+
+def detect(cleaned: str) -> tuple[Action, dict[str, Any]] | None:
+    """Deterministic intent match. Returns None when only a model can read this.
+
+    Runs before any model call, so the common commands cost nothing and cannot
+    drift with a prompt change.
+    """
+    lower = cleaned.lower()
+
+    setting = _setting_request(cleaned)
+    if setting:
+        key, value = setting
+        return "UPDATE_SETTING", {"key": key, "value": value}
+
+    if "invite" in lower or "add operator" in lower or "add colleague" in lower:
+        return "INVITE_OPERATOR", _invite_parameters(cleaned)
+
+    case_ref_match = CASE_REF.search(cleaned)
+    if case_ref_match:
+        case_ref = case_ref_match.group(0).upper()
+        if any(word in lower for word in ("verify", "audit", "chain", "integrity")):
+            return "VERIFY_CHAIN", {"case_ref": case_ref}
+        return "OPEN_CASE", {"case_ref": case_ref}
+
+    if any(phrase in lower for phrase in ("sla risk", "at risk", "deadline", "breach")):
+        return "SHOW_SLA_RISK", {}
+    if any(
+        phrase in lower
+        for phrase in ("summarise", "summarize", "today", "operations", "how are we doing")
+    ):
+        return "SUMMARISE_OPERATIONS", {}
+
+    for terms, action in (
+        (("review", "queue"), "OPEN_REVIEW"),
+        (("policy", "rule"), "OPEN_POLICY"),
+        (("setting", "control register"), "OPEN_SETTINGS"),
+        (("quarantine", "hostile"), "OPEN_QUARANTINE"),
+    ):
+        if any(term in lower for term in terms):
+            return action, {}  # type: ignore[return-value]
+
+    return None
+
+
+NAVIGATION_TARGETS: dict[str, tuple[str, str]] = {
+    "OPEN_REVIEW": ("Open the review queue", "/review"),
+    "OPEN_POLICY": ("Open rules and policies", "/policy"),
+    "OPEN_SETTINGS": ("Open settings", "/settings"),
+    "OPEN_QUARANTINE": ("Open blocked intake", "/quarantine"),
+}
+
+
+def build(
+    cleaned: str,
+    role: str,
+    db: Any,
+    action: Action,
+    parameters: dict[str, Any],
+    *,
+    controls: dict[str, Any],
+    reply: str = "",
+    understood_by: str = "deterministic",
+) -> WajarPlan:
+    """Assemble the plan for one action. All authority is decided here, in code.
+
+    Whether the action label came from a regex or from a language model makes no
+    difference below this line, which is the point: the model cannot widen its own
+    permissions by phrasing a request differently.
+    """
+    common = {"reply": reply, "understood_by": understood_by}
+
+    if action == "UPDATE_SETTING":
+        key = str(parameters.get("key") or "")
+        value = parameters.get("value")
+        valid = key in SETTABLE_CONTROLS and not (
+            key == "sla_warning_hours" and not (isinstance(value, int) and 1 <= value <= 120)
+        )
+        return _make(
+            cleaned,
+            role,
+            "UPDATE_SETTING",
+            title="Change an operating control",
+            summary=f"Set {key.replace('_', ' ')} to {value!s}.",
+            effect="The singleton control register changes and a hash-chained settings event is appended.",
+            authority="Admin only",
+            confirmation_required=True,
+            permitted=role == "ADMIN" and valid,
+            route="/settings",
+            parameters={"key": key, "value": value},
+            gates=(
+                "Admin role",
+                "Explicit confirmation",
+                "Server-side value validation",
+                "Hash-chained settings event",
+            ),
+            result={} if valid else {"error": "That control or value is not accepted."},
+            **common,
+        )
+
+    if action == "INVITE_OPERATOR":
+        email = parameters.get("email")
+        name = str(parameters.get("full_name") or "")
+        role_value = str(parameters.get("role") or "OPS").upper()
+        complete = bool(email and len(name) >= 2 and role_value in ROLES)
+        return _make(
+            cleaned,
+            role,
+            "INVITE_OPERATOR",
+            title="Invite a bank operator",
+            summary=(
+                f"Invite {name} at {email} as {role_value}."
+                if complete
+                else "An invitation needs a full name, work email, and CaseZero role."
+            ),
+            effect="Supabase sends one single-use invitation email and the assigned role is written to app_users.",
+            authority="Admin only",
+            confirmation_required=True,
+            permitted=role == "ADMIN" and complete,
+            route="/admin/users",
+            parameters={"full_name": name, "email": email, "role": role_value},
+            gates=(
+                "Admin role",
+                "Explicit confirmation",
+                "Unique work email",
+                "Supabase single-use invitation",
+            ),
+            **common,
+        )
+
+    if action == "VERIFY_CHAIN":
+        case_ref = str(parameters.get("case_ref") or "").upper()
+        case = db.get_case_by_ref(case_ref) if case_ref else None
+        if case is None:
+            result: dict[str, Any] = {"found": False, "case_ref": case_ref}
+        else:
+            chain = db.verify_case_chain(str(case["id"]))
+            result = {
+                "found": True,
+                "case_ref": case_ref,
+                "ok": chain.ok,
+                "first_bad_seq": chain.first_bad_seq,
+                "reason": chain.reason,
+                "links": len(db.get_events(str(case["id"]))),
+            }
+        return _make(
+            cleaned,
+            role,
+            "VERIFY_CHAIN",
+            title=f"Verify {case_ref}" if case_ref else "Verify a case chain",
+            summary="Recompute every link from canonical event payloads and locate the first mismatch.",
+            effect="Read-only integrity check; no case data changes.",
+            route=f"/case/{case_ref}" if case_ref else "/audit",
+            parameters={"case_ref": case_ref},
+            gates=("RLS-visible case", "SHA-256 chain recomputation"),
+            result=result,
+            **common,
+        )
+
+    if action == "OPEN_CASE":
+        case_ref = str(parameters.get("case_ref") or "").upper()
+        return _make(
+            cleaned,
+            role,
+            "OPEN_CASE",
+            title=f"Open {case_ref}" if case_ref else "Open a case",
+            summary="Open the evidence, events, journal and customer-communication record for this case.",
+            effect="Navigate only; no case data changes.",
+            route=f"/case/{case_ref}" if case_ref else "/simple",
+            parameters={"case_ref": case_ref},
+            gates=("RLS-visible case",),
+            **common,
+        )
+
+    if action == "SHOW_SLA_RISK":
+        warning_hours = int(controls.get("sla_warning_hours") or 24)
+        result = _risk_result(_safe_cases(db), warning_hours)
+        return _make(
+            cleaned,
+            role,
+            "SHOW_SLA_RISK",
+            title="Cases approaching deadline",
+            summary=f"Check open cases due within the configured {warning_hours}-hour warning horizon.",
+            effect="Read-only prioritisation; no case data changes.",
+            route="/simple",
+            gates=(
+                "RLS-visible cases",
+                f"Control register warning horizon = {warning_hours} hours",
+            ),
+            result=result,
+            **common,
+        )
+
+    if action == "SUMMARISE_OPERATIONS":
+        result = _operations_result(_safe_cases(db))
+        return _make(
+            cleaned,
+            role,
+            "SUMMARISE_OPERATIONS",
+            title="Operations summary",
+            summary=(
+                f"{result['total']} cases are visible; {result['needs_attention']} need "
+                f"attention and {result['communicated']} are communicated."
+            ),
+            effect="Read-only aggregation; no customer content is sent to a model.",
+            route="/pro",
+            gates=("RLS-visible cases", "PII-free deterministic aggregation"),
+            result=result,
+            **common,
+        )
+
+    if action in NAVIGATION_TARGETS:
+        title, route = NAVIGATION_TARGETS[action]
+        return _make(
+            cleaned,
+            role,
+            action,
+            title=title,
+            summary=f"Take the operator to {title.lower().removeprefix('open ')}.",
+            effect="Navigate only; no customer or policy data changes.",
+            route=route,
+            gates=("Signed-in operator",),
+            **common,
+        )
+
+    return _make(
+        cleaned,
+        role,
+        "HELP",
+        title="I can prepare a governed action",
+        summary=HELP_SUMMARY,
+        effect="No capability matched, so nothing was read or changed.",
+        gates=("Closed action registry",),
+        **common,
+    )
+
+
+HELP_SUMMARY = (
+    "Try “summarise operations”, “show cases at SLA risk”, “verify MYB-2026-000012”, "
+    "“open review”, or an Admin command such as “set SLA warning to 12 hours”."
+)
+
+SETTABLE_CONTROLS = (
+    "bank_display_name",
+    "complaints_email",
+    "sla_warning_hours",
+    "default_workspace",
+    "wajar_enabled",
+    "automatic_resolution_enabled",
+)
+
+
+class ResolvedIntent(BaseModel):
+    """What the model is allowed to return: one closed label, plus a sentence."""
+
+    action: str = Field(description="One action name from the provided registry.")
+    case_ref: str = ""
+    setting_key: str = ""
+    setting_value: str = ""
+    invite_email: str = ""
+    invite_name: str = ""
+    invite_role: str = ""
+    reply: str = Field(default="", description="One or two sentences for the operator.")
+
+
+INTENT_SYSTEM = """You are Axiom, the operations assistant inside CaseZero, a governed
+banking-complaint system for a Malaysian bank. You do not execute anything. You only
+choose which named capability the operator is asking for, and write one short reply.
+
+Choose exactly one action:
+SUMMARISE_OPERATIONS  - how the queue is doing right now, counts, workload, throughput
+SHOW_SLA_RISK         - complaints near or past a regulatory deadline
+OPEN_CASE             - look at one specific case (needs case_ref like MYB-2026-000012)
+VERIFY_CHAIN          - check the audit chain / tamper evidence of one case
+OPEN_REVIEW           - the human review queue
+OPEN_POLICY           - category rules, thresholds, policy packs
+OPEN_SETTINGS         - operating controls, bank name, automation switch
+OPEN_QUARANTINE       - complaints blocked by the prompt-injection firewall
+INVITE_OPERATOR       - add a colleague (needs invite_email; invite_role in OPS,
+                        INVESTIGATOR, COMPLIANCE, ADMIN)
+UPDATE_SETTING        - change one control. setting_key must be one of:
+                        sla_warning_hours, automatic_resolution_enabled, wajar_enabled,
+                        default_workspace, complaints_email, bank_display_name
+HELP                  - the request is unclear or outside these capabilities
+
+Rules:
+- Never invent a case reference, an email address, or a numeric value. Leave the field
+  empty if the operator did not say it.
+- Never claim you performed an action. Authority is decided after you answer.
+- Malay and English are both expected. Reply in the language the operator used.
+- Keep `reply` under 220 characters, factual, no emoji, no promises.
+Return JSON only."""
+
+
+async def resolve_intent(cleaned: str, ctx: Any) -> ResolvedIntent | None:
+    """Ask the deployed model which capability this phrasing means.
+
+    Returns None when no model is attached or the call fails, so Axiom degrades to
+    the deterministic matcher instead of going silent.
+    """
+    if ctx is None or getattr(ctx, "router", None) is None:
+        return None
+    try:
+        result = await ctx.complete(
+            "intel",
+            f"Operator request:\n{cleaned}",
+            system=INTENT_SYSTEM,
+            schema=ResolvedIntent,
+            temperature=0.0,
+            max_tokens=400,
+        )
+    except Exception:  # noqa: BLE001 - a model outage must not break the assistant
+        return None
+    parsed = result.parsed
+    return parsed if isinstance(parsed, ResolvedIntent) else None
+
+
+def _intent_parameters(intent: ResolvedIntent) -> tuple[Action, dict[str, Any]]:
+    """Coerce a model answer into a known action and validated parameters.
+
+    Anything unrecognised collapses to HELP. A model that hallucinates an action
+    name therefore gets no capability at all.
+    """
+    action = intent.action.strip().upper()
+    known: set[str] = {
+        "SUMMARISE_OPERATIONS",
+        "SHOW_SLA_RISK",
+        "OPEN_CASE",
+        "VERIFY_CHAIN",
+        "OPEN_REVIEW",
+        "OPEN_POLICY",
+        "OPEN_SETTINGS",
+        "OPEN_QUARANTINE",
+        "INVITE_OPERATOR",
+        "UPDATE_SETTING",
+    }
+    if action not in known:
+        return "HELP", {}
+
+    if action in {"OPEN_CASE", "VERIFY_CHAIN"}:
+        found = CASE_REF.search(intent.case_ref or "")
+        if not found:
+            return "HELP", {}
+        return action, {"case_ref": found.group(0).upper()}  # type: ignore[return-value]
+
+    if action == "UPDATE_SETTING":
+        key = intent.setting_key.strip().lower()
+        if key not in SETTABLE_CONTROLS:
+            return "HELP", {}
+        raw = intent.setting_value.strip()
+        value: Any = raw
+        if key == "sla_warning_hours":
+            digits = re.search(r"\d{1,3}", raw)
+            if not digits:
+                return "HELP", {}
+            value = int(digits.group(0))
+        elif key in {"automatic_resolution_enabled", "wajar_enabled"}:
+            value = raw.lower() in {"true", "on", "enable", "enabled", "yes", "1"}
+        elif key == "default_workspace":
+            if raw.lower().lstrip("/") not in {"simple", "pro"}:
+                return "HELP", {}
+            value = "/" + raw.lower().lstrip("/")
+        elif not raw:
+            return "HELP", {}
+        return "UPDATE_SETTING", {"key": key, "value": value}
+
+    if action == "INVITE_OPERATOR":
+        email = EMAIL.search(intent.invite_email or "")
+        role_value = intent.invite_role.strip().upper()
+        return "INVITE_OPERATOR", {
+            "full_name": " ".join(intent.invite_name.split())[:120],
+            "email": email.group(0).lower() if email else None,
+            "role": role_value if role_value in ROLES else "OPS",
+        }
+
+    return action, {}  # type: ignore[return-value]
+
+
+def _preflight(command: str, role: str, db: Any) -> tuple[str, dict[str, Any]] | WajarPlan:
+    """Shared guards: empty input, the injection firewall, and the kill switch."""
     cleaned = " ".join(command.strip().split())
     if not cleaned:
         return _make(
@@ -182,7 +603,7 @@ def plan(command: str, role: str, db: Any) -> WajarPlan:
             role,
             "HELP",
             title="What should Axiom do?",
-            summary="Ask for the operating summary, cases at SLA risk, a case chain check, navigation, an operator invitation, or an administrative control change.",
+            summary=HELP_SUMMARY,
             effect="No action has been selected.",
         )
 
@@ -201,7 +622,6 @@ def plan(command: str, role: str, db: Any) -> WajarPlan:
             result={"detectors": list(verdict.detectors)},
         )
 
-    lower = cleaned.lower()
     controls = db.get_stakeholder_settings()
     if not controls.get("wajar_enabled", True):
         return _make(
@@ -216,150 +636,52 @@ def plan(command: str, role: str, db: Any) -> WajarPlan:
             route="/settings",
             gates=("stakeholder_settings.wajar_enabled = false",),
         )
+    return cleaned, controls
 
-    setting = _setting_request(cleaned)
-    if setting:
-        key, value = setting
-        valid = not (key == "sla_warning_hours" and not 1 <= int(value) <= 120)
-        permitted = role == "ADMIN" and valid
-        return _make(
-            cleaned,
-            role,
-            "UPDATE_SETTING",
-            title="Change an operating control",
-            summary=f"Set {key.replace('_', ' ')} to {value!s}.",
-            effect="The singleton control register changes and a hash-chained settings event is appended.",
-            authority="Admin only",
-            confirmation_required=True,
-            permitted=permitted,
-            route="/settings",
-            parameters={"key": key, "value": value},
-            gates=("Admin role", "Explicit confirmation", "Server-side value validation", "Hash-chained settings event"),
-            result={} if valid else {"error": "SLA warning must be between 1 and 120 hours."},
-        )
 
-    if "invite" in lower or "add operator" in lower or "add colleague" in lower:
-        email = EMAIL.search(cleaned)
-        role_match = re.search(r"\b(OPS|INVESTIGATOR|COMPLIANCE|ADMIN)\b", cleaned, re.I)
-        role_value = role_match.group(1).upper() if role_match else "OPS"
-        name = re.sub(r"\b(?:invite|add operator|add colleague)\b", "", cleaned, flags=re.I)
-        if email:
-            name = name.replace(email.group(0), "")
-        name = re.sub(r"\b(?:at|as|with role)\b", " ", name, flags=re.I)
-        name = re.sub(r"\b(?:OPS|INVESTIGATOR|COMPLIANCE|ADMIN)\b", "", name, flags=re.I)
-        name = " ".join(name.strip(" ,.-").split())
-        complete = bool(email and len(name) >= 2 and role_value in ROLES)
-        return _make(
-            cleaned,
-            role,
-            "INVITE_OPERATOR",
-            title="Invite a bank operator",
-            summary=(f"Invite {name} at {email.group(0).lower()} as {role_value}." if complete else "An invitation needs a full name, work email, and CaseZero role."),
-            effect="Supabase sends one single-use invitation email and the assigned role is written to app_users.",
-            authority="Admin only",
-            confirmation_required=True,
-            permitted=role == "ADMIN" and complete,
-            route="/admin/users",
-            parameters={"full_name": name, "email": email.group(0).lower() if email else None, "role": role_value},
-            gates=("Admin role", "Explicit confirmation", "Unique work email", "Supabase single-use invitation"),
-        )
+def plan(command: str, role: str, db: Any) -> WajarPlan:
+    """Deterministic planning only. Used by execution re-planning and by tests."""
+    guarded = _preflight(command, role, db)
+    if isinstance(guarded, WajarPlan):
+        return guarded
+    cleaned, controls = guarded
 
-    case_ref_match = CASE_REF.search(cleaned)
-    case_ref = case_ref_match.group(0).upper() if case_ref_match else None
-    if case_ref and any(word in lower for word in ("verify", "audit", "chain", "integrity")):
-        case = db.get_case_by_ref(case_ref)
-        if case is None:
-            result = {"found": False, "case_ref": case_ref}
-        else:
-            verdict = db.verify_case_chain(str(case["id"]))
-            result = {
-                "found": True,
-                "case_ref": case_ref,
-                "ok": verdict.ok,
-                "first_bad_seq": verdict.first_bad_seq,
-                "reason": verdict.reason,
-                "links": len(db.get_events(str(case["id"]))),
-            }
-        return _make(
-            cleaned,
-            role,
-            "VERIFY_CHAIN",
-            title=f"Verify {case_ref}",
-            summary="Recompute every link from canonical event payloads and locate the first mismatch.",
-            effect="Read-only integrity check; no case data changes.",
-            route=f"/case/{case_ref}",
-            parameters={"case_ref": case_ref},
-            gates=("RLS-visible case", "SHA-256 chain recomputation"),
-            result=result,
-        )
-    if case_ref:
-        return _make(
-            cleaned,
-            role,
-            "OPEN_CASE",
-            title=f"Open {case_ref}",
-            summary="Open the evidence, events, journal and customer-communication record for this case.",
-            effect="Navigate only; no case data changes.",
-            route=f"/case/{case_ref}",
-            parameters={"case_ref": case_ref},
-            gates=("RLS-visible case",),
-        )
+    detected = detect(cleaned)
+    action, parameters = detected if detected else ("HELP", {})
+    return build(cleaned, role, db, action, parameters, controls=controls)
 
-    if any(phrase in lower for phrase in ("sla risk", "at risk", "deadline", "breach")):
-        warning_hours = int(controls.get("sla_warning_hours") or 24)
-        result = _risk_result(_safe_cases(db), warning_hours)
-        return _make(
-            cleaned,
-            role,
-            "SHOW_SLA_RISK",
-            title="Cases approaching deadline",
-            summary=f"Check open cases due within the configured {warning_hours}-hour warning horizon.",
-            effect="Read-only prioritisation; no case data changes.",
-            route="/simple",
-            gates=("RLS-visible cases", f"Control register warning horizon = {warning_hours} hours"),
-            result=result,
-        )
-    if any(phrase in lower for phrase in ("summarise", "summarize", "today", "operations", "how are we doing")):
-        result = _operations_result(_safe_cases(db))
-        return _make(
-            cleaned,
-            role,
-            "SUMMARISE_OPERATIONS",
-            title="Operations summary",
-            summary=f"{result['total']} cases are visible; {result['needs_attention']} need attention and {result['communicated']} are communicated.",
-            effect="Read-only aggregation; no customer content is sent to a model.",
-            route="/pro",
-            gates=("RLS-visible cases", "PII-free deterministic aggregation"),
-            result=result,
-        )
 
-    navigation = (
-        (("review", "queue"), "OPEN_REVIEW", "Open the review queue", "/review"),
-        (("policy", "rule"), "OPEN_POLICY", "Open Policy Studio", "/policy"),
-        (("setting", "control register"), "OPEN_SETTINGS", "Open Settings", "/settings"),
-        (("quarantine", "hostile"), "OPEN_QUARANTINE", "Open Quarantine", "/quarantine"),
-    )
-    for terms, action, title, route in navigation:
-        if any(term in lower for term in terms):
-            return _make(
-                cleaned,
-                role,
-                action,  # type: ignore[arg-type]
-                title=title,
-                summary=f"Take the operator to {title.lower()}.",
-                effect="Navigate only; no customer or policy data changes.",
-                route=route,
-                gates=("Signed-in operator",),
-            )
+async def plan_with_model(command: str, role: str, db: Any, ctx: Any = None) -> WajarPlan:
+    """Plan a command, consulting the model only when the fast matcher cannot read it.
 
-    return _make(
+    The model widens *understanding*, never authority: its answer is coerced into
+    the closed registry and then handed to the same `build` used above.
+    """
+    guarded = _preflight(command, role, db)
+    if isinstance(guarded, WajarPlan):
+        return guarded
+    cleaned, controls = guarded
+
+    detected = detect(cleaned)
+    if detected:
+        action, parameters = detected
+        return build(cleaned, role, db, action, parameters, controls=controls)
+
+    intent = await resolve_intent(cleaned, ctx)
+    if intent is None:
+        return build(cleaned, role, db, "HELP", {}, controls=controls)
+
+    action, parameters = _intent_parameters(intent)
+    reply = " ".join((intent.reply or "").split())[:400]
+    return build(
         cleaned,
         role,
-        "HELP",
-        title="I can prepare a governed action",
-        summary="Try “summarise operations”, “show cases at SLA risk”, “verify MYB-2026-000012”, “open review”, or an Admin command such as “set SLA warning to 12 hours”.",
-        effect="No capability matched, so nothing was read or changed.",
-        gates=("Closed action registry",),
+        db,
+        action,
+        parameters,
+        controls=controls,
+        reply=reply,
+        understood_by="model",
     )
 
 

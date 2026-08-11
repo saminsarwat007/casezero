@@ -49,6 +49,32 @@ All implementation dates are 2026 and all bank/customer data is synthetic.
   TypeScript, production build, dependency audit, MCP, LLM/vision, live agent,
   database-integrity and scheduler smokes all passed.
 
+## 4 Aug — UX simplification and the stakeholder complaint composer
+
+- Replaced the 11-item flat sidebar with three role-filtered groups in plain language
+  (Operations / Compliance / Setup). Simple and Pro survive as the first two
+  Operations entries, so the duplicate topbar mode switch is gone. Role filtering is
+  a usability control only; RLS and per-endpoint `require()` still enforce authority.
+- Added `GET /me` so the menu can hide pages a role cannot act on, and
+  `dashboard/hooks/use-operator.ts` to consume it.
+- Made the public runner accept a complaint the visitor writes themselves:
+  `GET /demo/personas`, `POST /demo/compose` (multipart, optional PDF) and
+  `GET /demo/live/{token}/progress` for stage-by-stage progress read from the hash
+  chain while the request is still open. The composer and the fixture runner share
+  one execution path (`_execute_public_run`).
+- Added `api/security/public_intake.py`: the complaint must name an allow-listed
+  synthetic account, and any other Malaysian account number or NRIC is **refused,
+  not scrubbed**.
+- Replaced Axiom's regex matcher with a two-layer agent: the model resolves phrasing
+  the deterministic matcher cannot, and `build()` still decides role, confirmation
+  and gates in code. `/assistant/execute` re-plans and refuses with 409 if its own
+  re-read reaches a different action than the operator approved.
+- Turned the Axiom docket into a conversation, with each governed docket bound to the
+  message that produced it.
+- Release gates after the composer work: **485 backend tests**, **17 browser
+  journeys**, TypeScript, production build and `npm audit --audit-level=high`
+  (0 vulnerabilities) all passed.
+
 ## External proof boundary
 
 WorkBuddy intake is present in the production path and was exercised by a live HTTP

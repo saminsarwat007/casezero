@@ -19,19 +19,26 @@ mint a posting ticket, remove the FMOS clause, write a journal entry, or bypass 
 - Double-entry reversals/credits, confidence routing and dual-control thresholds.
 - Policy Composer: English instruction → typed intent → protected diff → 200-case
   replay → Compliance apply/reject → versioned hash chain.
-- **Axiom by CaseZero:** a governed operating agent that turns natural-language
-  requests into an inspectable action docket. Reads execute safely; writes require
-  role checks, explicit confirmation and a hash-addressed receipt.
+- **Axiom by CaseZero:** a governed operating agent you talk to in English or Malay.
+  A deployed model resolves the request onto one named capability; every plan is then
+  assembled in code as an inspectable action docket. Reads execute safely; writes
+  require role checks, explicit confirmation and a hash-addressed receipt. The model
+  picks a label — it never decides whether an operator may act.
 - Stakeholder Control Register for bank identity, complaint contact, timezone,
   warning horizon, default workspace, Axiom availability and the automatic
   resolution kill switch. Every change is chained.
 - Supabase Auth/RLS for OPS, INVESTIGATOR, COMPLIANCE and ADMIN.
 - Admin-only work-email invitations with single-use password setup.
-- A rate-limited public live runner: one allow-listed synthetic RFC822 complaint
-  executes through the deployed model, MCP bank tools, Supabase records, signed
-  posting gate, balanced journal and hash chain. Arbitrary public uploads are refused.
-- Next.js PWA with Simple/Pro operations views, review queue, Agent Theater SSE,
-  fraud-ring radar, quarantine, audit proof, customer tracker and proactive alert.
+- A rate-limited public live runner where the visitor **writes their own complaint**
+  and may attach their own PDF, then watches the seven stages land as each
+  hash-chained event is written. It executes through the deployed model, MCP bank
+  tools, Supabase records, signed posting gate, balanced journal and hash chain.
+  The complaint must name one of six allow-listed synthetic customers; any other
+  Malaysian account number or NRIC is **refused rather than scrubbed**, so the channel
+  never becomes a real PII inbox.
+- Next.js PWA with role-filtered navigation, Simple/Pro operations views, review
+  queue, Agent Theater SSE, fraud-ring radar, quarantine, audit proof, customer
+  tracker and proactive alert.
 - Four-page FMOS Referral Pack export.
 - 200 labelled `.eml` files, 20 PDFs and deterministic/live evaluation runners.
 
@@ -142,7 +149,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-The current release gate is **466 Python tests**, **14 Playwright stakeholder
+The current release gate is **501 Python tests**, **29 Playwright stakeholder
 journeys**, a clean production build/typecheck and **0 npm vulnerabilities**.
 
 Record the chaptered stakeholder walkthrough at 1920×1080, then build the narrated

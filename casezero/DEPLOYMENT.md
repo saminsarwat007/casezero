@@ -91,7 +91,7 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 5. Run `python -m api.jobs --once`, then start exactly one scheduler worker.
 6. Build the dashboard with the final public API/Supabase values and release it.
 7. Sign in once as every role; confirm the investigator's RLS-filtered register.
-8. Run all 14 Playwright journeys, then execute `/demo/live` once and prove a fresh
+8. Run all 29 Playwright journeys, then execute `/demo/live` once and prove a fresh
    `COMMUNICATED` case, actual telemetry/tool receipts, balanced journal and valid chain.
 9. Remove `DEMO_USER_PASSWORD` from the long-lived runtime after identities exist.
 
@@ -127,5 +127,5 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 - `.env` absent from image layers and source control.
 - API logs expose no bearer tokens, PII, raw account numbers or encryption keys.
 - Four-role auth smoke, RLS visibility smoke and exact-chain verification pass.
-- 466-test Python suite, typecheck, production build, 14 Playwright journeys, MCP,
+- 501-test Python suite, typecheck, production build, 29 Playwright journeys, MCP,
   LLM, database and mailbox-channel smokes pass.

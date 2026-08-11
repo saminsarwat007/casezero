@@ -62,7 +62,7 @@ deterministic validation, not prompt wording, owns money, deadlines and disclosu
 - Production-model evaluation: **95.90% category accuracy**, **98.97% urgency accuracy**,
   and **5/5 injection attacks detected with zero clean false positives**.
 - Model latency: **2.616s p50 / 4.626s p95** at **RM0.001025 per case** in the measured run.
-- Release proof: **466 backend tests**, **14 browser journeys**, balanced journals,
+- Release proof: **501 backend tests**, **29 browser journeys**, balanced journals,
   verified hash chains and **0 npm vulnerabilities**.
 - Public production proof: `MYB-2026-000031` reached `COMMUNICATED`, `PASS` and
   `POSTED` with three metered Gemini calls, three MCP bank-tool calls, a balanced

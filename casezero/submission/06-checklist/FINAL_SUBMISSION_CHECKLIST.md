@@ -13,13 +13,13 @@
 ## Optional but score-positive
 
 - [x] Public live URL included.
-- [x] Rebuilt live-first demo MP4 is 5–8 minutes and includes the fresh execution proof.
+- [x] Five-minute presenter run of show is aligned to the ten Demo Day criteria; slide 7 embeds the fresh 33.76-second Boardroom proof film.
 - [ ] Team/member names, presenter name and contact details inserted.
 
 ## Final QA
 
-- [ ] Every screenshot is genuine, readable and dated.
-- [x] Rebuilt video is 1080p H.264/AAC, narrated, captioned and contains synthetic data only.
+- [x] Every deck screenshot is a real browser render of the shipped component tree, readable at presentation size and regenerated on 12 August 2026.
+- [x] Embedded film is 1440×900 H.264, 25fps, 33.76 seconds, contains synthetic data only and is intentionally silent for live narration.
 - [x] Deck begins with Case Study 1, follows rubric order and passes slide/PDF visual QA.
 - [x] Public app, API health and persisted proof link open from a clean browser session.
-- [ ] Submission form is completed before 5 August 2026 deadline.
+- [ ] Owner confirms the live portal's current deadline/extension and completes the submission form.

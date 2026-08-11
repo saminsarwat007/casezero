@@ -54,7 +54,8 @@ FastAPI boundary, Supabase Auth/RLS/PostgREST and one dedicated SLA worker. Live
 makes agent/tool execution observable without making the animation the source of
 truth.
 
-The public deployment opens on one live proof path. A visitor can execute an
+The public deployment opens on one live proof path. A visitor writes a synthetic
+complaint in the composer and can execute an
 allow-listed fictional complaint without an email or password; the deployed API,
 model, MCP bank tools, Supabase rows, signed journal and audit chain run for that
 fresh case. Arbitrary uploads are unavailable and the UI labels synthetic input
@@ -62,6 +63,12 @@ separately from live execution. The mutation-free operations rehearsal is second
 Production staff have no public sign-up path. An Admin enters a colleague's work email and role in **Operators**, Supabase
 sends a single-use invitation, and Postgres RLS enforces that role after password
 setup.
+
+The live result lands in the Boardroom: six named seats speak only when their own
+hash-chained event exists, every spoken line opens its sequence number and hash,
+and the deterministic kernel stamps the financial ruling. The per-desk value ledger
+keeps measured timestamps, the 90-minute baseline and editable assumptions visibly
+separate, and claims no savings for refused cases.
 
 The Pro surface now behaves as an operations board on desktop and a focused
 single-stage register on mobile. Settings, the mobile menu and Axiom use the same
@@ -87,9 +94,9 @@ FMOS pack, reducing both operating time and regulator-file preparation.
 - At least 3 genuine dated CodeBuddy/WorkBuddy screenshots (target 10+).
 - WorkBuddy build/run screenshots plus the CaseZero API call log.
 - 380×216 cover: `submission/03-cover/casezero-cover-380x216.png` — ready.
-- 5:55.77 narrated demo: `submission/04-demo/CaseZero-Stakeholder-Demo.mp4` — ready.
-- Final rubric-ordered deck: `submission/02-deck/Axiom-Case-Study-1-Submission-Deck.pptx`
-  and `.pdf` — ready, fully rendered and inspected.
+- 33.76-second silent Boardroom presenter film: `submission/04-demo/Axiom-Boardroom-Demo.mp4` — ready and embedded on slide 7.
+- Final ten-criterion Demo Day deck: `submission/02-deck/Axiom-Demo-Day-Deck.pptx`
+  and `.pdf` — ready, overflow-checked, fully rendered and inspected.
 - Public dashboard/API URL: <https://casezero-alpha.vercel.app> — ready.
 
 Never fabricate proof: Tencent can verify product-side activity.

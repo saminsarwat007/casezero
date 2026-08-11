@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { AgentTheater } from "@/components/agent-theater";
 import { CaseCard } from "@/components/case-card";
@@ -26,12 +26,25 @@ export default function ProPage() {
   const { cases, loading, rehearsal } = useCases();
   const { data: analytics, error: analyticsError } = useAnalytics();
   const [activeStage, setActiveStage] = useState<(typeof columns)[number]["key"]>("verified");
+  const stageTabs = useRef<Array<HTMLButtonElement | null>>([]);
   const resolved = cases.filter((item) => ["COMMUNICATED", "FINANCIALLY_RESOLVED", "CLOSED"].includes(item.status)).length;
   const review = cases.filter((item) => ["REVIEW_PENDING", "VERIFIED", "QUARANTINED"].includes(item.status)).length;
   const now = new Date("2026-08-04T09:00:00+08:00").getTime();
   const atRisk = cases.filter((item) => item.sla_due && !["COMMUNICATED", "CLOSED", "QUARANTINED"].includes(item.status) && new Date(item.sla_due).getTime() - now <= 24 * 60 * 60 * 1000).length;
   const automation = Number(analytics?.metrics.automation_rate ?? (cases.length ? resolved / cases.length : 0)) * 100;
   const latestEval = analytics?.eval_runs[0];
+
+  function moveStageTab(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? columns.length - 1
+        : (index + (event.key === "ArrowRight" ? 1 : -1) + columns.length) % columns.length;
+    setActiveStage(columns[nextIndex].key);
+    requestAnimationFrame(() => stageTabs.current[nextIndex]?.focus());
+  }
 
   return (
     <AppShell>
@@ -51,15 +64,15 @@ export default function ProPage() {
       <section className="section" aria-labelledby="pipeline-title">
         <div className="section-heading pipeline-heading"><div><p className="eyebrow mono">Continuous state / No hidden lane</p><h2 id="pipeline-title" className="section-title">Case movement</h2></div><p className="pipeline-hint mono">SELECT A STAGE ON MOBILE</p></div>
         <div className="stage-tabs" role="tablist" aria-label="Case pipeline stages">
-          {columns.map((column) => {
+          {columns.map((column, index) => {
             const count = cases.filter((item) => (column.statuses as readonly string[]).includes(item.status)).length;
-            return <button type="button" role="tab" aria-selected={activeStage === column.key} key={column.key} className={activeStage === column.key ? "active" : ""} onClick={() => setActiveStage(column.key)}><span>{column.label}</span><strong className="mono">{count.toString().padStart(2, "0")}</strong></button>;
+            return <button ref={(element) => { stageTabs.current[index] = element; }} id={`stage-tab-${column.key}`} type="button" role="tab" aria-controls={`stage-panel-${column.key}`} aria-selected={activeStage === column.key} tabIndex={activeStage === column.key ? 0 : -1} key={column.key} className={activeStage === column.key ? "active" : ""} onKeyDown={(event) => moveStageTab(event, index)} onClick={() => setActiveStage(column.key)}><span>{column.label}</span><strong className="mono">{count.toString().padStart(2, "0")}</strong></button>;
           })}
         </div>
         <div className="pipeline">
           {columns.map((column) => {
             const items = cases.filter((item) => (column.statuses as readonly string[]).includes(item.status));
-            return <div className={`pipeline-column ${activeStage === column.key ? "active" : ""}`} key={column.key} role="tabpanel"><div className="pipeline-head"><strong>{column.label}</strong><span className="mono">{items.length.toString().padStart(2, "0")}</span></div>{items.length ? items.map((item) => <CaseCard item={item} key={item.id} />) : <div className="pipeline-empty">No case is waiting here.</div>}</div>;
+            return <div id={`stage-panel-${column.key}`} aria-labelledby={`stage-tab-${column.key}`} className={`pipeline-column ${activeStage === column.key ? "active" : ""}`} key={column.key} role="tabpanel"><div className="pipeline-head"><strong>{column.label}</strong><span className="mono">{items.length.toString().padStart(2, "0")}</span></div>{items.length ? items.map((item) => <CaseCard item={item} key={item.id} />) : <div className="pipeline-empty">No case is waiting here.</div>}</div>;
           })}
         </div>
       </section>
