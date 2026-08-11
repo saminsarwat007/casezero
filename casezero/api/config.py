@@ -36,7 +36,9 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash"
 
     groq_api_key: str | None = None
-    groq_base_url: str = "https://api.groq.com/openai/v1"
+    # The Groq SDK appends /openai/v1 itself. Supplying that suffix here would
+    # produce /openai/v1/openai/v1/chat/completions at runtime.
+    groq_base_url: str = "https://api.groq.com"
     groq_model: str = "llama-3.3-70b-versatile"
     groq_model_fast: str = "llama-3.1-8b-instant"
 

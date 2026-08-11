@@ -18,6 +18,21 @@ from api.config import Settings
 from api.llm.provider import ImagePart, LLMError, LLMProvider
 
 
+def sdk_base_url(value: str) -> str:
+    """Return the origin/path prefix expected by the official Groq SDK.
+
+    Older deployments copied the OpenAI-compatible REST suffix into
+    ``GROQ_BASE_URL``. The SDK adds that suffix to every chat request, so accept
+    the legacy value but remove it at this boundary.
+    """
+
+    base_url = value.rstrip("/")
+    suffix = "/openai/v1"
+    if base_url.endswith(suffix):
+        base_url = base_url[: -len(suffix)]
+    return base_url
+
+
 class GroqProvider(LLMProvider):
     name = "groq"
 
@@ -42,7 +57,10 @@ class GroqProvider(LLMProvider):
                 raise LLMError(
                     "groq is not installed. Run: pip install -r api/requirements.txt"
                 ) from exc
-            self._client = AsyncGroq(api_key=self.settings.groq_api_key)
+            self._client = AsyncGroq(
+                api_key=self.settings.groq_api_key,
+                base_url=sdk_base_url(self.settings.groq_base_url),
+            )
         return self._client
 
     async def _complete(
