@@ -11,8 +11,8 @@ account evidence and team identity details require the owner.
 ## Final upload map
 
 1. `01-project-copy/PROJECT_DESCRIPTION.md` - title, under-10-word blurb and full description.
-2. `02-deck/Axiom-Demo-Day-Deck.pptx` - final 18-slide Demo Day presentation: 13 timed story slides plus 5 appendix/Q&A slides, with speaker notes on every slide.
-3. `02-deck/Axiom-Demo-Day-Deck.pdf` - verified 18-page font-independent fallback of the same deck.
+2. `02-deck/Axiom-Demo-Day-Deck.pptx` - final 19-slide Demo Day presentation: 13 timed story slides, 1 preserved previous-close reference and 5 appendix/Q&A slides, with speaker notes on every slide.
+3. `02-deck/Axiom-Demo-Day-Deck.pdf` - verified 19-page font-independent fallback of the same deck.
 4. `03-cover/casezero-cover-380x216.png` - required online showcase cover.
 5. `04-demo/Axiom-Boardroom-Demo.mp4` - optional 33.76-second silent Boardroom fallback if venue connectivity fails.
 6. `04-demo/Axiom-Boardroom-Demo-poster.png` - standalone film poster frame.
