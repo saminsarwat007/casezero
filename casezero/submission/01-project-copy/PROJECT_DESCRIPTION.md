@@ -64,9 +64,11 @@ deterministic validation, not prompt wording, owns money, deadlines and disclosu
 - Model latency: **2.616s p50 / 4.626s p95** at **RM0.001025 per case** in the measured run.
 - Release proof: **504 backend tests**, **29 browser journeys**, balanced journals,
   verified hash chains and **0 npm vulnerabilities**.
-- Public production proof: `MYB-2026-000031` reached `COMMUNICATED`, `PASS` and
-  `POSTED` with three metered Gemini calls, three MCP bank-tool calls, a balanced
-  RM2,450 journal and 13 valid hash links in **26.54 seconds**.
+- Public production proof: visitor-authored case `MYB-2026-000057` reached
+  `COMMUNICATED`, `PASS` and `POSTED` with three metered model calls, three MCP
+  bank-tool calls, a balanced RM180.50 journal and 14 valid hash links in
+  **20.11 seconds**. Its input receipt preserves the visitor's exact subject,
+  amount, merchant, PDF filename, PDF read method and complaint-body fingerprint.
 
 The live deployment is ready for stakeholder onboarding, safe rehearsal and a
 synthetic-data pilot. Real financial rollout additionally requires the bank's core/CRM
