@@ -77,15 +77,29 @@ async function shotFold(page: Page, name: string, selector: string, height: numb
 /** A completed PASS run, reopened from its persisted proof. */
 async function captureCompleted(browser: Browser) {
   const page = await (await browser.newContext({ viewport: DESKTOP, deviceScaleFactor: 2 })).newPage();
+  const completed = liveProof();
+  if (!completed.proof) throw new Error("Expected completed proof fixture");
+  completed.proof.input = {
+    ...completed.proof.input,
+    fixture: "stakeholder_composed_v1",
+    authored_by: "STAKEHOLDER",
+    subject: "Card charge I never made",
+    body_chars: 80,
+    body_sha256: "a".repeat(64),
+    attachment: "my-evidence.pdf",
+    attachment_read_by: "pdf_text",
+  };
   await stub(page, [
     ["**/demo/personas", PERSONAS as unknown as Json],
     ["**/demo/agents", ROSTER as unknown as Json],
-    [`**/demo/live/${PROOF_TOKEN}`, liveProof() as unknown as Json],
+    [`**/demo/live/${PROOF_TOKEN}`, completed as unknown as Json],
   ]);
 
   await page.goto(`${BASE}/live?run=${PROOF_TOKEN}`, { waitUntil: "networkidle" });
   await page.locator(".boardroom").waitFor();
   await settle(page);
+  await shot(page, "input-receipt", ".input-receipt");
+  await shot(page, "proof-verdict", ".proof-verdict");
   await shot(page, "boardroom-complete", ".boardroom");
   await shot(page, "value-ledger", ".value-ledger");
 
@@ -127,12 +141,18 @@ async function captureRunning(browser: Browser) {
   await page.route("**/demo/compose", () => {});
 
   await page.goto(`${BASE}/live`, { waitUntil: "networkidle" });
-  await shot(page, "composer", ".live-input");
   await shot(page, "boardroom-idle", ".boardroom");
 
+  await page.getByLabel("Subject").fill("Card charge I never made");
   await page
     .getByLabel("What happened?")
     .fill("A card payment left my account last night and I never approved it. Please reverse it.");
+  await page.getByLabel("Evidence PDF (optional)").setInputFiles({
+    name: "my-evidence.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4 stakeholder evidence"),
+  });
+  await shot(page, "composer", ".live-input");
   await page.getByRole("button", { name: "Run My Complaint Live" }).click();
   await page.locator(".board-minutes").waitFor();
   await settle(page);

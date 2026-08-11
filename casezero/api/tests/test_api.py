@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+import hashlib
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 import pytest
 
 from api.main import agent_context, app, settings
+from api.corpus.statement_pdf import StatementLine, StatementSpec, render_statement
 from api.db.invitations import invitation_service
+from api.security.public_intake import ALLOWED_PERSONAS
 from api.web.auth import AuthUser, current_user, rls_database, service_database
 
 
@@ -119,6 +122,70 @@ def test_public_live_demo_runs_real_pipeline_and_returns_verifiable_proof(
     reopened = api_client.get(f"/demo/live/{payload['token']}")
     assert reopened.status_code == 200
     assert reopened.json()["proof"]["chain"]["head_hash"] == proof["chain"]["head_hash"]
+
+
+def test_public_composer_proof_uses_the_visitors_words_values_and_pdf(
+    api_client, fake_db, monkeypatch
+) -> None:
+    """The composed route must never inherit the fixture's visible input receipt."""
+    monkeypatch.setattr(settings, "public_live_demo_enabled", True)
+    persona = ALLOWED_PERSONAS[0]
+    body = (
+        "A midnight card charge appeared and I did not authorise it. "
+        "Please inspect the attached evidence and reverse this payment."
+    )
+    evidence = render_statement(
+        StatementSpec(
+            account_holder=persona["full_name"],
+            account_no=persona["account_no"],
+            nric_masked="880412-14-****",
+            period_label="01 AUG 2026 - 31 AUG 2026",
+            opening_balance_rm=2_000.00,
+            lines=(StatementLine(date(2026, 8, 11), "POS - AURORA BOOKS KL", 180.50),),
+        )
+    )
+
+    response = api_client.post(
+        "/demo/compose",
+        headers={"User-Agent": "casezero-composer-proof-test"},
+        data={
+            "token": "stakeholder-evidence-proof-token-0001",
+            "account_no": persona["account_no"],
+            "from_name": persona["full_name"],
+            "from_email": persona["email"],
+            "subject": "Midnight card charge from Aurora Books",
+            "body": body,
+            "amount_rm": "180.50",
+            "merchant": "AURORA BOOKS KL",
+        },
+        files={
+            "attachment": (
+                "aurora-evidence.pdf",
+                evidence,
+                "application/pdf",
+            )
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    proof = response.json()["proof"]
+    assert proof["input"] == {
+        "fixture": "stakeholder_composed_v1",
+        "sender": persona["email"],
+        "subject": "Midnight card charge from Aurora Books",
+        "account_no_masked": "******6890",
+        "amount_rm": 180.5,
+        "merchant": "AURORA BOOKS KL",
+        "txn_ref": proof["input"]["txn_ref"],
+        "attachment_read_by": "pdf_text",
+        "authored_by": "STAKEHOLDER",
+        "body_chars": len(body),
+        "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        "attachment": "aurora-evidence.pdf",
+    }
+    transaction = fake_db.transactions[proof["input"]["txn_ref"]]
+    assert transaction["amount_rm"] == 180.5
+    assert transaction["merchant"] == "AURORA BOOKS KL"
 
 
 def test_case_reads_require_a_bearer_token() -> None:

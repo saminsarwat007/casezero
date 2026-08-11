@@ -91,7 +91,7 @@ export const demoScenes = [
     id: "proof",
     kicker: "RELEASE EVIDENCE",
     title: "Measured, not merely demonstrated.",
-    caption: "95.90% category · 98.97% urgency · 5/5 attacks blocked · 501 backend tests",
+    caption: "95.90% category · 98.97% urgency · 5/5 attacks blocked · 504 backend tests",
     durationMs: 20000,
     narration: "The persisted live-model evaluation scores ninety-five point nine percent category accuracy and ninety-eight point nine-seven percent urgency accuracy across one hundred and ninety-five clean cases. All five injection attacks are blocked. Median model latency is two point six seconds, measured cost is about one-tenth of a sen per case, and the release carries five hundred and one backend tests plus twenty-nine browser journeys.",
   },

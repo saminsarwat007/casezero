@@ -149,7 +149,7 @@ npm run test:e2e
 npm audit --audit-level=high
 ```
 
-The current release gate is **501 Python tests**, **29 Playwright stakeholder
+The current release gate is **504 Python tests**, **29 Playwright stakeholder
 journeys**, a clean production build/typecheck and **0 npm vulnerabilities**.
 
 Record the chaptered stakeholder walkthrough at 1920×1080, then build the narrated
