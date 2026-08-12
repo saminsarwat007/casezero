@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #E4EAE5;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="54.987"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div
+        id="el-01-complaint-vanishes"
+        class="scene"
+        data-composition-id="01-complaint-vanishes"
+        data-composition-src="compositions/frames/01-complaint-vanishes.html"
+        data-start="0"
+        data-duration="9.639"
+        data-track-index="0"
+      ></div>
+      <audio
+        id="el-01-complaint-vanishes-voice"
+        src="assets/voice/01.wav"
+        data-start="0"
+        data-duration="9.639"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-02-your-words"
+        class="scene"
+        data-composition-id="02-your-words"
+        data-composition-src="compositions/frames/02-your-words.html"
+        data-start="9.639"
+        data-duration="8.229"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-02-your-words-voice"
+        src="assets/voice/02.wav"
+        data-start="9.639"
+        data-duration="8.229"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-03-case-moves"
+        class="scene"
+        data-composition-id="03-case-moves"
+        data-composition-src="compositions/frames/03-case-moves.html"
+        data-start="17.868"
+        data-duration="10.344"
+        data-track-index="0"
+      ></div>
+      <audio
+        id="el-03-case-moves-voice"
+        src="assets/voice/03.wav"
+        data-start="17.868"
+        data-duration="10.344"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-04-human-judgment"
+        class="scene"
+        data-composition-id="04-human-judgment"
+        data-composition-src="compositions/frames/04-human-judgment.html"
+        data-start="28.211999999999996"
+        data-duration="11.598"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-04-human-judgment-voice"
+        src="assets/voice/04.wav"
+        data-start="28.211999999999996"
+        data-duration="11.598"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-05-clear-outcome"
+        class="scene"
+        data-composition-id="05-clear-outcome"
+        data-composition-src="compositions/frames/05-clear-outcome.html"
+        data-start="39.809999999999995"
+        data-duration="15.177"
+        data-track-index="0"
+      ></div>
+      <audio
+        id="el-05-clear-outcome-voice"
+        src="assets/voice/05.wav"
+        data-start="39.809999999999995"
+        data-duration="15.177"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <video id="f03-case-moves-boardroom-video" src="assets/Axiom-Boardroom-Demo.mp4" muted playsinline data-layout-allow-occlusion
+        class="clip"
+        style="position:absolute;left:64px;top:64px;width:1792px;height:780px;object-fit:cover;object-position:50% 0%;z-index:1"
+        data-start="17.868"
+        data-duration="10.344"
+        data-media-start="8.5"
+        data-track-index="3001"
+      ></video>
+
+      <!-- BGM -->
+      <audio
+        id="el-bgm"
+        src="assets/bgm/track.loop.mp3"
+        data-start="0"
+        data-duration="54.987"
+        data-track-index="11"
+        data-volume="0.12"
+      ></audio>
+
+      <!-- captions -->
+      <div
+        id="el-captions"
+        class="scene"
+        data-composition-id="captions"
+        data-composition-src="compositions/captions.html"
+        data-start="0"
+        data-duration="54.987"
+        data-track-index="2"
+      ></div>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── editorial hard cuts: scenes butt-join at 9.639 / 17.868 / 28.212 / 39.81 ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to({}, { duration: 54.987 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
+      })();
+    </script>
+  </body>
+</html>

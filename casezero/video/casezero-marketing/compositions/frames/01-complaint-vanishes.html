@@ -1,0 +1,351 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Sans";
+      src: url("assets/fonts/26d0ba92e140f0dc-s.p.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+    }
+
+    @font-face {
+      font-family: "Martian Mono SemiExpanded";
+      src: url("assets/fonts/2a705150951ef2a4-s.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+    }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #e4eae5;
+      font-family: "Instrument Sans", sans-serif;
+    }
+
+    .f01-complaint-vanishes-ground {
+      position: absolute;
+      inset: 0;
+      background: #0b0f0c;
+    }
+
+    .f01-complaint-vanishes-topbar {
+      position: absolute;
+      top: 52px;
+      left: 96px;
+      right: 96px;
+      height: 54px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      border-top: 2px solid #8b2333;
+      padding-top: 18px;
+      color: #e4eae5;
+      font-family: "Martian Mono SemiExpanded", monospace;
+      font-size: 22px;
+      font-weight: 580;
+      letter-spacing: 0.16em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .f01-complaint-vanishes-counter {
+      color: #a8bfb0;
+    }
+
+    .f01-complaint-vanishes-stage {
+      position: absolute;
+      inset: 0;
+    }
+
+    .f01-complaint-vanishes-type-wrap {
+      position: absolute;
+      z-index: 4;
+      top: 244px;
+      left: 96px;
+      width: 1090px;
+      height: 270px;
+      transform-origin: 50% 50%;
+    }
+
+    .f01-complaint-vanishes-type-line {
+      display: flex;
+      align-items: baseline;
+      width: 1090px;
+      min-height: 154px;
+      white-space: pre;
+      font-family: "Martian Mono SemiExpanded", monospace;
+      font-size: 64px;
+      font-weight: 580;
+      letter-spacing: -0.025em;
+      line-height: 1.14;
+    }
+
+    .f01-complaint-vanishes-text-wrap {
+      display: inline-flex;
+      align-items: baseline;
+      min-width: 1050px;
+      white-space: pre;
+    }
+
+    .f01-complaint-vanishes-prefix,
+    .f01-complaint-vanishes-active {
+      white-space: pre;
+    }
+
+    .f01-complaint-vanishes-cursor {
+      display: inline-block;
+      flex: 0 0 auto;
+      width: 15px;
+      height: 58px;
+      margin-left: 8px;
+      background: #e4eae5;
+      vertical-align: -6px;
+    }
+
+    .f01-complaint-vanishes-type-rule {
+      width: 210px;
+      height: 2px;
+      margin-top: 42px;
+      background: #8b2333;
+    }
+
+    .f01-complaint-vanishes-sliver {
+      --dof: 12px;
+      position: absolute;
+      z-index: 2;
+      top: 150px;
+      right: 0;
+      width: 118px;
+      height: 692px;
+      overflow: hidden;
+      border-left: 2px solid #8b2333;
+      background: #e4eae5;
+      filter: blur(var(--dof));
+      will-change: filter;
+    }
+
+    .f01-complaint-vanishes-sliver img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 12%;
+    }
+
+    .f01-complaint-vanishes-composer {
+      --dof: 16px;
+      position: absolute;
+      z-index: 5;
+      top: 128px;
+      right: 0;
+      width: 1306px;
+      height: 714px;
+      overflow: hidden;
+      border: 2px solid #365f48;
+      border-right: 0;
+      border-radius: 8px 0 0 8px;
+      background: #e4eae5;
+      filter: blur(var(--dof));
+      transform-origin: 43% 42%;
+      will-change: filter;
+    }
+
+    .f01-complaint-vanishes-composer img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 10%;
+    }
+
+    .f01-complaint-vanishes-final-copy {
+      position: absolute;
+      z-index: 7;
+      top: 590px;
+      left: 96px;
+      width: 430px;
+      color: #a8bfb0;
+    }
+
+    .f01-complaint-vanishes-final-rule {
+      width: 168px;
+      height: 2px;
+      margin-bottom: 28px;
+      background: #8b2333;
+    }
+
+    .f01-complaint-vanishes-final-copy p {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.18;
+    }
+  </style>
+
+  <div
+    id="root"
+    data-composition-id="01-complaint-vanishes"
+    data-start="0"
+    data-duration="9.639"
+    data-width="1920"
+    data-height="1080"
+  >
+    <div
+      class="clip f01-complaint-vanishes-ground"
+      data-start="0"
+      data-duration="9.639"
+      data-track-index="0"
+    ></div>
+
+    <div
+      class="clip f01-complaint-vanishes-topbar"
+      data-start="0"
+      data-duration="9.639"
+      data-track-index="1"
+    >
+      <span>Complaint / uncertainty</span>
+      <span class="f01-complaint-vanishes-counter">01</span>
+    </div>
+
+    <div
+      class="clip f01-complaint-vanishes-stage"
+      data-start="0"
+      data-duration="9.639"
+      data-track-index="2"
+    >
+      <div class="f01-complaint-vanishes-sliver" id="f01-complaint-vanishes-sliver" data-depth="2">
+        <img src="assets/composer.png" alt="CaseZero complaint composer" />
+      </div>
+
+      <div class="f01-complaint-vanishes-type-wrap" id="f01-complaint-vanishes-type-wrap">
+        <div class="f01-complaint-vanishes-type-line">
+          <div class="f01-complaint-vanishes-text-wrap">
+            <span class="f01-complaint-vanishes-prefix" id="f01-complaint-vanishes-prefix"></span><span class="f01-complaint-vanishes-active" id="f01-complaint-vanishes-active"></span><span class="f01-complaint-vanishes-cursor" id="f01-complaint-vanishes-cursor"></span>
+          </div>
+        </div>
+        <div class="f01-complaint-vanishes-type-rule"></div>
+      </div>
+
+      <div class="f01-complaint-vanishes-composer" id="f01-complaint-vanishes-composer">
+        <img src="assets/composer.png" alt="CaseZero complaint composer" />
+      </div>
+
+      <div class="f01-complaint-vanishes-final-copy" id="f01-complaint-vanishes-final-copy">
+        <div class="f01-complaint-vanishes-final-rule"></div>
+        <p>No clear path forward.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (() => {
+      const id = "01-complaint-vanishes";
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines[id] = tl;
+
+      const prefixEl = document.getElementById("f01-complaint-vanishes-prefix");
+      const activeEl = document.getElementById("f01-complaint-vanishes-active");
+      const cursorEl = document.getElementById("f01-complaint-vanishes-cursor");
+
+      const sequence = [
+        { t: 0.00, prefix: "", active: "", color: "#e4eae5" },
+        { t: 0.18, prefix: "", active: "A", color: "#e4eae5" },
+        { t: 0.34, prefix: "", active: "A complaint", color: "#e4eae5" },
+        { t: 0.72, prefix: "", active: "A complaint can", color: "#e4eae5" },
+        { t: 1.08, prefix: "", active: "A complaint can feel", color: "#e4eae5" },
+        { t: 1.54, prefix: "", active: "A complaint can feel like", color: "#e4eae5" },
+        { t: 2.04, prefix: "", active: "A complaint can feel like it", color: "#e4eae5" },
+        { t: 2.80, prefix: "", active: "A complaint can feel like i", color: "#a8bfb0" },
+        { t: 2.96, prefix: "", active: "A complaint can feel like ", color: "#a8bfb0" },
+        { t: 3.18, prefix: "A complaint can feel like ", active: "d", color: "#8b2333" },
+        { t: 3.34, prefix: "A complaint can feel like ", active: "dis", color: "#8b2333" },
+        { t: 3.56, prefix: "A complaint can feel like ", active: "disapp", color: "#8b2333" },
+        { t: 3.84, prefix: "A complaint can feel like ", active: "disappear", color: "#8b2333" },
+        { t: 4.18, prefix: "A complaint can feel like ", active: "disappears.", color: "#8b2333" }
+      ];
+
+      const entryAt = (time) => {
+        for (let index = sequence.length - 1; index >= 0; index -= 1) {
+          if (time >= sequence[index].t) return sequence[index];
+        }
+        return sequence[0];
+      };
+
+      const changeTimes = sequence.slice(1).map((entry) => entry.t);
+      const driver = { t: 0 };
+      const blink = { p: 0 };
+
+      tl.to(driver, {
+        t: 5.8,
+        duration: 5.8,
+        ease: "none",
+        onUpdate: () => {
+          const entry = entryAt(driver.t);
+          prefixEl.textContent = entry.prefix;
+          activeEl.textContent = entry.active;
+          activeEl.style.color = entry.color;
+          cursorEl.style.background = entry.color;
+          const isTyping = changeTimes.some((time) => time <= driver.t && driver.t - time < 0.15);
+          cursorEl.style.opacity = isTyping || Math.sin(blink.p) > 0 ? "1" : "0";
+        }
+      }, 0);
+
+      tl.to(blink, {
+        p: Math.PI * 2 * 8,
+        duration: 5.8,
+        ease: "none"
+      }, 0);
+
+      tl.fromTo(
+        "#f01-complaint-vanishes-type-wrap",
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.48, ease: "power3.out" },
+        0
+      );
+
+      tl.fromTo(
+        "#f01-complaint-vanishes-sliver",
+        { opacity: 0.18, "--dof": "18px" },
+        { opacity: 0.48, "--dof": "12px", duration: 0.9, ease: "power2.out" },
+        0.2
+      );
+
+      tl.to(
+        "#f01-complaint-vanishes-sliver",
+        { "--dof": "16px", opacity: 0.38, duration: 0.8, ease: "power2.inOut" },
+        2.8
+      );
+
+      tl.to(
+        "#f01-complaint-vanishes-type-wrap",
+        { x: 850, y: 170, scale: 0.72, opacity: 0, duration: 0.42, ease: "power2.in" },
+        5.8
+      );
+
+      tl.fromTo(
+        "#f01-complaint-vanishes-composer",
+        { scale: 0.72, opacity: 0, "--dof": "16px" },
+        { scale: 1, opacity: 1, "--dof": "0px", duration: 0.64, ease: "power3.out" },
+        6.06
+      );
+
+      tl.to(
+        "#f01-complaint-vanishes-sliver",
+        { opacity: 0, "--dof": "18px", duration: 0.45, ease: "power2.in" },
+        5.8
+      );
+
+      tl.fromTo(
+        "#f01-complaint-vanishes-final-copy",
+        { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" },
+        7.7
+      );
+    })();
+  </script>
+</template>

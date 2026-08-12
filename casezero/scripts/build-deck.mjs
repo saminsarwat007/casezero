@@ -477,7 +477,7 @@ function stamp(slide, { x, y, w = 2.45, text, gate, refused = false }) {
     ["5 / 5", "injection attacks blocked, zero false positives"],
   ];
   const row2 = [
-    ["501", "backend tests passing"],
+    ["504", "backend tests passing"],
     ["29", "browser journeys, 12 on the boardroom alone"],
     ["0", "npm vulnerabilities at high or above"],
   ];

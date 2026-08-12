@@ -234,6 +234,9 @@ def _build_public_demo_proof(
     run: CaseRun,
     ctx: AgentContext,
     txn_ref: str,
+    account_no: str,
+    merchant: str,
+    amount_rm: float,
     started_at: datetime,
     completed_at: datetime,
     duration_ms: int,
@@ -290,6 +293,7 @@ def _build_public_demo_proof(
     posted = (by_type.get("JOURNAL_POSTED") or {}).get("payload") or {}
     linted = (by_type.get("DRAFT_LINTED") or {}).get("payload") or {}
     message = (by_type.get("MESSAGE_SENT") or {}).get("payload") or {}
+    document = (by_type.get("DOCUMENT_READ") or {}).get("payload") or {}
 
     gate_action = str(gate.get("action") or "—")
     gate_reasons = gate.get("reasons") or []
@@ -467,10 +471,11 @@ def _build_public_demo_proof(
             "fixture": "unauthorised_transaction_v1",
             "sender": "ahmad.live@example.my",
             "subject": "Unauthorised card transaction",
-            "account_no_masked": "******6890",
-            "amount_rm": 2450.0,
-            "merchant": "TECHWORLD KL",
+            "account_no_masked": mask_account(account_no),
+            "amount_rm": amount_rm,
+            "merchant": merchant,
             "txn_ref": txn_ref,
+            "attachment_read_by": document.get("method"),
         },
         "result": {
             "status": run.status,
@@ -830,6 +835,9 @@ async def _execute_public_run(
             run=run,
             ctx=ctx,
             txn_ref=txn_ref,
+            account_no=account_no,
+            merchant=merchant,
+            amount_rm=amount_rm,
             started_at=started_at,
             completed_at=datetime.now(timezone.utc),
             duration_ms=int((time.perf_counter() - started_clock) * 1000),
@@ -1000,11 +1008,13 @@ async def compose_public_live_demo(
         amount_rm=complaint.amount_rm,
         build_email=lambda txn_ref, posted_at: _composed_email(complaint, txn_ref, posted_at),
         input_summary={
+            "fixture": "stakeholder_composed_v1",
             "authored_by": "STAKEHOLDER",
             "subject": complaint.subject,
             "sender": complaint.from_email,
+            "body_chars": len(complaint.body),
+            "body_sha256": hashlib.sha256(complaint.body.encode("utf-8")).hexdigest(),
             "attachment": complaint.attachment_name if complaint.has_attachment else None,
-            "attachment_read_by": "vision OCR" if complaint.has_attachment else None,
         },
     )
 

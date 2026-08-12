@@ -1,0 +1,329 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Sans";
+      src: url("assets/fonts/26d0ba92e140f0dc-s.p.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+    }
+
+    @font-face {
+      font-family: "Martian Mono SemiExpanded";
+      src: url("assets/fonts/2a705150951ef2a4-s.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+    }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #131a15;
+    }
+
+    .frame-02-your-words-ground {
+      position: absolute;
+      inset: 0;
+      background: #e4eae5;
+    }
+
+    .frame-02-your-words-scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .frame-02-your-words-topbar {
+      position: absolute;
+      z-index: 6;
+      top: 55px;
+      left: 96px;
+      right: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #131a15;
+      color: #131a15;
+      font-family: "Martian Mono SemiExpanded";
+      font-size: 22px;
+      font-weight: 580;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .frame-02-your-words-counter {
+      color: #8b2333;
+    }
+
+    .frame-02-your-words-copy {
+      position: absolute;
+      z-index: 7;
+      left: 96px;
+      top: 244px;
+      width: 470px;
+      min-height: 290px;
+      pointer-events: none;
+    }
+
+    .frame-02-your-words-line {
+      position: absolute;
+      left: 0;
+      top: 58px;
+      width: 470px;
+      margin: 0;
+      color: #131a15;
+      font-family: "Instrument Sans";
+      font-size: 105px;
+      font-weight: 580;
+      line-height: 0.94;
+      letter-spacing: -0.03em;
+    }
+
+    .frame-02-your-words-line--evidence {
+      color: #8b2333;
+    }
+
+    .frame-02-your-words-word {
+      display: inline-block;
+      will-change: transform, opacity, filter;
+    }
+
+    .frame-02-your-words-rule {
+      position: absolute;
+      left: 0;
+      top: 286px;
+      width: 224px;
+      height: 2px;
+      background: #8b2333;
+      transform-origin: 0 50%;
+    }
+
+    .frame-02-your-words-surface {
+      position: absolute;
+      z-index: 2;
+      left: 540px;
+      top: 116px;
+      width: 1380px;
+      height: 760px;
+      overflow: hidden;
+      border: 2px solid #131a15;
+      border-right: 0;
+      border-radius: 8px 0 0 8px;
+      background: #f2f5f2;
+    }
+
+    .frame-02-your-words-camera-outer,
+    .frame-02-your-words-camera-inner {
+      position: absolute;
+      inset: 0;
+      transform-origin: 50% 50%;
+      will-change: transform;
+    }
+
+    .frame-02-your-words-camera-inner {
+      display: grid;
+      place-items: start center;
+    }
+
+    .frame-02-your-words-composer {
+      display: block;
+      width: 680px;
+      height: auto;
+      margin-top: -250px;
+      border-left: 2px solid #365f48;
+      border-right: 2px solid #365f48;
+    }
+
+    .frame-02-your-words-locator {
+      position: absolute;
+      z-index: 5;
+      left: 50%;
+      width: 556px;
+      height: 2px;
+      margin-left: -278px;
+      background: #8b2333;
+      transform-origin: 0 50%;
+      will-change: transform, opacity;
+    }
+
+    .frame-02-your-words-locator--words {
+      top: 390px;
+    }
+
+    .frame-02-your-words-locator--evidence {
+      top: 614px;
+      left: calc(50% + 96px);
+      width: 260px;
+      margin-left: -130px;
+    }
+  </style>
+
+  <div
+    id="root"
+    data-composition-id="02-your-words"
+    data-start="0"
+    data-duration="8.229"
+    data-width="1920"
+    data-height="1080"
+  >
+    <div class="clip frame-02-your-words-ground" data-start="0" data-duration="8.229" data-track-index="0"></div>
+
+    <div class="clip frame-02-your-words-scene" data-start="0" data-duration="8.229" data-track-index="1">
+      <div class="frame-02-your-words-topbar">
+        <span>CaseZero / Complaint</span>
+        <span class="frame-02-your-words-counter">02 / 04</span>
+      </div>
+
+      <div class="frame-02-your-words-copy">
+        <p id="frame-02-your-words-copy-words" class="frame-02-your-words-line" data-layout-allow-overlap>
+          <span class="frame-02-your-words-word">Your</span>
+          <span class="frame-02-your-words-word">words.</span>
+        </p>
+        <p id="frame-02-your-words-copy-evidence" class="frame-02-your-words-line frame-02-your-words-line--evidence" data-layout-allow-overlap>
+          <span class="frame-02-your-words-word">Your</span>
+          <span class="frame-02-your-words-word">evidence.</span>
+        </p>
+        <div id="frame-02-your-words-rule" class="frame-02-your-words-rule"></div>
+      </div>
+
+      <div id="frame-02-your-words-surface" class="frame-02-your-words-surface">
+        <div id="frame-02-your-words-camera-outer" class="frame-02-your-words-camera-outer">
+          <div id="frame-02-your-words-camera-inner" class="frame-02-your-words-camera-inner">
+            <img
+              id="frame-02-your-words-composer"
+              class="frame-02-your-words-composer"
+              src="assets/composer.png"
+              alt=""
+            />
+            <div id="frame-02-your-words-locator-words" class="frame-02-your-words-locator frame-02-your-words-locator--words"></div>
+            <div id="frame-02-your-words-locator-evidence" class="frame-02-your-words-locator frame-02-your-words-locator--evidence"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["02-your-words"] = tl;
+
+      const outer = document.getElementById("frame-02-your-words-camera-outer");
+      const inner = document.getElementById("frame-02-your-words-camera-inner");
+      const wordsLine = document.getElementById("frame-02-your-words-copy-words");
+      const evidenceLine = document.getElementById("frame-02-your-words-copy-evidence");
+      const words = wordsLine.querySelectorAll(".frame-02-your-words-word");
+      const evidence = evidenceLine.querySelectorAll(".frame-02-your-words-word");
+      const wordsLocator = document.getElementById("frame-02-your-words-locator-words");
+      const evidenceLocator = document.getElementById("frame-02-your-words-locator-evidence");
+      const rule = document.getElementById("frame-02-your-words-rule");
+
+      const camera = { scale: 1, x: 0, y: 0 };
+      const applyCamera = () => {
+        outer.style.transform = `scale(${camera.scale})`;
+        inner.style.transform = `translate(${camera.x}px, ${camera.y}px)`;
+      };
+      applyCamera();
+
+      tl.fromTo(
+        "#frame-02-your-words-surface",
+        { scale: 0.94, opacity: 0, y: 18 },
+        { scale: 1, opacity: 1, y: 0, duration: 0.62, ease: "power3.out" },
+        0.04,
+      );
+      tl.fromTo(
+        ".frame-02-your-words-topbar",
+        { opacity: 0, y: -10 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        0.12,
+      );
+      tl.set([wordsLine, evidenceLine, wordsLocator, evidenceLocator, rule], { opacity: 0 }, 0);
+
+      // Scene 2: nested coordinate-target zoom to the verified wording field.
+      tl.to(
+        camera,
+        {
+          scale: 1.46,
+          x: 0,
+          y: 42,
+          duration: 1.45,
+          ease: "power3.inOut",
+          onUpdate: applyCamera,
+        },
+        2.55,
+      );
+      tl.set(wordsLine, { opacity: 1 }, 3.6);
+      words.forEach((word, index) => {
+        tl.fromTo(
+          word,
+          { x: -34, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.62, ease: "power3.out" },
+          3.6 + index * 0.12,
+        );
+      });
+      tl.fromTo(
+        wordsLocator,
+        { scaleX: 0, opacity: 0 },
+        { scaleX: 1, opacity: 1, duration: 0.72, ease: "power3.out" },
+        3.98,
+      );
+      tl.fromTo(
+        rule,
+        { scaleX: 0, opacity: 0 },
+        { scaleX: 1, opacity: 1, duration: 0.58, ease: "power3.out" },
+        4.6,
+      );
+
+      // Scene 3: velocity-matched reframe to the verified PDF area.
+      tl.to(
+        camera,
+        {
+          scale: 1.46,
+          x: -142,
+          y: -178,
+          duration: 1.22,
+          ease: "power3.inOut",
+          onUpdate: applyCamera,
+        },
+        5.35,
+      );
+      tl.to(wordsLine, { x: -42, opacity: 0, filter: "blur(8px)", duration: 0.34, ease: "power3.in" }, 5.35);
+      tl.set(evidenceLine, { opacity: 1 }, 5.85);
+      evidence.forEach((word, index) => {
+        tl.fromTo(
+          word,
+          { x: 46, opacity: 0, filter: "blur(8px)" },
+          { x: 0, opacity: 1, filter: "blur(0px)", duration: 0.56, ease: "power3.out" },
+          5.85 + index * 0.11,
+        );
+      });
+      tl.to(wordsLocator, { opacity: 0, duration: 0.25, ease: "power3.in" }, 5.4);
+      tl.fromTo(
+        evidenceLocator,
+        { scaleX: 0, opacity: 0 },
+        { scaleX: 1, opacity: 1, duration: 0.68, ease: "power3.out" },
+        6.35,
+      );
+      tl.to(rule, { scaleX: 1.42, backgroundColor: "#8b2333", duration: 0.72, ease: "power3.out" }, 6.6);
+
+      // Scene 4: restore the full verified composer, then hold completely still.
+      tl.to(
+        camera,
+        {
+          scale: 1,
+          x: 0,
+          y: 0,
+          duration: 0.7,
+          ease: "power3.inOut",
+          onUpdate: applyCamera,
+        },
+        7.1,
+      );
+      tl.to(evidenceLocator, { opacity: 0, duration: 0.3, ease: "power3.out" }, 7.15);
+    })();
+  </script>
+</template>

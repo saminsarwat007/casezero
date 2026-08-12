@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "demo:record": "node scripts/record-stakeholder-demo.mjs",
-    "demo:build": "node scripts/build-demo-film.mjs"
+    "demo:build": "node scripts/build-demo-film.mjs",
+    "film:stakeholder": "node scripts/build-stakeholder-film.mjs"
   },
   "dependencies": {
     "@number-flow/react": "0.6.2",

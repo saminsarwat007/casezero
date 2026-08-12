@@ -470,12 +470,17 @@ export function liveProof({
       },
       input: {
         fixture: "unauthorised_transaction_v1",
+        authored_by: "FIXTURE" as "FIXTURE" | "STAKEHOLDER",
         sender: "ahmad.live@example.my",
         subject: "Unauthorised card transaction",
         account_no_masked: "******6890",
         amount_rm: 2450,
         merchant: "TECHWORLD KL",
         txn_ref: "CZLIVE-20260804-ABC12345",
+        body_chars: undefined as number | undefined,
+        body_sha256: undefined as string | undefined,
+        attachment: null as string | null,
+        attachment_read_by: null as "pdf_text" | "vision_ocr" | null,
       },
       result: {
         status: quarantined ? "QUARANTINED" : "COMMUNICATED",

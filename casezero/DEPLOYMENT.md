@@ -127,5 +127,5 @@ keys. The presenter-mode proactive alert does not depend on browser push permiss
 - `.env` absent from image layers and source control.
 - API logs expose no bearer tokens, PII, raw account numbers or encryption keys.
 - Four-role auth smoke, RLS visibility smoke and exact-chain verification pass.
-- 501-test Python suite, typecheck, production build, 29 Playwright journeys, MCP,
+- 504-test Python suite, typecheck, production build, 29 Playwright journeys, MCP,
   LLM, database and mailbox-channel smokes pass.

@@ -1,34 +1,37 @@
 # Axiom by CaseZero — Demo Day run of show
 
-This is a five-minute, deck-led story with a **33.76-second silent product film** embedded on slide 7. The presenter narrates the film live, then can open the deployed `/live` route for a visitor-written complaint if venue connectivity is stable. The older `CaseZero-Stakeholder-Demo.mp4` is retained only as an archive; it predates the composer and Boardroom and is not the Demo Day film.
+This is a five-minute, deck-led story built around a live visitor-written complaint. Slides 1–13 are timed; slide 14 preserves the previous conclusion for comparison; slides 15–19 are appendix/Q&A only. Use the **33.76-second silent product film** only if venue connectivity prevents the live `/live` route from running.
 
 | Time | Slide / visual | Presenter job | Demo Day criteria |
 |---|---|---|---|
-| 0:00–0:25 | 1 — Axiom | “An AI dispute team that can be put on the record.” Name Case Study 1 and the evidence/authority boundary. | Impact & Relevance; Demo & Storytelling |
-| 0:25–0:55 | 2 — 90 minutes / 11% | Connect delay to evidence, authority and ownership drifting between desks. | Impact & Relevance |
-| 0:55–1:15 | 3 — who benefits | Complaints lead, customer, regulator/auditor; plain English over internal enums. | Human-Centered Design |
-| 1:15–1:40 | 4–6 — solution and seven seats | “Models propose. The kernel disposes.” Explain why Verifier, Resolver and the financial gate have no model. | AI Interaction; Innovation & Creativity |
-| 1:40–2:20 | 7 — embedded Boardroom film | Start the film. Narrate intake → classifier → verifier → kernel → resolver → communicator. Point out the receipt opening and the refusal ending. | Demo & Storytelling; Technical Execution |
-| 2:20–2:45 | 8 — every line has a receipt | Click a line if live. Show sequence, hash, event type and model-call count. | Technical Execution; Overall Quality |
-| 2:45–3:15 | 9 — refusal | “The most important action is the one that never happened.” Injection is blocked before any model call; downstream seats say “Never saw it”; no savings are claimed. | Responsible AI & Ethics |
-| 3:15–3:45 | 10 — value ledger | Separate measured timestamps, the 90-minute baseline and editable rate/volume assumptions. | Impact & Relevance; Feasibility |
-| 3:45–4:10 | 11 — checked evidence | 95.90% category accuracy, 98.97% urgency accuracy, 5/5 attacks, 501 backend tests, 29 browser journeys and 0 high-or-above npm vulnerabilities. | Overall Quality; Technical Execution |
-| 4:10–4:35 | 12 — UX/accessibility | 390px relay, keyboard receipts, screen-reader handoffs, reduced motion and honest degraded states. | UX & Accessibility; Human-Centered Design |
-| 4:35–4:50 | 13 — real now / bank supplies | Distinguish the deployed synthetic pipeline from bank-owned production inputs and sign-off. | Feasibility |
-| 4:50–5:00 | 14 — close | Invite the judge to write a complaint at `/live`: “Models propose. The kernel disposes.” | Demo & Storytelling |
+| 0:00–0:10 | 1 — purpose | “Bank complaints resolved in minutes—governed end to end.” | Impact & Relevance; Demo & Storytelling |
+| 0:10–0:30 | 2 — problem | Establish the 90-minute case-study baseline and the six handoffs. | Impact & Relevance |
+| 0:30–0:50 | 3 — consequence | Connect ownership drift to customer silence and regulatory exposure. | Impact & Relevance |
+| 0:50–1:10 | 4 — solution | Explain the visible chain from customer words to governed proof. | Human-Centered Design; Innovation & Creativity |
+| 1:10–1:35 | 5 — reason behind the solution | AI interprets messy inputs; deterministic authority owns irreversible decisions. | Responsible AI & Ethics; Innovation & Creativity |
+| 1:35–2:05 | 6 — six agents | Name each specialist, its job, its enforceable rule and whether it uses Gemini, Groq or no model. | AI Interaction; Technical Execution |
+| 2:05–2:30 | 7 — the brain and gate | “Models propose. The kernel decides. A human handles uncertainty.” Point to the human branch and its triggers. | Responsible AI & Ethics; Human-Centered Design |
+| 2:30–3:15 | 8 — live visitor input | Open `/live`, choose a fictional identity, type original complaint words, set amount/merchant, attach a PDF and run. | Demo & Storytelling; UX & Accessibility |
+| 3:15–3:40 | 9 — product in action | Show the Boardroom sequence and open one receipt for event number, facts and hash. | Technical Execution; Overall Quality |
+| 3:40–4:10 | 10 — human-in-the-loop | Show exactly what evidence the person receives and the approve/reject/request-information choices. | Human-Centered Design; Responsible AI & Ethics |
+| 4:10–4:35 | 11 — business validity | Tie unauthorised transactions plus billing errors to 57% of stated volume and the controlled rollout path. | Feasibility; Impact & Relevance |
+| 4:35–4:50 | 12 — production proof | State the measured 20.1-second fresh run, 14 valid links, model/bank calls and balanced posting. | Technical Execution; Overall Quality |
+| 4:50–5:00 | 13 — conclusion | Strike through the six desks, point to the six governed specialists and measured proof, then invite judges to scan the QR and test their own complaint and PDF. Say “24/7 intake readiness,” not autonomous bank operations. | Feasibility; Demo & Storytelling |
 
 ## Narration guardrails
 
 - Say “production-grade prototype with synthetic bank data,” not “live bank production.”
 - Never claim a model approves money. Say “the model proposes; the signed kernel gate authorises.”
-- Pause at each before/after transition. The viewer should understand the outcome before the next click.
+- Only the demo identity is fictional; the presenter must write the subject and complaint, enter amount and merchant, and attach the PDF during the demo.
+- Pause on the visitor-input receipt so the judges can see that the subject, claim and PDF follow what was typed.
+- On slide 13, say “24/7 intake readiness.” Do not imply that models can operate bank systems without availability controls, integrations or human exception ownership.
+- Slide 14 is reference only. Do not advance to it during the five-minute presentation.
 - Keep the cursor visible, highlight each click and leave important evidence on screen for at least three seconds.
-- Do not call the short embedded film a mockup: it is a real browser capture of the shipped component tree with deterministic network fixtures.
-- Do not claim the stubbed film is proof of production connectivity. Use the deployed end-to-end check for that claim.
+- Do not call the fallback film proof of production connectivity. Use the deployed end-to-end result on slide 12 for that claim.
 
 ## Final artifacts
 
-- `Axiom-Boardroom-Demo.mp4` — 1440×900 H.264, 25fps, 33.76 seconds, silent presenter film embedded in slide 7.
-- `Axiom-Boardroom-Demo-poster.png` — fallback/poster frame for the embedded film.
-- `Axiom-Demo-Day-Deck.pptx` — 14-slide editable deck with embedded film.
-- `Axiom-Demo-Day-Deck.pdf` — visually verified font-independent fallback; the PDF shows the film poster.
+- `Axiom-Boardroom-Demo.mp4` — 1440×900 H.264, 25fps, 33.76 seconds, optional silent venue-connectivity fallback.
+- `Axiom-Boardroom-Demo-poster.png` — standalone fallback-film poster frame.
+- `Axiom-Demo-Day-Deck.pptx` — 19-slide editable deck with notes on every slide.
+- `Axiom-Demo-Day-Deck.pdf` — visually verified 19-page font-independent fallback.

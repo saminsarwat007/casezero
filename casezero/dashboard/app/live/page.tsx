@@ -115,6 +115,11 @@ type LiveProof = {
     amount_rm: number;
     merchant: string;
     txn_ref: string;
+    authored_by?: "STAKEHOLDER" | "FIXTURE";
+    body_chars?: number;
+    body_sha256?: string;
+    attachment?: string | null;
+    attachment_read_by?: "pdf_text" | "vision_ocr" | null;
   };
   result: {
     status: string;
@@ -473,6 +478,11 @@ function LiveRunner() {
     proof && (proofHandoffs.some((handoff) => handoff.refused) || proof.result.status === "QUARANTINED")
   );
   const proofSeats = proof?.roster ?? roster?.seats ?? null;
+  const attachmentMethod = proof?.input.attachment_read_by === "pdf_text"
+    ? "Digital text read directly"
+    : proof?.input.attachment_read_by === "vision_ocr"
+      ? "Scanned pages transcribed with vision"
+      : "No PDF attached";
 
   function selectComposerTab(next: "compose" | "sample", focus = false) {
     setTab(next);
@@ -521,8 +531,8 @@ function LiveRunner() {
       </header>
 
       <section className="truth-banner" aria-label="Data and execution boundary">
-        <span><i aria-hidden="true" /> Synthetic Customer Input</span>
-        <strong>Real API · Real Model · MCP Bank Tools · Real Supabase Writes</strong>
+        <span><i aria-hidden="true" /> Fictional customer identity only</span>
+        <strong>Your words + your PDF · Real API · Real models · Real Supabase writes</strong>
       </section>
 
       <section className="live-hero" aria-labelledby="live-title">
@@ -589,8 +599,8 @@ function LiveRunner() {
                       ))}
                     </select>
                     <p className="field-help">
-                      Only these fictional customers exist in the synthetic ledger, so only they can be
-                      verified. The account and sender address stay bound to your choice.
+                      This choice supplies only a safe fictional identity and matching ledger account.
+                      Your complaint, amount, merchant and PDF are not prefilled; they become the fresh case.
                     </p>
                   </div>
 
@@ -808,6 +818,35 @@ function LiveRunner() {
 
             {notice ? <p className="proof-notice" role="status">{notice}</p> : null}
             {proof.result.degraded.length ? <div className="degraded-note" role="alert"><strong>Degraded capability</strong><span>{proof.result.degraded.join(" · ")}</span></div> : null}
+
+            <section className="input-receipt" aria-labelledby="input-receipt-title">
+              <div className="input-receipt-copy">
+                <p className="eyebrow mono">
+                  Input receipt / {proof.input.authored_by === "STAKEHOLDER" ? "written by this visitor" : "sanitised sample"}
+                </p>
+                <h2 id="input-receipt-title">
+                  {proof.input.authored_by === "STAKEHOLDER"
+                    ? "This result starts with what you submitted."
+                    : "This result starts with the labelled sample."}
+                </h2>
+                <p>
+                  The fictional identity only keeps real customer data out of the public demo. The
+                  complaint wording, amount, merchant and PDF below are the inputs the pipeline used.
+                </p>
+              </div>
+              <dl>
+                <div><dt>Subject</dt><dd>{proof.input.subject}</dd></div>
+                <div><dt>Claim</dt><dd>{currency.format(proof.input.amount_rm)} · {proof.input.merchant}</dd></div>
+                <div><dt>Evidence</dt><dd>{proof.input.attachment ? `${proof.input.attachment} · ${attachmentMethod}` : attachmentMethod}</dd></div>
+                <div>
+                  <dt>Words received</dt>
+                  <dd className="mono">
+                    {proof.input.body_chars == null ? "Sample fixture" : `${proof.input.body_chars} characters`}
+                    {proof.input.body_sha256 ? ` · SHA-256 ${proof.input.body_sha256.slice(0, 12)}…` : ""}
+                  </dd>
+                </div>
+              </dl>
+            </section>
 
             {proofHandoffs.length ? (
               <>

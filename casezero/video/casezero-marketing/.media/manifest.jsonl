@@ -1,0 +1,14 @@
+{"id":"video_001","type":"video","path":"assets/Axiom-Boardroom-Demo.mp4","source":"existing","description":"Axiom Boardroom Demo","duration":33.8,"width":1440,"height":900,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_001","type":"image","path":"assets/boardroom-complete.png","source":"existing","description":"boardroom complete","width":2640,"height":3072,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_002","type":"image","path":"assets/casezero-live-qr.png","source":"existing","description":"casezero live qr","width":720,"height":720,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_003","type":"image","path":"assets/composer.png","source":"existing","description":"composer","width":1026,"height":2228,"provenance":{"provider":"local","adopted":true}}
+{"id":"icon_001","type":"icon","path":"assets/figma-cursors.svg","source":"existing","description":"figma cursors","provenance":{"provider":"local","adopted":true}}
+{"id":"icon_002","type":"icon","path":"assets/figma-logo-pieces.svg","source":"existing","description":"figma logo pieces","provenance":{"provider":"local","adopted":true}}
+{"id":"icon_003","type":"icon","path":"assets/figma-logo-pills.svg","source":"existing","description":"figma logo pills","provenance":{"provider":"local","adopted":true}}
+{"id":"image_004","type":"image","path":"assets/human-review.png","source":"existing","description":"human review","width":2880,"height":1800,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_005","type":"image","path":"assets/landing.png","source":"existing","description":"landing","width":2880,"height":1920,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_006","type":"image","path":"assets/mission-control.png","source":"existing","description":"mission control","width":2880,"height":1800,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_001","type":"voice","path":"assets/voice/01.wav","source":"existing","description":"01","duration":8.3,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_002","type":"voice","path":"assets/voice/02.wav","source":"existing","description":"02","duration":7,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_003","type":"voice","path":"assets/voice/03.wav","source":"existing","description":"03","duration":7.7,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_004","type":"voice","path":"assets/voice/04.wav","source":"existing","description":"04","duration":11.8,"provenance":{"provider":"local","adopted":true}}

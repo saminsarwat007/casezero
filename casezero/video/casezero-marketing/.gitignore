@@ -1,0 +1,13 @@
+# HyperFrames — regenerable artifacts
+node_modules/
+.tmp/
+renders/
+snapshots/
+capture/
+
+# HeyGen-generated audio (regenerable via the generation log)
+assets/voice/
+assets/bgm/
+
+# OS / editor
+.DS_Store

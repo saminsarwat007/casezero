@@ -27,8 +27,8 @@ test("public path explains the truth boundary before asking for a run", async ({
   await expect(page.getByRole("link", { name: "Run a Live Complaint" })).toBeVisible();
   await page.getByRole("link", { name: "Run a Live Complaint" }).click();
   await expect(page.getByRole("heading", { name: "Watch one complaint become proof." })).toBeVisible();
-  await expect(page.getByText("Synthetic Customer Input")).toBeVisible();
-  await expect(page.getByText("Real API · Real Model · MCP Bank Tools · Real Supabase Writes")).toBeVisible();
+  await expect(page.getByText("Fictional customer identity only")).toBeVisible();
+  await expect(page.getByText("Your words + your PDF · Real API · Real models · Real Supabase writes")).toBeVisible();
   await expect(page.getByText("The evidence rail starts empty.")).toBeVisible();
 });
 
@@ -45,16 +45,37 @@ test("the composer runs the stakeholder's own wording and streams real stages", 
   });
 
   const submissions: string[] = [];
+  const composedResponse = structuredClone(response);
+  if (!composedResponse.proof) throw new Error("Expected proof fixture");
+  composedResponse.proof.input = {
+    ...composedResponse.proof.input,
+    fixture: "stakeholder_composed_v1",
+    authored_by: "STAKEHOLDER",
+    sender: "siti.rahman@example.my",
+    subject: "Card charge I never made",
+    body_chars: 79,
+    body_sha256: "a".repeat(64),
+    attachment: "my-evidence.pdf",
+    attachment_read_by: "pdf_text",
+  };
+  await page.route(`**/demo/live/${composedResponse.token}`, async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(composedResponse) });
+  });
   await page.route("**/demo/compose", async (route) => {
     submissions.push(route.request().postDataBuffer()?.toString("utf8") ?? "");
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(response) });
+    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(composedResponse) });
   });
 
   await page.goto("/live");
   await page.getByLabel("File it as").selectOption("7142001233");
   await page.getByLabel("Subject").fill("Card charge I never made");
   await page.getByLabel("What happened?").fill("A payment left my account last night and I never approved it. Please reverse it.");
+  await page.getByLabel("Evidence PDF (optional)").setInputFiles({
+    name: "my-evidence.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4 stakeholder evidence"),
+  });
   await page.getByRole("button", { name: "Run My Complaint Live" }).click();
 
   // The boardroom is the default view now, so the live stage feed is read there.
@@ -65,6 +86,12 @@ test("the composer runs the stakeholder's own wording and streams real stages", 
   // The sender identity stays bound to the chosen fictional customer.
   expect(submissions[0]).toContain("siti.rahman@example.my");
   expect(submissions[0]).toContain("7142001233");
+  expect(submissions[0]).toContain("my-evidence.pdf");
+  await expect(page.getByRole("heading", { name: "This result starts with what you submitted." })).toBeVisible();
+  const receipt = page.getByRole("region", { name: "This result starts with what you submitted." });
+  await expect(receipt).toContainText("Card charge I never made");
+  await expect(receipt).toContainText("my-evidence.pdf · Digital text read directly");
+  await expect(receipt).toContainText("SHA-256 aaaaaaaaaaaa…");
 });
 
 test("the composer refuses a real identifier verbatim instead of scrubbing it", async ({ page }) => {

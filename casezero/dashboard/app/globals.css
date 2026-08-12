@@ -681,6 +681,16 @@ h1, h2, h3 { text-wrap: balance; scroll-margin-top: 24px; }
 .proof-verdict { min-height: 190px; display: flex; align-items: end; justify-content: space-between; gap: 36px; padding-bottom: 28px; border-bottom: 3px double var(--ink); }
 .proof-verdict h2 { margin: 4px 0; font-size: clamp(56px, 9vw, 122px); line-height: .82; letter-spacing: -.075em; }
 .proof-verdict p:last-child { margin: 14px 0 0; color: var(--ink-2); }
+.input-receipt { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 72px); margin-top: 24px; padding: clamp(24px, 4vw, 46px) 0; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }
+.input-receipt-copy h2 { max-width: 640px; margin: 8px 0 14px; font-size: clamp(30px, 4vw, 54px); line-height: .96; letter-spacing: -.055em; }
+.input-receipt-copy > p:last-child { max-width: 630px; margin: 0; color: var(--ink-2); line-height: 1.6; }
+.input-receipt dl { display: grid; grid-template-columns: 1fr 1fr; align-content: start; margin: 0; border-top: 1px solid var(--ink); }
+.input-receipt dl > div { min-width: 0; padding: 16px 0 18px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 34%, transparent); }
+.input-receipt dl > div:nth-child(odd) { padding-right: 20px; }
+.input-receipt dl > div:nth-child(even) { padding-left: 20px; border-left: 1px solid color-mix(in srgb, var(--ink) 34%, transparent); }
+.input-receipt dt { margin-bottom: 8px; color: var(--ink-2); font: 700 10px/1.2 var(--font-martian), monospace; letter-spacing: .1em; text-transform: uppercase; }
+.input-receipt dd { margin: 0; overflow-wrap: anywhere; font-weight: 650; line-height: 1.4; }
+.input-receipt dd.mono { color: var(--ink-2); font-size: 11px; font-weight: 560; }
 .live-stamp { flex: 0 0 auto; min-width: 185px; padding: 18px; display: grid; gap: 3px; border: 4px double currentColor; color: var(--endorse); text-align: center; text-transform: uppercase; transform: rotate(-1.2deg); }
 .live-stamp span { font: 760 15px/1.2 var(--font-martian), monospace; letter-spacing: .08em; }
 .live-stamp small { font-size: 9px; letter-spacing: .08em; }
@@ -787,6 +797,10 @@ h1, h2, h3 { text-wrap: balance; scroll-margin-top: 24px; }
   .proof-verdict { align-items: start; flex-direction: column; }
   .proof-verdict h2 { font-size: clamp(48px, 15vw, 76px); }
   .live-stamp { min-width: 160px; }
+  .input-receipt { grid-template-columns: 1fr; gap: 24px; }
+  .input-receipt dl { grid-template-columns: 1fr; }
+  .input-receipt dl > div:nth-child(odd),
+  .input-receipt dl > div:nth-child(even) { padding-left: 0; padding-right: 0; border-left: 0; }
   .proof-outcome { grid-template-columns: 1fr; }
   .proof-outcome > div { min-height: 104px; border-left: 0; border-top: 1px solid #273229; }
   .proof-outcome > div:first-child { border-top: 0; }
