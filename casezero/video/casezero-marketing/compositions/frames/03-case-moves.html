@@ -1,0 +1,219 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Sans";
+      src: url("assets/fonts/26d0ba92e140f0dc-s.p.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+    }
+
+    @font-face {
+      font-family: "Martian Mono SemiExpanded";
+      src: url("assets/fonts/2a705150951ef2a4-s.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+    }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #131A15;
+      font-family: "Instrument Sans";
+    }
+
+    .frame-03-case-moves-ground {
+      position: absolute;
+      inset: 0;
+      background: transparent;
+    }
+
+    .frame-03-case-moves-media-field {
+      position: absolute;
+      left: 64px;
+      top: 64px;
+      width: 1792px;
+      height: 780px;
+      overflow: hidden;
+      border: 2px solid #131A15;
+      border-radius: 6px;
+      background: transparent;
+      box-sizing: border-box;
+    }
+
+    .frame-03-case-moves-media-wash {
+      position: absolute;
+      inset: 0;
+      background: #131A15;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .frame-03-case-moves-receipt-anchor {
+      position: absolute;
+      z-index: 8;
+      left: 96px;
+      top: 608px;
+      width: 560px;
+      min-height: 154px;
+    }
+
+    .frame-03-case-moves-receipt-rule {
+      width: 100%;
+      height: 2px;
+      margin-bottom: 16px;
+      background: #131A15;
+    }
+
+    .frame-03-case-moves-receipt-label {
+      display: flex;
+      align-items: center;
+      min-height: 118px;
+      box-sizing: border-box;
+      padding: 24px 28px;
+      border: 2px solid #131A15;
+      border-radius: 6px;
+      background: #E4EAE5;
+      color: #131A15;
+    }
+
+    .frame-03-case-moves-receipt-text {
+      display: block;
+      min-width: 490px;
+      white-space: nowrap;
+      font-family: "Instrument Sans";
+      font-size: 52px;
+      font-weight: 580;
+      letter-spacing: -0.01em;
+      line-height: 0.98;
+    }
+
+    .frame-03-case-moves-receipt-kicker {
+      position: absolute;
+      left: 0;
+      top: -34px;
+      color: #131A15;
+      font-family: "Martian Mono SemiExpanded";
+      font-size: 17px;
+      font-weight: 580;
+      letter-spacing: 0.15em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+  </style>
+
+  <div id="root"
+    data-composition-id="03-case-moves"
+    data-start="0"
+    data-duration="10.344"
+    data-width="1920"
+    data-height="1080">
+
+    <div class="clip frame-03-case-moves-ground"
+      data-start="0"
+      data-duration="10.344"
+      data-track-index="0"></div>
+
+    <!-- approved frame video hoisted by assemble-index -->
+
+    <div class="clip frame-03-case-moves-media-field"
+      data-start="0"
+      data-duration="10.344"
+      data-track-index="2">
+      <div class="frame-03-case-moves-media-wash" id="f03-case-moves-media-wash"></div>
+    </div>
+
+    <!-- No synthetic topbar or live-mark: the real Boardroom film carries its own
+         kicker, headline, and elapsed counter; overlay chrome collided with them. -->
+
+    <div class="clip frame-03-case-moves-receipt-anchor"
+      data-start="4.58"
+      data-duration="5.764"
+      data-track-index="8">
+      <div class="frame-03-case-moves-receipt-kicker">Case receipt</div>
+      <div class="frame-03-case-moves-receipt-rule"></div>
+      <div class="frame-03-case-moves-receipt-label" id="f03-case-moves-receipt-label">
+        <span class="frame-03-case-moves-receipt-text" id="f03-case-moves-receipt-text"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["03-case-moves"] = tl;
+
+      const receiptText = document.getElementById("f03-case-moves-receipt-text");
+      const receiptLabel = document.getElementById("f03-case-moves-receipt-label");
+
+      // Receipts land exactly when the narration names them:
+      // "Records" 4.58 · "deadline" 6.10 · "next step" 8.04 (local seconds).
+      const RECEIPT_START = 4.58;
+      const RECEIPT_TIMELINE = [
+        { title: "Records are checked.", start: 0 },
+        { title: "Deadline watched.", start: 6.10 - RECEIPT_START },
+        { title: "Next step ready.", start: 8.04 - RECEIPT_START }
+      ];
+      const RECEIPT_SPAN = 10.344 - RECEIPT_START;
+
+      function entryAt(time) {
+        for (let i = RECEIPT_TIMELINE.length - 1; i >= 0; i -= 1) {
+          if (time >= RECEIPT_TIMELINE[i].start) return RECEIPT_TIMELINE[i];
+        }
+        return RECEIPT_TIMELINE[0];
+      }
+
+      const receiptDriver = { t: 0 };
+      let lastTitle = "";
+      tl.to(receiptDriver, {
+        t: RECEIPT_SPAN,
+        duration: RECEIPT_SPAN,
+        ease: "none",
+        onUpdate: () => {
+          const entry = entryAt(receiptDriver.t);
+          if (entry.title !== lastTitle) {
+            receiptText.textContent = entry.title;
+            lastTitle = entry.title;
+          }
+        }
+      }, RECEIPT_START);
+
+      tl.fromTo(receiptLabel,
+        { opacity: 0, x: -58 },
+        { opacity: 1, x: 0, duration: 1.25, ease: "expo.out" },
+        4.58
+      );
+
+      tl.fromTo(".frame-03-case-moves-receipt-kicker",
+        { opacity: 0, x: -24 },
+        { opacity: 1, x: 0, duration: 1.0, ease: "expo.out" },
+        4.76
+      );
+
+      tl.fromTo(".frame-03-case-moves-receipt-rule",
+        { scaleX: 0, transformOrigin: "0% 50%" },
+        { scaleX: 1, duration: 1.05, ease: "expo.out" },
+        4.66
+      );
+
+      tl.to(receiptLabel, {
+        backgroundColor: "#8B2333",
+        borderColor: "#8B2333",
+        color: "#E4EAE5",
+        duration: 0.62,
+        ease: "power3.out"
+      }, 8.04);
+
+      tl.to(".frame-03-case-moves-receipt-rule", {
+        backgroundColor: "#8B2333",
+        duration: 0.62,
+        ease: "power3.out"
+      }, 8.04);
+    })();
+  </script>
+</template>

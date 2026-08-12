@@ -1,0 +1,353 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Instrument Sans";
+      src: url("assets/fonts/26d0ba92e140f0dc-s.p.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: block;
+    }
+
+    @font-face {
+      font-family: "Martian Mono SemiExpanded";
+      src: url("assets/fonts/2a705150951ef2a4-s.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: block;
+    }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      container-type: size;
+      color: #e4eae5;
+      background: #0b0f0c;
+      font-family: "Instrument Sans", sans-serif;
+    }
+
+    .f05-ground,
+    .f05-scene,
+    .f05-landing,
+    .f05-landing-shade {
+      position: absolute;
+      inset: 0;
+    }
+
+    .f05-ground {
+      background: #0b0f0c;
+    }
+
+    .f05-topbar {
+      position: absolute;
+      z-index: 10;
+      top: 54px;
+      left: 96px;
+      right: 96px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 28px;
+      color: #a8bfb0;
+      font-family: "Martian Mono SemiExpanded", monospace;
+      font-size: 20px;
+      font-weight: 580;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .f05-topbar-rule {
+      height: 2px;
+      background: #8b2333;
+      transform-origin: 0 50%;
+    }
+
+    .f05-statement {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      padding: 0 180px 84px;
+      text-align: center;
+    }
+
+    .f05-statement-line {
+      display: block;
+      margin: 0;
+      font-size: 132px;
+      font-weight: 580;
+      letter-spacing: -0.042em;
+      line-height: 0.92;
+      transform-origin: 50% 50%;
+      will-change: transform, opacity, filter;
+    }
+
+    .f05-statement-line + .f05-statement-line {
+      margin-top: 24px;
+    }
+
+    .f05-statement-secondary {
+      color: #a8bfb0;
+    }
+
+    .f05-outcome {
+      position: absolute;
+      z-index: 5;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      padding: 0 160px 66px;
+      text-align: center;
+    }
+
+    .f05-outcome-row {
+      display: block;
+      font-size: 126px;
+      font-weight: 580;
+      letter-spacing: -0.04em;
+      line-height: 0.96;
+      white-space: nowrap;
+      will-change: transform, opacity, filter;
+    }
+
+    .f05-outcome-row + .f05-outcome-row {
+      margin-top: 28px;
+    }
+
+    .f05-accent {
+      color: #8b2333;
+    }
+
+    .f05-cta {
+      position: absolute;
+      z-index: 7;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .f05-landing {
+      --dof: 18px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 24%;
+      opacity: 0.14;
+      filter: blur(var(--dof));
+      transform: scale(1.04);
+    }
+
+    .f05-landing-shade {
+      background: rgba(11, 15, 12, 0.78);
+    }
+
+    .f05-cta-panel {
+      position: absolute;
+      top: 116px;
+      right: 96px;
+      bottom: 112px;
+      width: 734px;
+      padding: 58px 62px;
+      box-sizing: border-box;
+      border: 2px solid #365f48;
+      border-radius: 8px;
+      background: #e4eae5;
+      color: #131a15;
+      will-change: transform, opacity;
+    }
+
+    .f05-cta-kicker,
+    .f05-cta-url {
+      font-family: "Martian Mono SemiExpanded", monospace;
+      font-weight: 580;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .f05-cta-kicker {
+      color: #8b2333;
+      font-size: 18px;
+    }
+
+    .f05-cta-title {
+      width: 590px;
+      margin: 28px 0 0;
+      font-size: 74px;
+      font-weight: 580;
+      letter-spacing: -0.035em;
+      line-height: 0.94;
+    }
+
+    .f05-cta-title span {
+      display: block;
+    }
+
+    .f05-qr-row {
+      position: absolute;
+      left: 62px;
+      right: 62px;
+      bottom: 54px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      align-items: end;
+      gap: 36px;
+    }
+
+    .f05-qr-shell {
+      width: 220px;
+      height: 220px;
+      padding: 12px;
+      box-sizing: border-box;
+      border: 2px solid #131a15;
+      background: #f2f5f2;
+    }
+
+    .f05-qr-shell img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .f05-cta-url {
+      padding-bottom: 6px;
+      font-size: 17px;
+      line-height: 1.55;
+      text-transform: none;
+      overflow-wrap: anywhere;
+    }
+
+    .f05-cta-copy {
+      position: absolute;
+      z-index: 8;
+      left: 96px;
+      top: 232px;
+      width: 720px;
+      color: #e4eae5;
+    }
+
+    .f05-cta-wordmark {
+      margin: 0;
+      font-size: 128px;
+      font-weight: 580;
+      letter-spacing: -0.048em;
+      line-height: 0.9;
+    }
+
+    .f05-cta-promise {
+      width: 570px;
+      margin: 46px 0 0;
+      color: #a8bfb0;
+      font-size: 43px;
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      line-height: 1.12;
+    }
+
+    .f05-cta-promise span {
+      display: block;
+    }
+  </style>
+
+  <div id="root" data-composition-id="05-clear-outcome" data-start="0" data-duration="15.177" data-width="1920" data-height="1080">
+    <div class="clip f05-ground" data-start="0" data-duration="15.177" data-track-index="0"></div>
+
+    <div class="clip f05-topbar" data-start="0" data-duration="15.177" data-track-index="9">
+      <span>Case Zero</span>
+      <span class="f05-topbar-rule" id="f05-topbar-rule"></span>
+      <span>One clear outcome</span>
+    </div>
+
+    <div class="clip f05-scene" data-start="0" data-duration="3.56" data-track-index="2">
+      <div class="f05-statement">
+        <span class="f05-statement-line" id="f05-lead-one">Less time</span>
+        <span class="f05-statement-line f05-statement-secondary" id="f05-lead-two">chasing systems.</span>
+      </div>
+    </div>
+
+    <div class="clip f05-scene" data-start="3.56" data-duration="3.2" data-track-index="3">
+      <div class="f05-statement">
+        <span class="f05-statement-line" id="f05-decision">Every decision</span>
+        <span class="f05-statement-line f05-statement-secondary" id="f05-visible">seen. explained.</span>
+      </div>
+    </div>
+
+    <div class="clip f05-scene" data-start="6.76" data-duration="3.92" data-track-index="4">
+      <div class="f05-outcome">
+        <span class="f05-outcome-row" id="f05-complaint-in">One complaint in.</span>
+        <span class="f05-outcome-row" id="f05-outcome-out">One <span class="f05-accent">clear outcome</span> out.</span>
+      </div>
+    </div>
+
+    <div class="clip f05-cta" data-start="10.68" data-duration="4.497" data-track-index="5">
+      <img class="f05-landing" src="assets/landing.png" alt="Case Zero live landing page">
+      <div class="f05-landing-shade"></div>
+
+      <div class="f05-cta-copy" id="f05-cta-copy">
+        <p class="f05-cta-wordmark">Case Zero</p>
+        <p class="f05-cta-promise">
+          <span>Your complaint.</span>
+          <span>A clear next step.</span>
+        </p>
+      </div>
+
+      <section class="f05-cta-panel" id="f05-cta-panel" aria-label="Try Case Zero">
+        <div class="f05-cta-kicker">Live product</div>
+        <h2 class="f05-cta-title" data-layout-allow-overlap>
+          <span>Try your own</span>
+          <span>complaint.</span>
+        </h2>
+        <div class="f05-qr-row" id="f05-qr-row">
+          <div class="f05-qr-shell">
+            <img src="assets/casezero-live-qr.png" alt="QR code for the Case Zero live product">
+          </div>
+          <div class="f05-cta-url">casezero-alpha.vercel.app/live</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["05-clear-outcome"] = tl;
+
+      const rule = document.getElementById("f05-topbar-rule");
+      const leadOne = document.getElementById("f05-lead-one");
+      const leadTwo = document.getElementById("f05-lead-two");
+      const decision = document.getElementById("f05-decision");
+      const visible = document.getElementById("f05-visible");
+      const complaintIn = document.getElementById("f05-complaint-in");
+      const outcomeOut = document.getElementById("f05-outcome-out");
+      const ctaCopy = document.getElementById("f05-cta-copy");
+      const ctaPanel = document.getElementById("f05-cta-panel");
+      const qrRow = document.getElementById("f05-qr-row");
+
+      // Word cues (local): "Teams" 0.20 · "Every" 3.56 · "seen" 4.96 ·
+      // "One complaint in." 6.76 · "One clear outcome out." 8.58 · "Try" 10.68 · QR readable by 11.8.
+      tl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "power3.out" }, 0.1);
+      tl.fromTo(leadOne, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.72, ease: "power3.out" }, 0.24);
+      tl.fromTo(leadTwo, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.72, ease: "power3.out" }, 1.1);
+      tl.to([leadOne, leadTwo], { y: -28, opacity: 0, filter: "blur(8px)", duration: 0.42, ease: "power3.in" }, 3.1);
+      tl.set([leadOne, leadTwo], { opacity: 0 }, 3.56);
+
+      tl.fromTo(decision, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 0.72, ease: "power3.out" }, 3.56);
+      tl.fromTo(visible, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.72, ease: "power3.out" }, 4.9);
+      tl.to([decision, visible], { y: -28, opacity: 0, filter: "blur(8px)", duration: 0.42, ease: "power3.in" }, 6.3);
+      tl.set([decision, visible], { opacity: 0 }, 6.76);
+
+      tl.fromTo(complaintIn, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.62, ease: "power3.out" }, 6.76);
+      tl.fromTo(outcomeOut, { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.68, ease: "power3.out" }, 8.58);
+      tl.to([complaintIn, outcomeOut], { y: -34, opacity: 0, filter: "blur(8px)", duration: 0.44, ease: "power3.in" }, 10.2);
+      tl.set([complaintIn, outcomeOut], { opacity: 0 }, 10.68);
+
+      tl.fromTo(".f05-landing", { opacity: 0 }, { opacity: 0.14, duration: 0.62, ease: "power3.out" }, 10.68);
+      tl.fromTo(ctaCopy, { x: -52, opacity: 0 }, { x: 0, opacity: 1, duration: 0.72, ease: "power3.out" }, 10.82);
+      tl.fromTo(ctaPanel, { x: 110, opacity: 0 }, { x: 0, opacity: 1, duration: 0.72, ease: "power3.out" }, 10.95);
+      tl.fromTo(qrRow, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 11.22);
+    })();
+  </script>
+</template>
