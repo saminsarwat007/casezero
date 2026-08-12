@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CaseZero stakeholder film</title>
+    <style>
+      :root {
+        --ink: #09110c;
+        --forest: #0d1a12;
+        --paper: #e9eee9;
+        --paper-2: #dfe7e1;
+        --sage: #92aa99;
+        --line: rgba(146, 170, 153, 0.38);
+        --red: #9f263b;
+        --mono: "SFMono-Regular", "Roboto Mono", Menlo, Consolas, monospace;
+        --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+      body {
+        color: var(--paper);
+        background: var(--ink);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        opacity: 0.22;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(146, 170, 153, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(146, 170, 153, 0.08) 1px, transparent 1px);
+        background-size: 96px 96px;
+      }
+
+      .brand {
+        position: fixed;
+        z-index: 90;
+        top: 42px;
+        left: 56px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 20px;
+        font-weight: 760;
+        letter-spacing: -0.04em;
+      }
+      .brand-mark {
+        width: 19px;
+        height: 19px;
+        border: 2px solid var(--paper);
+        transform: rotate(4deg);
+        box-shadow: inset 0 0 0 4px var(--ink), inset 0 0 0 5px var(--sage);
+      }
+      .film-label {
+        position: fixed;
+        z-index: 90;
+        top: 48px;
+        right: 56px;
+        color: var(--sage);
+        font: 700 12px/1 var(--mono);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .progress {
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 5px;
+        background: rgba(146, 170, 153, 0.15);
+      }
+      .progress > span {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: var(--red);
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        opacity: 0;
+        transform: scale(0.994);
+        pointer-events: none;
+        transition: opacity 540ms ease, transform 780ms cubic-bezier(.2,.75,.2,1);
+      }
+      .scene.is-active { opacity: 1; transform: scale(1); }
+      .scene-inner {
+        position: absolute;
+        inset: 116px 74px 68px;
+      }
+
+      .eyebrow {
+        color: var(--sage);
+        font: 760 14px/1.2 var(--mono);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+      h1, h2, h3, p { margin: 0; }
+      h1, h2 { letter-spacing: -0.065em; }
+      h1 { font-size: 120px; line-height: 0.88; font-weight: 760; }
+      h2 { font-size: 78px; line-height: 0.92; font-weight: 750; }
+      .subhead { max-width: 920px; color: #b7c5ba; font-size: 27px; line-height: 1.35; }
+      .red { color: #d35a6c; }
+      .sage { color: var(--sage); }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+      .is-active .reveal {
+        animation: reveal 720ms cubic-bezier(.2,.75,.2,1) forwards;
+        animation-delay: var(--delay, 0ms);
+      }
+      @keyframes reveal { to { opacity: 1; transform: translateY(0); } }
+
+      /* 01 — Problem */
+      .hook .scene-inner { display: flex; align-items: flex-end; }
+      .hook-copy { width: 100%; padding-bottom: 78px; }
+      .hook h1 { max-width: 1420px; }
+      .systems {
+        position: absolute;
+        top: 45px;
+        right: 34px;
+        width: 690px;
+        height: 360px;
+        color: #84948a;
+        font: 680 14px/1 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .system-chip {
+        position: absolute;
+        padding: 13px 17px;
+        border: 1px solid rgba(146, 170, 153, 0.32);
+        background: rgba(13, 26, 18, 0.7);
+      }
+      .system-chip:nth-child(1) { left: 0; top: 88px; }
+      .system-chip:nth-child(2) { left: 218px; top: 10px; }
+      .system-chip:nth-child(3) { right: 0; top: 128px; }
+      .system-chip:nth-child(4) { left: 116px; bottom: 42px; }
+      .system-chip:nth-child(5) { right: 72px; bottom: 0; }
+      .systems svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+      /* 02 — Collapse */
+      .collapse .scene-inner { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 100px; align-items: center; }
+      .desk-stack { display: grid; gap: 13px; }
+      .desk {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        align-items: center;
+        min-height: 68px;
+        padding: 0 20px;
+        color: var(--ink);
+        background: var(--paper);
+        border: 1px solid #aab8ae;
+        font-size: 24px;
+        font-weight: 680;
+      }
+      .desk span:first-child { color: #66776b; font: 700 13px/1 var(--mono); }
+      .desk del { color: #617067; text-decoration-color: var(--red); text-decoration-thickness: 3px; }
+      .desk em { color: var(--red); font: 720 12px/1 var(--mono); font-style: normal; letter-spacing: 0.12em; }
+      .chain-line {
+        margin-top: 32px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        color: var(--sage);
+        font: 700 14px/1 var(--mono);
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+      .chain-line::before { content: ""; width: 88px; height: 2px; background: var(--red); }
+
+      /* Shared live product window */
+      .product-stage {
+        position: absolute;
+        z-index: 22;
+        left: 74px;
+        top: 142px;
+        width: 1772px;
+        height: 814px;
+        opacity: 0;
+        overflow: hidden;
+        background: #dfe6e1;
+        border: 1px solid rgba(146, 170, 153, .7);
+        box-shadow: 0 38px 110px rgba(0,0,0,.48);
+        transform: translateY(20px) scale(.98);
+        transition: opacity 520ms ease, transform 760ms cubic-bezier(.2,.75,.2,1), width 760ms ease;
+      }
+      .product-stage.is-active { opacity: 1; transform: translateY(0) scale(1); }
+      .product-stage.is-agent-mode { width: 1190px; }
+      .browser-bar {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 19px;
+        background: #f1f4f1;
+        border-bottom: 1px solid #b7c4ba;
+      }
+      .browser-bar i { width: 9px; height: 9px; border-radius: 50%; background: #aebcb2; }
+      .browser-bar span { margin-left: 18px; color: #617067; font: 670 12px/1 var(--mono); letter-spacing: .04em; }
+      .product-stage video { display: block; width: 100%; height: calc(100% - 48px); object-fit: cover; object-position: top center; }
+      .product-caption {
+        position: absolute;
+        z-index: 30;
+        left: 112px;
+        bottom: 92px;
+        display: none;
+        padding: 16px 19px;
+        color: var(--paper);
+        background: rgba(9,17,12,.94);
+        border-left: 4px solid var(--red);
+        box-shadow: 0 16px 46px rgba(0,0,0,.3);
+      }
+      .product-caption strong { display: block; font-size: 26px; letter-spacing: -.03em; }
+      .product-caption span { display: block; margin-top: 5px; color: #b7c5ba; font: 650 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+
+      /* 03 — User input */
+      .input-scene .scene-inner { pointer-events: none; }
+      .input-scene .input-tag {
+        position: absolute;
+        z-index: 35;
+        top: -8px;
+        left: 8px;
+        display: flex;
+        gap: 10px;
+      }
+      .input-tag span {
+        padding: 10px 14px;
+        color: var(--paper);
+        background: var(--red);
+        font: 720 12px/1 var(--mono);
+        letter-spacing: .1em;
+        text-transform: uppercase;
+      }
+      .input-tag span:last-child { color: var(--ink); background: var(--paper); }
+
+      /* 04 — Agent seats */
+      .agent-panel {
+        position: absolute;
+        z-index: 28;
+        top: 142px;
+        right: 74px;
+        width: 520px;
+        height: 814px;
+        padding: 34px;
+        opacity: 0;
+        transform: translateX(32px);
+        background: #111f16;
+        border: 1px solid rgba(146,170,153,.6);
+        transition: opacity 420ms ease, transform 680ms cubic-bezier(.2,.75,.2,1);
+      }
+      .agent-panel.is-active { opacity: 1; transform: translateX(0); }
+      .agent-panel h3 { margin-top: 16px; font-size: 45px; line-height: .98; letter-spacing: -.05em; }
+      .agent-rule {
+        position: absolute;
+        left: 34px;
+        right: 34px;
+        top: 170px;
+        opacity: 0;
+        transform: translateY(15px);
+        transition: opacity 300ms ease, transform 440ms ease;
+      }
+      .agent-rule.is-active { opacity: 1; transform: translateY(0); }
+      .seat-number { color: #d35a6c; font: 730 14px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+      .agent-rule h4 { margin: 14px 0 20px; font-size: 62px; line-height: .95; letter-spacing: -.055em; }
+      .agent-rule p { color: #c1cec4; font-size: 25px; line-height: 1.35; }
+      .agent-rule .boundary { margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--sage); font: 700 13px/1.45 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+      .agent-dots { position: absolute; left: 34px; bottom: 34px; display: flex; gap: 8px; }
+      .agent-dots span { width: 42px; height: 4px; background: rgba(146,170,153,.25); }
+      .agent-dots span.is-active { background: var(--red); }
+
+      /* 05 — Kernel */
+      .kernel .scene-inner { display: grid; grid-template-rows: auto 1fr; gap: 46px; }
+      .kernel h2 { max-width: 1180px; }
+      .authority-flow { display: grid; grid-template-columns: 1fr 92px 1fr 92px 1fr; align-items: stretch; }
+      .authority-card { min-height: 330px; padding: 30px; border: 1px solid rgba(146,170,153,.52); background: rgba(13,26,18,.72); }
+      .authority-card.kernel-card { color: var(--ink); background: var(--paper); border-color: var(--paper); }
+      .authority-card .number { color: var(--sage); font: 720 13px/1 var(--mono); letter-spacing: .12em; }
+      .authority-card h3 { margin-top: 46px; font-size: 38px; line-height: 1; letter-spacing: -.045em; }
+      .authority-card p { margin-top: 18px; color: #adbbb0; font-size: 20px; line-height: 1.4; }
+      .kernel-card p { color: #526258; }
+      .authority-arrow { align-self: center; height: 1px; background: var(--red); position: relative; }
+      .authority-arrow::after { content: ""; position: absolute; right: -1px; top: -5px; width: 10px; height: 10px; border-top: 1px solid var(--red); border-right: 1px solid var(--red); transform: rotate(45deg); }
+      .kernel-rules { margin-top: 38px; display: grid; gap: 13px; color: var(--ink); font: 700 14px/1.3 var(--mono); text-transform: uppercase; }
+
+      /* 06 & 07 — Screenshot stages */
+      .screen-scene .scene-inner { display: grid; grid-template-columns: 0.72fr 1.28fr; gap: 64px; align-items: center; }
+      .screen-copy h2 { margin-top: 17px; }
+      .screen-copy .subhead { margin-top: 26px; max-width: 560px; font-size: 23px; }
+      .decision-list { margin-top: 35px; display: grid; gap: 11px; }
+      .decision-list span { display: flex; align-items: center; gap: 12px; color: #c3d0c6; font: 690 14px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+      .decision-list span::before { content: ""; width: 18px; height: 2px; background: var(--red); }
+      .screen-frame {
+        position: relative;
+        height: 720px;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(146,170,153,.68);
+        box-shadow: 0 36px 90px rgba(0,0,0,.44);
+      }
+      .screen-frame img { width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.03); }
+      .is-active .screen-frame img { animation: drift 9s ease-out forwards; }
+      @keyframes drift { to { transform: scale(1.0); } }
+      .human .screen-frame img { object-position: 58% center; }
+      .dashboard .scene-inner { grid-template-columns: 1.26fr .74fr; }
+      .dashboard .screen-frame img { object-position: 54% 32%; }
+      .dashboard .screen-copy { order: 2; }
+      .dashboard .screen-frame { order: 1; }
+      .big-stat { margin-top: 38px; display: flex; align-items: baseline; gap: 17px; }
+      .big-stat strong { color: var(--paper); font: 760 78px/.9 var(--mono); letter-spacing: -.08em; }
+      .big-stat span { color: var(--sage); font: 700 13px/1.35 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+
+      /* 08 — Production proof */
+      .proof .scene-inner { display: grid; grid-template-rows: auto 1fr auto; }
+      .proof h2 { margin-top: 16px; max-width: 1220px; }
+      .proof-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.35fr; margin-top: 54px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .proof-cell { min-height: 255px; padding: 34px 26px; border-right: 1px solid var(--line); }
+      .proof-cell:last-child { border-right: 0; }
+      .proof-cell strong { display: block; margin-top: 46px; color: var(--paper); font: 760 64px/.9 var(--mono); letter-spacing: -.075em; }
+      .proof-cell span { display: block; margin-top: 16px; color: var(--sage); font: 700 12px/1.45 var(--mono); text-transform: uppercase; letter-spacing: .09em; }
+      .proof-foot { display: flex; justify-content: space-between; align-items: flex-end; color: #b7c5ba; font-size: 20px; }
+      .verified-stamp { padding: 15px 18px; color: #d35a6c; border: 2px solid var(--red); font: 760 14px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; transform: rotate(-1deg); }
+
+      /* 09 — Close */
+      .close .scene-inner { display: grid; grid-template-columns: 1.34fr .66fr; gap: 88px; align-items: center; }
+      .close h2 { max-width: 1100px; font-size: 96px; }
+      .close .subhead { margin-top: 30px; max-width: 990px; }
+      .close-points { margin-top: 46px; display: flex; gap: 26px; }
+      .close-points span { padding: 12px 15px; border: 1px solid var(--line); color: var(--sage); font: 700 12px/1 var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+      .qr-card { padding: 30px; color: var(--ink); background: var(--paper); border: 1px solid #b7c4ba; }
+      .qr-card img { display: block; width: 100%; aspect-ratio: 1; }
+      .qr-card strong { display: block; margin-top: 18px; font-size: 24px; letter-spacing: -.035em; }
+      .qr-card span { display: block; margin-top: 9px; color: #5e6e63; font: 680 12px/1.4 var(--mono); word-break: break-all; }
+      .close-rule { position: absolute; right: 74px; bottom: 68px; width: 590px; height: 2px; background: var(--red); }
+    </style>
+  </head>
+  <body>
+    <div class="brand"><span class="brand-mark"></span><span>CaseZero</span></div>
+    <div class="film-label">Stakeholder film / 2026</div>
+
+    <section class="scene hook" data-scene="hook">
+      <div class="scene-inner">
+        <div class="systems reveal" style="--delay: 180ms">
+          <svg viewBox="0 0 690 360" aria-hidden="true"><path d="M60 110 L320 80 L615 150 L480 316 L185 286 Z" fill="none" stroke="rgba(159,38,59,.55)" stroke-width="1.4" stroke-dasharray="5 8"/></svg>
+          <span class="system-chip">Email</span><span class="system-chip">PDF evidence</span><span class="system-chip">Core banking</span><span class="system-chip">CRM</span><span class="system-chip">Policy clock</span>
+        </div>
+        <div class="hook-copy">
+          <div class="eyebrow reveal">The hidden cost of complaint handling</div>
+          <h1 class="reveal" style="--delay: 160ms">The clock runs<br />between systems.</h1>
+          <p class="subhead reveal" style="--delay: 360ms">A complaint can wait across six desks before anyone has the whole truth.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene collapse" data-scene="collapse">
+      <div class="scene-inner">
+        <div>
+          <div class="eyebrow reveal">The operating change</div>
+          <h2 class="reveal" style="--delay: 130ms">Six handoffs become one governed chain.</h2>
+          <div class="chain-line reveal" style="--delay: 330ms">Every handoff preserved</div>
+        </div>
+        <div class="desk-stack">
+          <div class="desk reveal" style="--delay: 80ms"><span>01</span><del>Complaints desk</del><em>Connected</em></div>
+          <div class="desk reveal" style="--delay: 140ms"><span>02</span><del>Compliance desk</del><em>Connected</em></div>
+          <div class="desk reveal" style="--delay: 200ms"><span>03</span><del>Investigator</del><em>Connected</em></div>
+          <div class="desk reveal" style="--delay: 260ms"><span>04</span><del>Finance operations</del><em>Connected</em></div>
+          <div class="desk reveal" style="--delay: 320ms"><span>05</span><del>Customer communications</del><em>Connected</em></div>
+          <div class="desk reveal" style="--delay: 380ms"><span>06</span><del>Team lead</del><em>Connected</em></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene input-scene" data-scene="input">
+      <div class="scene-inner">
+        <div class="input-tag reveal"><span>Real visitor input</span><span>Original words preserved</span></div>
+      </div>
+    </section>
+
+    <section class="scene" data-scene="agents"></section>
+
+    <div class="product-stage" id="product-stage">
+      <div class="browser-bar"><i></i><i></i><i></i><span>casezero-alpha.vercel.app/live</span></div>
+      <video id="boardroom-video" muted playsinline preload="auto" src="/submission/04-demo/Axiom-Boardroom-Demo.mp4"></video>
+      <div class="product-caption" id="product-caption"><strong>Write it once. Watch the chain form.</strong><span>Your complaint · your PDF · exact input receipt</span></div>
+    </div>
+
+    <aside class="agent-panel" id="agent-panel">
+      <div class="eyebrow">Six specialists / one rulebook</div>
+      <h3>Each seat has a job—and a boundary.</h3>
+      <div class="agent-rule" data-agent="0"><div class="seat-number">Seat 01 / Intake</div><h4>Intake</h4><p>Structures the email and PDF, then encrypts personal data.</p><div class="boundary">Stops unsafe instructions before any model reads them.</div></div>
+      <div class="agent-rule" data-agent="1"><div class="seat-number">Seat 02 / Classifier</div><h4>Classifier</h4><p>Identifies the complaint type, urgency and confidence.</p><div class="boundary">Low confidence cannot quietly become a decision.</div></div>
+      <div class="agent-rule" data-agent="2"><div class="seat-number">Seat 03 / Verifier</div><h4>Verifier</h4><p>Checks CRM and core banking records against the claim.</p><div class="boundary">Compares evidence. It never invents bank facts.</div></div>
+      <div class="agent-rule" data-agent="3"><div class="seat-number">Seat 04 / Resolver</div><h4>Resolver</h4><p>Drafts the remedy when the evidence is complete.</p><div class="boundary">Cannot post without PASS evidence and a signed ticket.</div></div>
+      <div class="agent-rule" data-agent="4"><div class="seat-number">Seat 05 / Communicator</div><h4>Communicator</h4><p>Writes a clear customer update in the bank's voice.</p><div class="boundary">Required regulatory wording comes from policy, not prose.</div></div>
+      <div class="agent-rule" data-agent="5"><div class="seat-number">Seat 06 / Supervisor</div><h4>Supervisor</h4><p>Watches the deadline and the load across the team.</p><div class="boundary">Escalates exceptions; it does not hide them.</div></div>
+      <div class="agent-dots"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </aside>
+
+    <section class="scene kernel" data-scene="kernel">
+      <div class="scene-inner">
+        <div>
+          <div class="eyebrow reveal">The brain / separated authority</div>
+          <h2 class="reveal" style="--delay: 130ms">AI proposes. Policy decides.</h2>
+        </div>
+        <div class="authority-flow reveal" style="--delay: 260ms">
+          <div class="authority-card"><div class="number">01 / MODEL</div><h3>Draft a classification or response</h3><p>Fast, language-aware proposals with confidence and source references.</p></div>
+          <div class="authority-arrow"></div>
+          <div class="authority-card kernel-card"><div class="number">02 / POLICY KERNEL</div><h3>Check what is allowed</h3><div class="kernel-rules"><span>Typed evidence only</span><span>PASS before money</span><span>Balanced journal</span><span>Human review when required</span></div></div>
+          <div class="authority-arrow"></div>
+          <div class="authority-card"><div class="number">03 / CONTROLLED ACTION</div><h3>Post, communicate—or stop</h3><p>Every result becomes a linked, time-stamped receipt.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene screen-scene human" data-scene="human">
+      <div class="scene-inner">
+        <div class="screen-copy">
+          <div class="eyebrow reveal">Human in the loop</div>
+          <h2 class="reveal" style="--delay: 110ms">The person owns the exception.</h2>
+          <p class="subhead reveal" style="--delay: 240ms">Ambiguous, high-value or policy-sensitive cases stop in one review lane with the evidence already assembled.</p>
+          <div class="decision-list reveal" style="--delay: 350ms"><span>Approve resolution</span><span>Reject claim</span><span>Request information</span></div>
+        </div>
+        <div class="screen-frame reveal" style="--delay: 170ms"><img src="/submission/assets/deck/human-review.png" alt="CaseZero human review queue" /></div>
+      </div>
+    </section>
+
+    <section class="scene screen-scene dashboard" data-scene="dashboard">
+      <div class="scene-inner">
+        <div class="screen-copy">
+          <div class="eyebrow reveal">Stakeholder control</div>
+          <h2 class="reveal" style="--delay: 110ms">See pressure before breach.</h2>
+          <p class="subhead reveal" style="--delay: 230ms">Workload, deadlines, human review and agent health stay visible in one operating picture.</p>
+          <div class="big-stat reveal" style="--delay: 340ms"><strong>24/7</strong><span>intake readiness<br />with one human lane</span></div>
+        </div>
+        <div class="screen-frame reveal" style="--delay: 150ms"><img src="/submission/assets/deck/mission-control.png" alt="CaseZero mission control dashboard" /></div>
+      </div>
+    </section>
+
+    <section class="scene proof" data-scene="proof">
+      <div class="scene-inner">
+        <div>
+          <div class="eyebrow reveal">Verified production run / 12 Aug 2026</div>
+          <h2 class="reveal" style="--delay: 120ms">A governed outcome, measured end to end.</h2>
+        </div>
+        <div class="proof-grid reveal" style="--delay: 260ms">
+          <div class="proof-cell"><div class="eyebrow">Fresh case</div><strong>20.1s</strong><span>Complaint to governed outcome</span></div>
+          <div class="proof-cell"><div class="eyebrow">Audit</div><strong>14</strong><span>Linked, valid events</span></div>
+          <div class="proof-cell"><div class="eyebrow">Live services</div><strong>3 + 3</strong><span>Model calls + bank tool calls</span></div>
+          <div class="proof-cell"><div class="eyebrow">Financial control</div><strong>RM180.50</strong><span>Balanced debit and credit</span></div>
+        </div>
+        <div class="proof-foot reveal" style="--delay: 400ms"><span>MYB-2026-000057 · communicated · PASS · posted · balanced</span><span class="verified-stamp">Verified live</span></div>
+      </div>
+    </section>
+
+    <section class="scene close" data-scene="close">
+      <div class="scene-inner">
+        <div>
+          <div class="eyebrow reveal">Axiom by CaseZero</div>
+          <h2 class="reveal" style="--delay: 100ms">One complaint.<br />One governed outcome.</h2>
+          <p class="subhead reveal" style="--delay: 230ms">Write your own complaint. Upload your own PDF. Inspect every handoff.</p>
+          <div class="close-points reveal" style="--delay: 350ms"><span>Six specialists</span><span>One policy kernel</span><span>Humans own exceptions</span></div>
+        </div>
+        <div class="qr-card reveal" style="--delay: 180ms"><img src="/submission/assets/deck/casezero-live-qr.png" alt="QR code for CaseZero live experience" /><strong>Try the live experience</strong><span>casezero-alpha.vercel.app/live</span></div>
+      </div>
+      <div class="close-rule"></div>
+    </section>
+
+    <div class="progress"><span id="progress-bar"></span></div>
+
+    <script>
+      const DURATION = 87;
+      const schedule = [
+        ["hook", 0, 8], ["collapse", 8, 15], ["input", 15, 25], ["agents", 25, 42],
+        ["kernel", 42, 51], ["human", 51, 60], ["dashboard", 60, 68], ["proof", 68, 77], ["close", 77, 87],
+      ];
+      const scenes = new Map([...document.querySelectorAll("[data-scene]")].map((node) => [node.dataset.scene, node]));
+      const productStage = document.getElementById("product-stage");
+      const productCaption = document.getElementById("product-caption");
+      const agentPanel = document.getElementById("agent-panel");
+      const boardroomVideo = document.getElementById("boardroom-video");
+      const progressBar = document.getElementById("progress-bar");
+      const agentRules = [...document.querySelectorAll("[data-agent]")];
+      const agentDots = [...document.querySelectorAll(".agent-dots span")];
+      let startedAt = 0;
+      let boardroomStarted = false;
+
+      function update(t) {
+        for (const [id, start, end] of schedule) scenes.get(id)?.classList.toggle("is-active", t >= start && t < end);
+        const productActive = t >= 15 && t < 42;
+        const agentActive = t >= 25 && t < 42;
+        productStage.classList.toggle("is-active", productActive);
+        productStage.classList.toggle("is-agent-mode", agentActive);
+        agentPanel.classList.toggle("is-active", agentActive);
+        productCaption.style.display = t >= 16 && t < 24 ? "block" : "none";
+        if (productActive && !boardroomStarted) {
+          boardroomStarted = true;
+          boardroomVideo.currentTime = 0;
+          boardroomVideo.play().catch(() => {});
+        }
+        if (agentActive) {
+          const index = Math.min(5, Math.floor((t - 25) / (17 / 6)));
+          agentRules.forEach((node, i) => node.classList.toggle("is-active", i === index));
+          agentDots.forEach((node, i) => node.classList.toggle("is-active", i === index));
+        }
+        progressBar.style.width = `${Math.min(100, Math.max(0, t / DURATION * 100))}%`;
+      }
+
+      window.startFilm = () => {
+        startedAt = performance.now();
+        update(0);
+        const frame = (now) => {
+          const t = (now - startedAt) / 1000;
+          update(t);
+          if (t < DURATION) requestAnimationFrame(frame);
+          else { window.__filmDone = true; boardroomVideo.pause(); }
+        };
+        requestAnimationFrame(frame);
+      };
+
+      Promise.all([
+        ...[...document.images].map((img) => img.complete ? Promise.resolve() : new Promise((resolve) => { img.onload = img.onerror = resolve; })),
+        new Promise((resolve) => boardroomVideo.readyState >= 2 ? resolve() : boardroomVideo.addEventListener("loadeddata", resolve, { once: true })),
+        document.fonts.ready,
+      ]).then(() => { window.__filmReady = true; });
+    </script>
+  </body>
+</html>
